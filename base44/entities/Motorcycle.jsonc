@@ -1,0 +1,44 @@
+{
+  "name": "Motorcycle",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Cliente",
+      "description": "ID del cliente propietario"
+    },
+    "brand": {
+      "type": "string",
+      "title": "Marca"
+    },
+    "model": {
+      "type": "string",
+      "title": "Modelo"
+    },
+    "year": {
+      "type": "number",
+      "title": "A\u00f1o"
+    },
+    "plate": {
+      "type": "string",
+      "title": "Placa"
+    },
+    "vin": {
+      "type": "string",
+      "title": "VIN / Chasis"
+    },
+    "color": {
+      "type": "string",
+      "title": "Color"
+    },
+    "mileage": {
+      "type": "number",
+      "title": "Kilometraje"
+    }
+  },
+  "required": [
+    "brand",
+    "model",
+    "customer_id"
+  ]
+}

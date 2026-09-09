@@ -1,0 +1,74 @@
+{
+  "name": "ServiceOrder",
+  "type": "object",
+  "properties": {
+    "motorcycle_id": {
+      "type": "string",
+      "title": "Motocicleta",
+      "description": "ID de la motocicleta"
+    },
+    "customer_id": {
+      "type": "string",
+      "title": "Cliente",
+      "description": "ID del cliente"
+    },
+    "service_type": {
+      "type": "string",
+      "title": "Tipo de servicio",
+      "enum": [
+        "Mantenimiento",
+        "Reparaci\u00f3n",
+        "Diagn\u00f3stico",
+        "Cambio de aceite",
+        "Frenos",
+        "Motor",
+        "El\u00e9ctrico",
+        "Personalizado"
+      ],
+      "default": "Mantenimiento"
+    },
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del trabajo"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Ingresado",
+        "En proceso",
+        "Completado",
+        "Entregado"
+      ],
+      "default": "Ingresado"
+    },
+    "mechanic": {
+      "type": "string",
+      "title": "Mec\u00e1nico asignado"
+    },
+    "entry_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de ingreso"
+    },
+    "delivery_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de entrega"
+    },
+    "cost": {
+      "type": "number",
+      "title": "Costo total"
+    },
+    "parts_used": {
+      "type": "string",
+      "title": "Repuestos utilizados"
+    }
+  },
+  "required": [
+    "motorcycle_id",
+    "customer_id",
+    "service_type",
+    "status"
+  ]
+}

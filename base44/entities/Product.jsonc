@@ -1,0 +1,59 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Nombre del producto"
+    },
+    "category": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Repuestos",
+        "Accesorios",
+        "Lubricantes",
+        "Llantas",
+        "Herramientas",
+        "Indumentaria",
+        "Otros"
+      ],
+      "default": "Repuestos"
+    },
+    "brand": {
+      "type": "string",
+      "title": "Marca"
+    },
+    "sku": {
+      "type": "string",
+      "title": "SKU / C\u00f3digo"
+    },
+    "price": {
+      "type": "number",
+      "title": "Precio de venta"
+    },
+    "cost": {
+      "type": "number",
+      "title": "Costo"
+    },
+    "stock": {
+      "type": "number",
+      "title": "Stock",
+      "default": 0
+    },
+    "min_stock": {
+      "type": "number",
+      "title": "Stock m\u00ednimo",
+      "default": 5
+    },
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n"
+    }
+  },
+  "required": [
+    "name",
+    "price",
+    "stock"
+  ]
+}
