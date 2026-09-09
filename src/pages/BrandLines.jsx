@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Search, Bike, X, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Bike, X, Globe, ChevronDown } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 
 const empty = { name: "", country: "", lines: [] };
@@ -18,6 +18,9 @@ export default function BrandLines() {
   const [lineInput, setLineInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState({});
+
+  const toggleExpand = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const load = async () => {
     setLoading(true);
@@ -129,17 +132,24 @@ export default function BrandLines() {
                     <button onClick={() => remove(b)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {lines.length === 0 ? (
-                    <span className="text-xs text-slate-400">Sin líneas registradas</span>
-                  ) : (
-                    lines.map((l, i) => (
-                      <span key={i} className="px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 text-xs font-medium border border-amber-100">{l}</span>
-                    ))
+                <button
+                  onClick={() => toggleExpand(b.id)}
+                  disabled={lines.length === 0}
+                  className={`w-full flex items-center justify-between mt-1 pt-2 border-t border-slate-100 ${lines.length === 0 ? "cursor-default" : "hover:bg-slate-50"} -mx-1 px-1 transition-colors rounded-b`}
+                >
+                  <span className="text-xs text-slate-400 py-1">
+                    {lines.length === 0 ? "Sin líneas registradas" : `${lines.length} línea${lines.length !== 1 ? "s" : ""}`}
+                  </span>
+                  {lines.length > 0 && (
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${expanded[b.id] ? "rotate-180" : ""}`} />
                   )}
-                </div>
-                {lines.length > 0 && (
-                  <p className="text-xs text-slate-400 mt-2">{lines.length} línea{lines.length !== 1 ? "s" : ""}</p>
+                </button>
+                {expanded[b.id] && lines.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    {lines.map((l, i) => (
+                      <span key={i} className="px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 text-xs font-medium border border-amber-100">{l}</span>
+                    ))}
+                  </div>
                 )}
               </div>
             );
