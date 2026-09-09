@@ -71,14 +71,16 @@ export default function Motorcycles() {
       if (editing) { await base44.entities.Motorcycle.update(editing.id, payload); }
       else { await base44.entities.Motorcycle.create(payload); }
 
-      // If a new line was entered, add it to the brand
+      // If a new line was entered, add it to the brand (or create the brand)
       if (form.line && form.brand) {
         const b = brands.find((x) => x.name?.toLowerCase() === form.brand.toLowerCase());
-        if (b && b.lines) {
-          const existing = b.lines.split(",").map((l) => l.trim()).filter(Boolean);
+        if (b) {
+          const existing = (b.lines || "").split(",").map((l) => l.trim()).filter(Boolean);
           if (!existing.map((l) => l.toLowerCase()).includes(form.line.toLowerCase())) {
             await base44.entities.Brand.update(b.id, { lines: [...existing, form.line].join(", ") });
           }
+        } else {
+          await base44.entities.Brand.create({ name: form.brand.trim(), lines: form.line.trim() });
         }
       }
 
