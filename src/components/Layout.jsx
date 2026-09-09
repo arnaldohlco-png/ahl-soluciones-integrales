@@ -3,82 +3,82 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
-  Truck, HardHat, Building2, Menu, X
-} from "lucide-react";
+  Truck, HardHat, Building2, Menu, X } from
+"lucide-react";
 import { cn } from "@/lib/utils";
 
 const navGroups = [
-  {
-    title: "Principal",
-    items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard }],
-  },
-  {
-    title: "Gestión",
-    items: [
-      { to: "/clientes", label: "Clientes", icon: Users },
-      { to: "/motocicletas", label: "Motocicletas", icon: Bike },
-      { to: "/ordenes", label: "Órdenes de Servicio", icon: Wrench },
-    ],
-  },
-  {
-    title: "Almacén",
-    items: [
-      { to: "/inventario", label: "Inventario", icon: Package },
-      { to: "/compras", label: "Compras", icon: Truck },
-      { to: "/ventas", label: "Ventas / POS", icon: ShoppingCart },
-    ],
-  },
-  {
-    title: "Finanzas",
-    items: [
-      { to: "/facturacion", label: "Facturación", icon: Receipt },
-      { to: "/creditos", label: "Créditos y Cartera", icon: CreditCard },
-      { to: "/gastos", label: "Gastos", icon: Wallet },
-      { to: "/caja", label: "Caja y Bancos", icon: Landmark },
-    ],
-  },
-  {
-    title: "Administración",
-    items: [
-      { to: "/tecnicos", label: "Técnicos", icon: HardHat },
-      { to: "/proveedores", label: "Proveedores", icon: Building2 },
-    ],
-  },
-];
+{
+  title: "Principal",
+  items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard }]
+},
+{
+  title: "Gestión",
+  items: [
+  { to: "/clientes", label: "Clientes", icon: Users },
+  { to: "/motocicletas", label: "Motocicletas", icon: Bike },
+  { to: "/ordenes", label: "Órdenes de Servicio", icon: Wrench }]
+
+},
+{
+  title: "Almacén",
+  items: [
+  { to: "/inventario", label: "Inventario", icon: Package },
+  { to: "/compras", label: "Compras", icon: Truck },
+  { to: "/ventas", label: "Ventas / POS", icon: ShoppingCart }]
+
+},
+{
+  title: "Finanzas",
+  items: [
+  { to: "/facturacion", label: "Facturación", icon: Receipt },
+  { to: "/creditos", label: "Créditos y Cartera", icon: CreditCard },
+  { to: "/gastos", label: "Gastos", icon: Wallet },
+  { to: "/caja", label: "Caja y Bancos", icon: Landmark }]
+
+},
+{
+  title: "Administración",
+  items: [
+  { to: "/tecnicos", label: "Técnicos", icon: HardHat },
+  { to: "/proveedores", label: "Proveedores", icon: Building2 }]
+
+}];
+
 
 export default function Layout() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const NavContent = () => (
-    <>
-      {navGroups.map((group) => (
-        <div key={group.title} className="mb-4">
+  const NavContent = () =>
+  <>
+      {navGroups.map((group) =>
+    <div key={group.title} className="mb-4">
           <p className="px-3 mb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{group.title}</p>
           {group.items.map((item) => {
-            const Icon = item.icon;
-            const active = location.pathname === item.to;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  active
-                    ? "bg-amber-500 text-slate-900"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                )}
-              >
+        const Icon = item.icon;
+        const active = location.pathname === item.to;
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+              active ?
+              "bg-amber-500 text-slate-900" :
+              "text-slate-300 hover:bg-slate-800 hover:text-white"
+            )}>
+            
                 <Icon className="w-5 h-5" />
                 {item.label}
-              </Link>
-            );
-          })}
+              </Link>);
+
+      })}
         </div>
-      ))}
-    </>
-  );
+    )}
+    </>;
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -89,7 +89,7 @@ export default function Layout() {
             <Bike className="w-6 h-6 text-slate-900" />
           </div>
           <div>
-            <h1 className="text-white font-bold text-lg leading-tight">MotoTaller</h1>
+            <h1 className="text-white font-bold text-lg leading-tight">HR MOTOCICLETAS</h1>
             <p className="text-xs text-slate-400">Taller & Almacén</p>
           </div>
         </div>
@@ -115,8 +115,8 @@ export default function Layout() {
       </div>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+      {mobileOpen &&
+      <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <aside className="relative w-72 max-w-[80vw] bg-slate-900 flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-6 border-b border-slate-800">
@@ -138,12 +138,12 @@ export default function Layout() {
             </nav>
           </aside>
         </div>
-      )}
+      }
 
       {/* Main content */}
       <main className="md:ml-64 pt-14 md:pt-0 min-h-screen">
         <Outlet />
       </main>
-    </div>
-  );
+    </div>);
+
 }
