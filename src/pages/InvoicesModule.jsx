@@ -23,6 +23,7 @@ export default function Invoices() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [company, setCompany] = useState(null);
   const [form, setForm] = useState({
     customer_id: "", customer_name: "", type: "Factura de venta", number: "",
     date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente",
@@ -39,6 +40,8 @@ export default function Invoices() {
         ]);
         setList(inv);
         setCustomers(cust);
+        const comp = await base44.entities.Company.list("-created_date", 1);
+        if (comp.length > 0) setCompany(comp[0]);
       } catch (e) { console.error(e); } finally { setLoading(false); }
     })();
   }, []);
@@ -103,6 +106,7 @@ export default function Invoices() {
     "Pagada": "bg-emerald-100 text-emerald-700",
     "Anulada": "bg-red-100 text-red-700",
   };
+  const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
@@ -226,17 +230,27 @@ export default function Invoices() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Subtotal</Label>
-                <Input type="number" value={form.subtotal} onChange={(e) => setForm({ ...form, subtotal: parseFloat(e.target.value) || 0 })} />
+                <Input type="number" value={form.subtotal} onChange={(e) => {
+                  const sub = parseFloat(e.target.value) || 0;
+                  const iva = chargesIva ? Math.round(sub * 0.19) : 0;
+                  setForm({ ...form, subtotal: sub, iva, total: sub + iva - (Number(form.discount) || 0) });
+                }} />
               </div>
               <div>
-                <Label>IVA</Label>
-                <Input type="number" value={form.iva} onChange={(e) => setForm({ ...form, iva: parseFloat(e.target.value) || 0 })} />
+                <Label>IVA {!chargesIva && <span className="text-xs text-slate-400 normal-case">(No responsable)</span>}</Label>
+                <Input type="number" value={form.iva} onChange={(e) => {
+                  const iv = parseFloat(e.target.value) || 0;
+                  setForm({ ...form, iva: iv, total: Number(form.subtotal) + iv - (Number(form.discount) || 0) });
+                }} disabled={!chargesIva} className={!chargesIva ? "bg-slate-50" : ""} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Descuento</Label>
-                <Input type="number" value={form.discount} onChange={(e) => setForm({ ...form, discount: parseFloat(e.target.value) || 0 })} />
+                <Input type="number" value={form.discount} onChange={(e) => {
+                  const disc = parseFloat(e.target.value) || 0;
+                  setForm({ ...form, discount: disc, total: Number(form.subtotal) + Number(form.iva) - disc });
+                }} />
               </div>
               <div>
                 <Label>Total</Label>

@@ -18,17 +18,20 @@ export default function Ventas() {
   const [paymentType, setPaymentType] = useState("Contado");
   const [discount, setDiscount] = useState(0);
   const [amountPaid, setAmountPaid] = useState(0);
+  const [company, setCompany] = useState(null);
   const [checkoutMsg, setCheckoutMsg] = useState("");
 
   useEffect(() => {
     (async () => {
       try {
-        const [prods, custs] = await Promise.all([
+        const [prods, custs, comps] = await Promise.all([
           base44.entities.Product.list("-created_date", 200),
           base44.entities.Customer.list("-created_date", 100),
+          base44.entities.Company.list("-created_date", 1),
         ]);
         setProducts(prods.filter(p => (p.stock || 0) > 0));
         setCustomers(custs);
+        if (comps.length > 0) setCompany(comps[0]);
       } catch (e) { console.error(e); } finally { setLoading(false); }
     })();
   }, []);
@@ -76,10 +79,11 @@ export default function Ventas() {
 
   const totals = useMemo(() => {
     const subtotal = cart.reduce((s, c) => s + c.subtotal, 0);
-    const iva = cart.reduce((s, c) => s + (c.subtotal * (c.iva_rate || 19) / 100), 0);
+    const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
+    const iva = chargesIva ? cart.reduce((s, c) => s + (c.subtotal * (c.iva_rate || 19) / 100), 0) : 0;
     const total = Math.max(0, subtotal + iva - (discount || 0));
     return { subtotal, iva, total };
-  }, [cart, discount]);
+  }, [cart, discount, company]);
 
   const checkout = async () => {
     if (cart.length === 0) return;

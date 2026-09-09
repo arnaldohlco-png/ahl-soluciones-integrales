@@ -10,6 +10,7 @@ import { Building2, Save, Loader2, Cloud, Upload } from "lucide-react";
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
   email: "", address: "", city: "", logo: "", footer_text: "", credit_default_days: 30,
+  charges_iva: true,
 };
 
 export default function Company() {
@@ -32,6 +33,7 @@ export default function Company() {
             email: data[0].email || "", address: data[0].address || "", city: data[0].city || "",
             logo: data[0].logo || "", footer_text: data[0].footer_text || "",
             credit_default_days: data[0].credit_default_days ?? 30,
+            charges_iva: data[0].charges_iva ?? (data[0].document_type === "Persona jurídica"),
           });
         }
       } catch (e) { console.error(e); }
@@ -105,13 +107,16 @@ export default function Company() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Tipo de persona</Label>
-            <Select value={form.document_type} onValueChange={(v) => setForm({ ...form, document_type: v })}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Persona natural">Persona natural</SelectItem>
-                <SelectItem value="Persona jurídica">Persona jurídica</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select value={form.document_type} onValueChange={(v) => setForm({ ...form, document_type: v, charges_iva: v === "Persona jurídica" })}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Persona natural">Persona natural</SelectItem>
+                  <SelectItem value="Persona jurídica">Persona jurídica</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className={`text-xs mt-1.5 font-medium ${form.charges_iva ? "text-emerald-600" : "text-slate-400"}`}>
+                {form.charges_iva ? "Responsable de IVA (19%)" : "No responsable de IVA"}
+              </p>
           </div>
           <div>
             <Label>Nombre / Razón social *</Label>

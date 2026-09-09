@@ -49,6 +49,11 @@
       "type": "number",
       "title": "D\u00edas de cr\u00e9dito por defecto",
       "default": 30
+    },
+    "charges_iva": {
+      "type": "boolean",
+      "title": "Responsable de IVA",
+      "default": true
     }
   },
   "required": [
