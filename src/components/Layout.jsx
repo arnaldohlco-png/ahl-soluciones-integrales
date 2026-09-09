@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
-  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store } from
+  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote } from
 "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,7 @@ const navGroups = [
 {
   title: "Finanzas",
   items: [
+  { to: "/cotizaciones", label: "Cotizaciones", icon: FileText },
   { to: "/facturacion", label: "Facturación", icon: Receipt },
   { to: "/creditos", label: "Créditos y Cartera", icon: CreditCard },
   { to: "/gastos", label: "Gastos", icon: Wallet },
@@ -44,7 +45,9 @@ const navGroups = [
   { to: "/tecnicos", label: "Técnicos", icon: HardHat },
   { to: "/proveedores", label: "Proveedores", icon: Building2 },
   { to: "/marcas", label: "Marcas y Líneas", icon: Tag },
-  { to: "/empresa", label: "Mi Empresa", icon: Store }]
+  { to: "/empresa", label: "Mi Empresa", icon: Store },
+  { to: "/prestamos-tecnicos", label: "Préstamos Técnicos", icon: HandCoins },
+  { to: "/pago-comisiones", label: "Pago Comisiones", icon: Banknote }]
   }];
 
 

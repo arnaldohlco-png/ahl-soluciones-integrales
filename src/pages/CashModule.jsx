@@ -26,6 +26,8 @@ export default function Cash() {
     payment_method: "Efectivo", register_type: "Caja principal",
     date: new Date().toISOString(),
   });
+  const [openingOpen, setOpeningOpen] = useState(false);
+  const [openingForm, setOpeningForm] = useState({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo" });
 
   useEffect(() => { load(); }, []);
 
@@ -56,6 +58,28 @@ export default function Cash() {
     setModalOpen(true);
   };
 
+  const openOpening = () => {
+    setOpeningForm({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo" });
+    setOpeningOpen(true);
+  };
+
+  const saveOpening = async () => {
+    if (!openingForm.amount || openingForm.amount <= 0) return;
+    setSaving(true);
+    try {
+      await base44.entities.CashMovement.create({
+        type: "Entrada", category: "Otro ingreso",
+        amount: Number(openingForm.amount),
+        description: `Apertura de caja - ${openingForm.register_type}`,
+        payment_method: openingForm.payment_method,
+        register_type: openingForm.register_type,
+        date: new Date().toISOString(),
+      });
+      setOpeningOpen(false);
+      await load();
+    } catch (e) { console.error(e); } finally { setSaving(false); }
+  };
+
   const save = async () => {
     if (!form.amount || form.amount <= 0) return;
     setSaving(true);
@@ -83,9 +107,14 @@ export default function Cash() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Caja y Bancos</h1>
           <p className="text-slate-500 mt-1">Saldo total: <span className={`font-semibold ${totalBalance >= 0 ? "text-emerald-600" : "text-red-600"}`}>${totalBalance.toLocaleString("es-CO")}</span></p>
         </div>
-        <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4" /> Nuevo Movimiento
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={openOpening} variant="outline">
+            <ArrowDownCircle className="w-4 h-4" /> Apertura de Caja
+          </Button>
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Plus className="w-4 h-4" /> Nuevo Movimiento
+          </Button>
+        </div>
       </div>
 
       {/* Balance cards */}
@@ -208,6 +237,42 @@ export default function Cash() {
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button onClick={save} disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
               {saving ? "Guardando..." : "Registrar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openingOpen} onOpenChange={setOpeningOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Apertura de Caja</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div>
+              <Label>Caja</Label>
+              <Select value={openingForm.register_type} onValueChange={(v) => setOpeningForm({ ...openingForm, register_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {REGISTERS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Monto inicial *</Label>
+              <Input type="number" value={openingForm.amount} onChange={(e) => setOpeningForm({ ...openingForm, amount: parseFloat(e.target.value) || 0 })} />
+            </div>
+            <div>
+              <Label>Forma de pago</Label>
+              <Select value={openingForm.payment_method} onValueChange={(v) => setOpeningForm({ ...openingForm, payment_method: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {METHODS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpeningOpen(false)}>Cancelar</Button>
+            <Button onClick={saveOpening} disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+              {saving ? "Guardando..." : "Abrir Caja"}
             </Button>
           </DialogFooter>
         </DialogContent>

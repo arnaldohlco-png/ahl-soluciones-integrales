@@ -1,0 +1,51 @@
+{
+  "name": "TechnicianLoan",
+  "type": "object",
+  "properties": {
+    "technician_id": {
+      "type": "string",
+      "title": "T\u00e9cnico"
+    },
+    "technician_name": {
+      "type": "string",
+      "title": "Nombre del t\u00e9cnico"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Monto del pr\u00e9stamo"
+    },
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n / Motivo"
+    },
+    "deducted_amount": {
+      "type": "number",
+      "title": "Monto descontado",
+      "default": 0
+    },
+    "balance": {
+      "type": "number",
+      "title": "Saldo pendiente",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pendiente",
+        "Descontado"
+      ],
+      "default": "Pendiente"
+    }
+  },
+  "required": [
+    "technician_id",
+    "date",
+    "amount"
+  ]
+}

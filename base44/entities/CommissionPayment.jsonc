@@ -1,0 +1,67 @@
+{
+  "name": "CommissionPayment",
+  "type": "object",
+  "properties": {
+    "technician_id": {
+      "type": "string",
+      "title": "T\u00e9cnico"
+    },
+    "technician_name": {
+      "type": "string",
+      "title": "Nombre del t\u00e9cnico"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de pago"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date",
+      "title": "Inicio del per\u00edodo"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date",
+      "title": "Fin del per\u00edodo"
+    },
+    "orders_count": {
+      "type": "number",
+      "title": "\u00d3rdenes completadas",
+      "default": 0
+    },
+    "total_commission": {
+      "type": "number",
+      "title": "Total comisiones",
+      "default": 0
+    },
+    "loans_deducted": {
+      "type": "number",
+      "title": "Pr\u00e9stamos descontados",
+      "default": 0
+    },
+    "net_amount": {
+      "type": "number",
+      "title": "Monto neto a pagar",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pendiente",
+        "Pagado"
+      ],
+      "default": "Pagado"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "technician_id",
+    "date",
+    "net_amount"
+  ]
+}

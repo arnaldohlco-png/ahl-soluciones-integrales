@@ -25,6 +25,7 @@ export default function Invoices() {
   const [form, setForm] = useState({
     customer_id: "", customer_name: "", type: "Factura de venta", number: "",
     date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente",
+    payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "",
   });
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function Invoices() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ customer_id: "", customer_name: "", type: "Factura de venta", number: "", date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente" });
+    setForm({ customer_id: "", customer_name: "", type: "Factura de venta", number: "", date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente", payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "" });
     setModalOpen(true);
   };
 
@@ -63,7 +64,10 @@ export default function Invoices() {
     if (!form.total) return;
     setSaving(true);
     try {
-      const payload = { ...form, subtotal: Number(form.subtotal), iva: Number(form.iva), discount: Number(form.discount), total: Number(form.total) };
+      const dueDate = form.payment_terms === "Crédito" && form.credit_days > 0 ? moment(form.date).add(Number(form.credit_days), "days").format("YYYY-MM-DD") : "";
+      const inst = Number(form.installments) || 1;
+      const instAmt = form.payment_terms === "Crédito" && inst > 0 ? Math.ceil(Number(form.total) / inst) : 0;
+      const payload = { ...form, subtotal: Number(form.subtotal), iva: Number(form.iva), discount: Number(form.discount), total: Number(form.total), credit_days: Number(form.credit_days) || 0, installments: inst, installment_amount: instAmt, payment_due_date: dueDate };
       if (editing) await base44.entities.Invoice.update(editing.id, payload);
       else await base44.entities.Invoice.create(payload);
       setModalOpen(false);
@@ -244,6 +248,42 @@ export default function Invoices() {
                   <SelectItem value="Anulada">Anulada</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="border-t border-slate-100 pt-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Plazo de pago</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Plazo</Label>
+                  <Select value={form.payment_terms} onValueChange={(v) => setForm({ ...form, payment_terms: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Contado">Contado</SelectItem>
+                      <SelectItem value="Crédito">Crédito</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.payment_terms === "Crédito" && (
+                  <div>
+                    <Label>Días de crédito</Label>
+                    <Input type="number" value={form.credit_days} onChange={(e) => setForm({ ...form, credit_days: e.target.value })} placeholder="30" />
+                  </div>
+                )}
+              </div>
+              {form.payment_terms === "Crédito" && (
+                <div className="grid grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <Label>Número de cuotas</Label>
+                    <Input type="number" value={form.installments} onChange={(e) => setForm({ ...form, installments: e.target.value })} min="1" />
+                  </div>
+                  <div>
+                    <Label>Valor por cuota</Label>
+                    <Input type="number" value={form.total && form.installments ? Math.ceil(Number(form.total) / (Number(form.installments) || 1)) : ""} readOnly className="bg-slate-50" placeholder="Auto" />
+                  </div>
+                </div>
+              )}
+              {form.payment_terms === "Crédito" && form.credit_days > 0 && (
+                <p className="text-xs text-slate-500 mt-2">Vence: {moment(form.date).add(Number(form.credit_days), "days").format("DD/MM/YYYY")} · {Number(form.installments) > 1 ? `${form.installments} cuotas` : "Pago único"}</p>
+              )}
             </div>
           </div>
           <DialogFooter>

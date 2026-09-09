@@ -64,6 +64,35 @@
       ],
       "default": "Pendiente"
     },
+    "payment_terms": {
+      "type": "string",
+      "title": "Plazo de pago",
+      "enum": [
+        "Contado",
+        "Cr\u00e9dito"
+      ],
+      "default": "Contado"
+    },
+    "credit_days": {
+      "type": "number",
+      "title": "D\u00edas de cr\u00e9dito",
+      "default": 0
+    },
+    "installments": {
+      "type": "number",
+      "title": "N\u00famero de cuotas",
+      "default": 1
+    },
+    "installment_amount": {
+      "type": "number",
+      "title": "Valor por cuota",
+      "default": 0
+    },
+    "payment_due_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de vencimiento"
+    },
     "related_sale_id": {
       "type": "string",
       "title": "Venta relacionada"
