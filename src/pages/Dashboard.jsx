@@ -3,8 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
-  Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard
-} from "lucide-react";
+  Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard } from
+"lucide-react";
 import moment from "moment";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
@@ -17,39 +17,39 @@ export default function Dashboard() {
     (async () => {
       try {
         const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians] = await Promise.all([
-          base44.entities.Sale.list("-created_date", 200),
-          base44.entities.ServiceOrder.list("-created_date", 200),
-          base44.entities.Customer.list("-created_date", 100),
-          base44.entities.Motorcycle.list("-created_date", 100),
-          base44.entities.Product.list("-created_date", 200),
-          base44.entities.Expense.list("-created_date", 200),
-          base44.entities.AccountReceivable.list("-created_date", 200),
-          base44.entities.Invoice.list("-created_date", 200),
-          base44.entities.Technician.list("-created_date", 100),
-        ]);
+        base44.entities.Sale.list("-created_date", 200),
+        base44.entities.ServiceOrder.list("-created_date", 200),
+        base44.entities.Customer.list("-created_date", 100),
+        base44.entities.Motorcycle.list("-created_date", 100),
+        base44.entities.Product.list("-created_date", 200),
+        base44.entities.Expense.list("-created_date", 200),
+        base44.entities.AccountReceivable.list("-created_date", 200),
+        base44.entities.Invoice.list("-created_date", 200),
+        base44.entities.Technician.list("-created_date", 100)]
+        );
 
         const today = moment().format("YYYY-MM-DD");
         const startWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
         const startMonth = moment().startOf("month").format("YYYY-MM-DD");
 
-        const salesToday = sales.filter(s => (s.date || "") >= today).reduce((s, x) => s + (x.total || 0), 0);
-        const salesWeek = sales.filter(s => (s.date || "") >= startWeek).reduce((s, x) => s + (x.total || 0), 0);
-        const salesMonth = sales.filter(s => (s.date || "") >= startMonth).reduce((s, x) => s + (x.total || 0), 0);
+        const salesToday = sales.filter((s) => (s.date || "") >= today).reduce((s, x) => s + (x.total || 0), 0);
+        const salesWeek = sales.filter((s) => (s.date || "") >= startWeek).reduce((s, x) => s + (x.total || 0), 0);
+        const salesMonth = sales.filter((s) => (s.date || "") >= startMonth).reduce((s, x) => s + (x.total || 0), 0);
 
-        const workshopIncome = orders.filter(o => o.status === "Completado" || o.status === "Entregado").reduce((s, o) => s + (o.cost || 0), 0);
+        const workshopIncome = orders.filter((o) => o.status === "Completado" || o.status === "Entregado").reduce((s, o) => s + (o.cost || 0), 0);
         const storeIncome = sales.reduce((s, x) => s + (x.total || 0), 0);
         const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
-        const monthExpenses = expenses.filter(e => (e.date || "") >= startMonth).reduce((s, e) => s + (e.amount || 0), 0);
-        const estimatedProfit = (workshopIncome + storeIncome) - totalExpenses;
+        const monthExpenses = expenses.filter((e) => (e.date || "") >= startMonth).reduce((s, e) => s + (e.amount || 0), 0);
+        const estimatedProfit = workshopIncome + storeIncome - totalExpenses;
         const totalReceivables = receivables.reduce((s, r) => s + (r.balance || 0), 0);
 
-        const lowStock = products.filter(p => (p.stock || 0) <= (p.min_stock || 5));
+        const lowStock = products.filter((p) => (p.stock || 0) <= (p.min_stock || 5));
 
         const productSales = {};
-        sales.forEach(s => {
+        sales.forEach((s) => {
           try {
             const items = JSON.parse(s.items || "[]");
-            items.forEach(item => {
+            items.forEach((item) => {
               const key = item.name || "N/A";
               if (!productSales[key]) productSales[key] = { qty: 0, revenue: 0 };
               productSales[key].qty += item.quantity || 0;
@@ -60,13 +60,13 @@ export default function Dashboard() {
         const topProducts = Object.entries(productSales).sort((a, b) => b[1].qty - a[1].qty).slice(0, 5);
 
         const svcCount = {};
-        orders.forEach(o => { svcCount[o.service_type] = (svcCount[o.service_type] || 0) + 1; });
+        orders.forEach((o) => {svcCount[o.service_type] = (svcCount[o.service_type] || 0) + 1;});
         const topServices = Object.entries(svcCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
         const techMap = {};
-        technicians.forEach(t => { techMap[t.id] = t.name; });
+        technicians.forEach((t) => {techMap[t.id] = t.name;});
         const techCommissions = {};
-        orders.forEach(o => {
+        orders.forEach((o) => {
           if (o.technician_id) {
             if (!techCommissions[o.technician_id]) techCommissions[o.technician_id] = { name: techMap[o.technician_id] || "—", commission: 0, count: 0 };
             techCommissions[o.technician_id].commission += o.technician_commission || 0;
@@ -75,9 +75,9 @@ export default function Dashboard() {
         });
         const topTechnicians = Object.values(techCommissions).sort((a, b) => b.commission - a.commission);
 
-        const motosInWorkshop = orders.filter(o => o.status === "Ingresado" || o.status === "En proceso");
-        const pendingOrders = orders.filter(o => o.status !== "Entregado");
-        const pendingInvoices = invoices.filter(i => i.status === "Pendiente");
+        const motosInWorkshop = orders.filter((o) => o.status === "Ingresado" || o.status === "En proceso");
+        const pendingOrders = orders.filter((o) => o.status !== "Entregado");
+        const pendingInvoices = invoices.filter((i) => i.status === "Pendiente");
 
         setD({
           salesToday, salesWeek, salesMonth,
@@ -88,7 +88,7 @@ export default function Dashboard() {
           pendingOrders: pendingOrders.length, pendingInvoices: pendingInvoices.length,
           customers: customers.length, motorcycles: motorcycles.length, products: products.length,
           lowStockProducts: lowStock.slice(0, 5),
-          completedOrders: orders.filter(o => o.status === "Completado" || o.status === "Entregado").length,
+          completedOrders: orders.filter((o) => o.status === "Completado" || o.status === "Entregado").length
         });
       } catch (e) {
         console.error(e);
@@ -102,21 +102,21 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   const statusColors = {
     "Ingresado": "bg-blue-100 text-blue-700",
     "En proceso": "bg-amber-100 text-amber-700",
     "Completado": "bg-emerald-100 text-emerald-700",
-    "Entregado": "bg-slate-100 text-slate-700",
+    "Entregado": "bg-slate-100 text-slate-700"
   };
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Dashboard</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Res</h1>
         <p className="text-slate-500 mt-1">Resumen financiero y operativo en tiempo real</p>
       </div>
 
@@ -207,21 +207,21 @@ export default function Dashboard() {
             <h3 className="font-semibold text-slate-900 flex items-center gap-2"><Bike className="w-5 h-5 text-amber-600" /> Motos en el taller</h3>
             <Link to="/ordenes" className="text-sm text-amber-600 hover:underline font-medium">Ver todas</Link>
           </div>
-          {d.motosInWorkshop?.length === 0 ? (
-            <p className="text-slate-400 text-sm py-4 text-center">No hay motos en el taller</p>
-          ) : (
-            <div className="space-y-2">
-              {d.motosInWorkshop?.map((o) => (
-                <div key={o.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+          {d.motosInWorkshop?.length === 0 ?
+          <p className="text-slate-400 text-sm py-4 text-center">No hay motos en el taller</p> :
+
+          <div className="space-y-2">
+              {d.motosInWorkshop?.map((o) =>
+            <div key={o.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                   <div>
                     <p className="font-medium text-slate-800 text-sm">{o.service_type}</p>
                     <p className="text-xs text-slate-400">{o.description?.slice(0, 40) || "Sin descripción"}</p>
                   </div>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[o.status] || "bg-slate-100"}`}>{o.status}</span>
                 </div>
-              ))}
+            )}
             </div>
-          )}
+          }
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
@@ -229,21 +229,21 @@ export default function Dashboard() {
             <h3 className="font-semibold text-slate-900 flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-red-500" /> Inventario bajo</h3>
             <Link to="/inventario" className="text-sm text-amber-600 hover:underline font-medium">Ver inventario</Link>
           </div>
-          {d.lowStockProducts?.length === 0 ? (
-            <p className="text-slate-400 text-sm py-4 text-center">Todo el inventario está en niveles correctos ✓</p>
-          ) : (
-            <div className="space-y-2">
-              {d.lowStockProducts?.map((p) => (
-                <div key={p.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+          {d.lowStockProducts?.length === 0 ?
+          <p className="text-slate-400 text-sm py-4 text-center">Todo el inventario está en niveles correctos ✓</p> :
+
+          <div className="space-y-2">
+              {d.lowStockProducts?.map((p) =>
+            <div key={p.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                   <div>
                     <p className="font-medium text-slate-800 text-sm">{p.name}</p>
                     <p className="text-xs text-slate-400">{p.brand} · {p.category}</p>
                   </div>
                   <span className="text-sm font-semibold text-red-600">{p.stock} u.</span>
                 </div>
-              ))}
+            )}
             </div>
-          )}
+          }
         </div>
       </div>
 
@@ -251,12 +251,12 @@ export default function Dashboard() {
       <div className="grid lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2"><Package className="w-5 h-5 text-emerald-600" /> Productos más vendidos</h3>
-          {d.topProducts?.length === 0 ? (
-            <p className="text-slate-400 text-sm py-4 text-center">Sin ventas registradas</p>
-          ) : (
-            <div className="space-y-2">
-              {d.topProducts?.map(([name, info], i) => (
-                <div key={name} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
+          {d.topProducts?.length === 0 ?
+          <p className="text-slate-400 text-sm py-4 text-center">Sin ventas registradas</p> :
+
+          <div className="space-y-2">
+              {d.topProducts?.map(([name, info], i) =>
+            <div key={name} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
                   <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center">{i + 1}</span>
                   <div className="flex-1">
                     <p className="font-medium text-slate-800 text-sm">{name}</p>
@@ -264,26 +264,26 @@ export default function Dashboard() {
                   </div>
                   <span className="text-sm font-semibold text-slate-700">{fmt(info.revenue)}</span>
                 </div>
-              ))}
+            )}
             </div>
-          )}
+          }
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2"><Wrench className="w-5 h-5 text-blue-600" /> Servicios más realizados</h3>
-          {d.topServices?.length === 0 ? (
-            <p className="text-slate-400 text-sm py-4 text-center">Sin órdenes registradas</p>
-          ) : (
-            <div className="space-y-2">
-              {d.topServices?.map(([type, count], i) => (
-                <div key={type} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
+          {d.topServices?.length === 0 ?
+          <p className="text-slate-400 text-sm py-4 text-center">Sin órdenes registradas</p> :
+
+          <div className="space-y-2">
+              {d.topServices?.map(([type, count], i) =>
+            <div key={type} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
                   <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center">{i + 1}</span>
                   <p className="flex-1 font-medium text-slate-800 text-sm">{type}</p>
                   <span className="text-sm text-slate-500">{count} órdenes</span>
                 </div>
-              ))}
+            )}
             </div>
-          )}
+          }
         </div>
       </div>
 
@@ -293,10 +293,10 @@ export default function Dashboard() {
           <h3 className="font-semibold text-slate-900 flex items-center gap-2"><HardHat className="w-5 h-5 text-amber-600" /> Técnicos y comisiones</h3>
           <Link to="/tecnicos" className="text-sm text-amber-600 hover:underline font-medium">Ver técnicos</Link>
         </div>
-        {d.topTechnicians?.length === 0 ? (
-          <p className="text-slate-400 text-sm py-4 text-center">No hay comisiones registradas</p>
-        ) : (
-          <div className="overflow-x-auto">
+        {d.topTechnicians?.length === 0 ?
+        <p className="text-slate-400 text-sm py-4 text-center">No hay comisiones registradas</p> :
+
+        <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-slate-400 border-b border-slate-100">
@@ -306,18 +306,18 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {d.topTechnicians?.map((t, i) => (
-                  <tr key={i} className="border-b border-slate-50 last:border-0">
+                {d.topTechnicians?.map((t, i) =>
+              <tr key={i} className="border-b border-slate-50 last:border-0">
                     <td className="py-3 font-medium text-slate-800">{t.name}</td>
                     <td className="py-3 text-center text-slate-600">{t.count}</td>
                     <td className="py-3 text-right font-semibold text-amber-600">{fmt(t.commission)}</td>
                   </tr>
-                ))}
+              )}
               </tbody>
             </table>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
