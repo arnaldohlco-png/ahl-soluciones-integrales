@@ -6,16 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Package, Search, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Search, AlertTriangle, MapPin, Barcode } from "lucide-react";
 
-const categories = ["Repuestos", "Accesorios", "Lubricantes", "Llantas", "Herramientas", "Indumentaria", "Otros"];
+const categories = ["Repuestos", "Accesorios", "Lubricantes", "Llantas", "Baterías", "Consumibles", "Herramientas", "Indumentaria", "Otros"];
 
 const empty = {
-  name: "", category: "Repuestos", brand: "", sku: "", price: "", cost: "", stock: "", min_stock: "5", description: "",
+  name: "", category: "Repuestos", brand: "", sku: "", barcode: "", reference: "",
+  compatibility: "", price: "", cost: "", iva_rate: "19", stock: "", min_stock: "5",
+  location: "", supplier_id: "", description: "",
 };
 
 export default function Products() {
   const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -27,22 +30,29 @@ export default function Products() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.Product.list("-created_date", 300);
-      setProducts(data);
+      const [p, s] = await Promise.all([
+        base44.entities.Product.list("-created_date", 300),
+        base44.entities.Supplier.list("-created_date", 100),
+      ]);
+      setProducts(p); setSuppliers(s);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
+  const supplierName = (id) => suppliers.find((s) => s.id === id)?.name || "";
+
   const openNew = () => { setForm(empty); setEditing(null); setOpen(true); };
   const openEdit = (p) => {
     setForm({
-      name: p.name || "", category: p.category || "Repuestos", brand: p.brand || "", sku: p.sku || "",
-      price: p.price || "", cost: p.cost || "", stock: p.stock ?? "", min_stock: p.min_stock ?? "5", description: p.description || "",
+      name: p.name || "", category: p.category || "Repuestos", brand: p.brand || "",
+      sku: p.sku || "", barcode: p.barcode || "", reference: p.reference || "",
+      compatibility: p.compatibility || "", price: p.price ?? "", cost: p.cost ?? "",
+      iva_rate: p.iva_rate ?? "19", stock: p.stock ?? "", min_stock: p.min_stock ?? "5",
+      location: p.location || "", supplier_id: p.supplier_id || "", description: p.description || "",
     });
-    setEditing(p);
-    setOpen(true);
+    setEditing(p); setOpen(true);
   };
 
   const save = async () => {
@@ -52,17 +62,14 @@ export default function Products() {
       ...form,
       price: Number(form.price) || 0,
       cost: Number(form.cost) || 0,
+      iva_rate: Number(form.iva_rate) || 0,
       stock: Number(form.stock) || 0,
       min_stock: Number(form.min_stock) || 5,
     };
     try {
-      if (editing) {
-        await base44.entities.Product.update(editing.id, payload);
-      } else {
-        await base44.entities.Product.create(payload);
-      }
-      setOpen(false);
-      await load();
+      if (editing) { await base44.entities.Product.update(editing.id, payload); }
+      else { await base44.entities.Product.create(payload); }
+      setOpen(false); await load();
     } catch (e) { console.error(e); alert("Error al guardar"); }
     setSaving(false);
   };
@@ -77,7 +84,8 @@ export default function Products() {
     const matchSearch =
       p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.brand?.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(search.toLowerCase());
+      p.sku?.toLowerCase().includes(search.toLowerCase()) ||
+      p.barcode?.includes(search);
     const matchCat = filterCat === "all" || p.category === filterCat;
     return matchSearch && matchCat;
   });
@@ -99,12 +107,7 @@ export default function Products() {
       <div className="flex gap-3 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <Input
-            placeholder="Buscar por nombre, marca o SKU..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+          <Input placeholder="Buscar por nombre, marca, SKU o código de barras..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={filterCat} onValueChange={setFilterCat}>
           <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
@@ -132,7 +135,9 @@ export default function Products() {
                   <th className="px-4 py-3 text-left font-medium">Categoría</th>
                   <th className="px-4 py-3 text-left font-medium">SKU</th>
                   <th className="px-4 py-3 text-right font-medium">Precio</th>
+                  <th className="px-4 py-3 text-right font-medium">Costo</th>
                   <th className="px-4 py-3 text-center font-medium">Stock</th>
+                  <th className="px-4 py-3 text-left font-medium">Ubic.</th>
                   <th className="px-4 py-3 text-right font-medium">Acciones</th>
                 </tr>
               </thead>
@@ -146,15 +151,14 @@ export default function Products() {
                         </div>
                         <div>
                           <p className="font-medium text-slate-900">{p.name}</p>
-                          {p.brand && <p className="text-xs text-slate-400">{p.brand}</p>}
+                          {p.brand && <p className="text-xs text-slate-400">{p.brand}{p.reference ? ` · Ref: ${p.reference}` : ""}</p>}
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">{p.category}</span>
-                    </td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">{p.category}</span></td>
                     <td className="px-4 py-3 font-mono text-slate-500">{p.sku || "—"}</td>
                     <td className="px-4 py-3 text-right font-semibold text-slate-900">${(p.price || 0).toLocaleString("es-CO")}</td>
+                    <td className="px-4 py-3 text-right text-slate-500">{p.cost ? `$${p.cost.toLocaleString("es-CO")}` : "—"}</td>
                     <td className="px-4 py-3 text-center">
                       {isLow(p) ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-50 text-red-600 text-xs font-semibold">
@@ -164,14 +168,11 @@ export default function Products() {
                         <span className="text-slate-700 font-medium">{p.stock}</span>
                       )}
                     </td>
+                    <td className="px-4 py-3 text-slate-500 text-xs">{p.location || "—"}</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <button onClick={() => openEdit(p)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors">
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => remove(p)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <button onClick={() => openEdit(p)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={() => remove(p)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
                   </tr>
@@ -183,64 +184,52 @@ export default function Products() {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
-            <div>
-              <Label>Nombre del producto *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1" />
-            </div>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>{editing ? "Editar Producto" : "Nuevo Producto"}</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pr-1">
+            <div><Label>Nombre del producto *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1" /></div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Categoría</Label>
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
+                  <SelectContent>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Marca</Label>
-                <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="mt-1" />
-              </div>
-            </div>
-            <div>
-              <Label>SKU / Código</Label>
-              <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="mt-1" />
+              <div><Label>Marca</Label><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Precio de venta *</Label>
-                <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="mt-1" />
-              </div>
-              <div>
-                <Label>Costo</Label>
-                <Input type="number" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} className="mt-1" />
-              </div>
+              <div><Label>SKU / Código</Label><Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="mt-1" /></div>
+              <div><Label>Código de barras</Label><Input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
+              <div><Label>Referencia</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} className="mt-1" /></div>
+              <div><Label>IVA (%)</Label><Input type="number" value={form.iva_rate} onChange={(e) => setForm({ ...form, iva_rate: e.target.value })} className="mt-1" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Precio de venta *</Label><Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="mt-1" /></div>
+              <div><Label>Costo</Label><Input type="number" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} className="mt-1" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Stock</Label><Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="mt-1" /></div>
+              <div><Label>Stock mínimo</Label><Input type="number" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} className="mt-1" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Ubicación</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="mt-1" placeholder="Estante, bodega..." /></div>
               <div>
-                <Label>Stock</Label>
-                <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="mt-1" />
-              </div>
-              <div>
-                <Label>Stock mínimo</Label>
-                <Input type="number" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} className="mt-1" />
+                <Label>Proveedor</Label>
+                <Select value={form.supplier_id} onValueChange={(v) => setForm({ ...form, supplier_id: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Sin proveedor" /></SelectTrigger>
+                  <SelectContent>{suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                </Select>
               </div>
             </div>
-            <div>
-              <Label>Descripción</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1" rows={2} />
-            </div>
+            <div><Label>Compatibilidad</Label><Input value={form.compatibility} onChange={(e) => setForm({ ...form, compatibility: e.target.value })} className="mt-1" placeholder="Ej: Honda CB190, Yamaha YBR125..." /></div>
+            <div><Label>Descripción</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1" rows={2} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={save} disabled={saving || !form.name.trim() || form.price === ""} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-              {saving ? "Guardando..." : "Guardar"}
-            </Button>
+            <Button onClick={save} disabled={saving || !form.name.trim() || form.price === ""} className="bg-amber-500 hover:bg-amber-600 text-slate-900">{saving ? "Guardando..." : "Guardar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

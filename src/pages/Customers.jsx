@@ -4,9 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Phone, Mail, Search, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Pencil, Trash2, Phone, Mail, Search, Users, MessageCircle, CreditCard, FileText } from "lucide-react";
 
-const empty = { name: "", phone: "", email: "", address: "", notes: "" };
+const docTypes = ["Cédula", "NIT", "Cédula de extranjería", "Pasaporte"];
+
+const empty = {
+  name: "", document_type: "Cédula", document_number: "", phone: "", whatsapp: "",
+  email: "", address: "", credit_limit: "", balance: "", notes: "",
+};
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -29,19 +35,30 @@ export default function Customers() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setForm(empty); setEditing(null); setOpen(true); };
-  const openEdit = (c) => { setForm({ name: c.name || "", phone: c.phone || "", email: c.email || "", address: c.address || "", notes: c.notes || "" }); setEditing(c); setOpen(true); };
+  const openEdit = (c) => {
+    setForm({
+      name: c.name || "", document_type: c.document_type || "Cédula", document_number: c.document_number || "",
+      phone: c.phone || "", whatsapp: c.whatsapp || "", email: c.email || "",
+      address: c.address || "", credit_limit: c.credit_limit ?? "", balance: c.balance ?? "", notes: c.notes || "",
+    });
+    setEditing(c); setOpen(true);
+  };
 
   const save = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
+    const payload = {
+      ...form,
+      credit_limit: Number(form.credit_limit) || 0,
+      balance: Number(form.balance) || 0,
+    };
     try {
       if (editing) {
-        await base44.entities.Customer.update(editing.id, form);
+        await base44.entities.Customer.update(editing.id, payload);
       } else {
-        await base44.entities.Customer.create(form);
+        await base44.entities.Customer.create(payload);
       }
-      setOpen(false);
-      await load();
+      setOpen(false); await load();
     } catch (e) { console.error(e); alert("Error al guardar"); }
     setSaving(false);
   };
@@ -55,7 +72,8 @@ export default function Customers() {
   const filtered = customers.filter((c) =>
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
     c.phone?.includes(search) ||
-    c.email?.toLowerCase().includes(search.toLowerCase())
+    c.email?.toLowerCase().includes(search.toLowerCase()) ||
+    c.document_number?.includes(search)
   );
 
   return (
@@ -72,12 +90,7 @@ export default function Customers() {
 
       <div className="relative mb-4 max-w-sm">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <Input
-          placeholder="Buscar por nombre, teléfono o email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+        <Input placeholder="Buscar por nombre, teléfono, email o documento..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       {loading ? (
@@ -98,69 +111,72 @@ export default function Customers() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900">{c.name}</p>
+                    {c.document_number && <p className="text-xs text-slate-400">{c.document_type}: {c.document_number}</p>}
                     {c.address && <p className="text-xs text-slate-400">{c.address}</p>}
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors">
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => remove(c)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => remove(c)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
               <div className="space-y-1.5 text-sm">
-                {c.phone && (
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" /> {c.phone}
-                  </div>
-                )}
-                {c.email && (
-                  <div className="flex items-center gap-2 text-slate-600 truncate">
-                    <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {c.email}
-                  </div>
-                )}
+                {c.phone && <div className="flex items-center gap-2 text-slate-600"><Phone className="w-3.5 h-3.5 text-slate-400" /> {c.phone}</div>}
+                {c.whatsapp && <div className="flex items-center gap-2 text-slate-600"><MessageCircle className="w-3.5 h-3.5 text-green-500" /> {c.whatsapp}</div>}
+                {c.email && <div className="flex items-center gap-2 text-slate-600 truncate"><Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {c.email}</div>}
               </div>
+              {(c.credit_limit > 0 || c.balance > 0) && (
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1 text-slate-500"><CreditCard className="w-3.5 h-3.5" /> Crédito: ${(c.credit_limit || 0).toLocaleString("es-CO")}</div>
+                  <div className={c.balance > 0 ? "text-red-600 font-semibold" : "text-emerald-600 font-semibold"}>
+                    Saldo: ${(c.balance || 0).toLocaleString("es-CO")}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>{editing ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
             <div>
-              <Label>Nombre completo *</Label>
+              <Label>Nombre / Razón social *</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Teléfono</Label>
-                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1" />
+                <Label>Tipo de documento</Label>
+                <Select value={form.document_type} onValueChange={(v) => setForm({ ...form, document_type: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{docTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                </Select>
               </div>
               <div>
-                <Label>Email</Label>
-                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1" />
+                <Label>Cédula / NIT</Label>
+                <Input value={form.document_number} onChange={(e) => setForm({ ...form, document_number: e.target.value })} className="mt-1" />
               </div>
             </div>
-            <div>
-              <Label>Dirección</Label>
-              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="mt-1" />
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Teléfono</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1" /></div>
+              <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} className="mt-1" /></div>
+            </div>
+            <div><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1" /></div>
+            <div><Label>Dirección</Label><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="mt-1" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Límite de crédito</Label><Input type="number" value={form.credit_limit} onChange={(e) => setForm({ ...form, credit_limit: e.target.value })} className="mt-1" placeholder="0" /></div>
+              <div><Label>Saldo pendiente</Label><Input type="number" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} className="mt-1" placeholder="0" /></div>
             </div>
             <div>
               <Label>Notas</Label>
-              <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="mt-1" />
+              <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="mt-1 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm" rows={2} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={save} disabled={saving || !form.name.trim()} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-              {saving ? "Guardando..." : "Guardar"}
-            </Button>
+            <Button onClick={save} disabled={saving || !form.name.trim()} className="bg-amber-500 hover:bg-amber-600 text-slate-900">{saving ? "Guardando..." : "Guardar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
