@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, Save, Loader2, Cloud, Upload } from "lucide-react";
+import { Building2, Save, Loader2, Cloud, Upload, RotateCcw, FileDown, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
@@ -20,6 +21,12 @@ export default function Company() {
   const [saving, setSaving] = useState(false);
   const [backing, setBacking] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
+  const [loadingBackups, setLoadingBackups] = useState(false);
+  const [backups, setBackups] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [restoring, setRestoring] = useState(false);
+  const [restoreResult, setRestoreResult] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -71,6 +78,44 @@ export default function Company() {
       alert("Error al respaldar: " + e.message);
     }
     setBacking(false);
+  };
+
+  const openRestore = async () => {
+    setRestoreOpen(true);
+    setRestoreResult(null);
+    setSelectedFile(null);
+    setLoadingBackups(true);
+    try {
+      const res = await base44.functions.invoke('restoreFromDrive', { action: 'list' });
+      if (res.data?.success) {
+        setBackups(res.data.files || []);
+      } else {
+        alert("Error al listar respaldos: " + (res.data?.error || "desconocido"));
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error: " + e.message);
+    }
+    setLoadingBackups(false);
+  };
+
+  const doRestore = async () => {
+    if (!selectedFile) return;
+    if (!confirm("⚠️ ADVERTENCIA: Esta acción reemplazará TODOS los datos actuales con los del respaldo seleccionado. ¿Está seguro?")) return;
+    setRestoring(true);
+    setRestoreResult(null);
+    try {
+      const res = await base44.functions.invoke('restoreFromDrive', { action: 'restore', fileId: selectedFile });
+      if (res.data?.success) {
+        setRestoreResult(res.data.results);
+      } else {
+        alert("Error al restaurar: " + (res.data?.error || "desconocido"));
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error: " + e.message);
+    }
+    setRestoring(false);
   };
 
   const handleLogoUpload = async (e) => {
@@ -200,12 +245,106 @@ export default function Company() {
               <p className="text-sm text-slate-500">Guarda una copia de todos los datos del taller en tu Google Drive</p>
             </div>
           </div>
-          <Button onClick={backupToDrive} disabled={backing} variant="outline">
-            {backing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Cloud className="w-4 h-4 mr-1" />}
-            {backing ? "Respaldando..." : "Respaldar ahora"}
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={backupToDrive} disabled={backing} variant="outline">
+              {backing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Cloud className="w-4 h-4 mr-1" />}
+              {backing ? "Respaldando..." : "Respaldar ahora"}
+            </Button>
+            <Button onClick={openRestore} disabled={restoring} variant="outline" className="text-slate-700 border-slate-300 hover:bg-slate-50">
+              <RotateCcw className="w-4 h-4 mr-1" />
+              Restaurar desde copia
+            </Button>
+          </div>
         </div>
       </div>
+
+      <Dialog open={restoreOpen} onOpenChange={(v) => !restoring && setRestoreOpen(v)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="w-5 h-5 text-amber-500" />
+              Restaurar desde copia de seguridad
+            </DialogTitle>
+            <DialogDescription>
+              Selecciona un respaldo de Google Drive para reemplazar los datos actuales.
+            </DialogDescription>
+          </DialogHeader>
+
+          {restoreResult ? (
+            <div className="space-y-3">
+              <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <FileDown className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                <div className="text-sm text-emerald-800">
+                  Restauración completada. Resumen por módulo:
+                </div>
+              </div>
+              <div className="max-h-60 overflow-y-auto space-y-1 text-sm">
+                {Object.entries(restoreResult).map(([entity, res]) => (
+                  <div key={entity} className="flex justify-between px-2 py-1 rounded hover:bg-slate-50">
+                    <span className="text-slate-600">{entity}</span>
+                    <span className={res.error ? "text-red-500" : "text-emerald-600 font-medium"}>
+                      {res.error ? `Error: ${res.error}` : res.restored != null ? `${res.restored} registros` : "omitido"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800">
+                  Esta acción <strong>eliminará y reemplazará</strong> todos los datos actuales del taller con los del respaldo. Proceder con precaución.
+                </p>
+              </div>
+
+              {loadingBackups ? (
+                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>
+              ) : backups.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-sm">
+                  No se encontraron respaldos en Google Drive.
+                </div>
+              ) : (
+                <div className="max-h-72 overflow-y-auto space-y-1.5">
+                  {backups.map((f) => (
+                    <label
+                      key={f.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedFile === f.id ? "border-amber-400 bg-amber-50" : "border-slate-200 hover:bg-slate-50"}`}
+                    >
+                      <input type="radio" name="backup" checked={selectedFile === f.id} onChange={() => setSelectedFile(f.id)} className="accent-amber-500" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-slate-800 truncate">{f.name}</div>
+                        <div className="text-xs text-slate-400">
+                          {new Date(f.createdTime).toLocaleString("es-CO")}
+                          {f.size ? ` · ${Math.round(Number(f.size) / 1024)} KB` : ""}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          <DialogFooter>
+            {restoreResult ? (
+              <Button onClick={() => setRestoreOpen(false)} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+                Cerrar
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setRestoreOpen(false)} disabled={restoring}>
+                  Cancelar
+                </Button>
+                <Button onClick={doRestore} disabled={!selectedFile || restoring} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+                  {restoring ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <RotateCcw className="w-4 h-4 mr-1" />}
+                  {restoring ? "Restaurando..." : "Restaurar"}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
