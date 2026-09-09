@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Search, Bike, X, Globe, ChevronDown } from "lucide-react";
-import ExportImport from "@/components/ExportImport";
+import BrandExportImport from "@/components/BrandExportImport";
 
 const empty = { name: "", country: "", lines: [] };
 
@@ -88,7 +88,7 @@ export default function BrandLines() {
           <p className="text-slate-500 mt-1">{brands.length} marcas registradas</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <ExportImport entityName="Brand" fields={["name", "country", "lines"]} />
+          <BrandExportImport onDone={load} />
           <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
             <Plus className="w-4 h-4 mr-1" /> Nueva Marca
           </Button>
