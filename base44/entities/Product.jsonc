@@ -4,7 +4,7 @@
   "properties": {
     "name": {
       "type": "string",
-      "title": "Nombre del producto"
+      "title": "Descripci\u00f3n"
     },
     "category": {
       "type": "string",
@@ -14,6 +14,8 @@
         "Accesorios",
         "Lubricantes",
         "Llantas",
+        "Bater\u00edas",
+        "Consumibles",
         "Herramientas",
         "Indumentaria",
         "Otros"
@@ -26,7 +28,19 @@
     },
     "sku": {
       "type": "string",
-      "title": "SKU / C\u00f3digo"
+      "title": "C\u00f3digo"
+    },
+    "barcode": {
+      "type": "string",
+      "title": "C\u00f3digo de barras"
+    },
+    "reference": {
+      "type": "string",
+      "title": "Referencia"
+    },
+    "compatibility": {
+      "type": "string",
+      "title": "Compatibilidad"
     },
     "price": {
       "type": "number",
@@ -36,9 +50,14 @@
       "type": "number",
       "title": "Costo"
     },
+    "iva_rate": {
+      "type": "number",
+      "title": "IVA (%)",
+      "default": 19
+    },
     "stock": {
       "type": "number",
-      "title": "Stock",
+      "title": "Existencia",
       "default": 0
     },
     "min_stock": {
@@ -46,9 +65,17 @@
       "title": "Stock m\u00ednimo",
       "default": 5
     },
+    "location": {
+      "type": "string",
+      "title": "Ubicaci\u00f3n"
+    },
+    "supplier_id": {
+      "type": "string",
+      "title": "Proveedor"
+    },
     "description": {
       "type": "string",
-      "title": "Descripci\u00f3n"
+      "title": "Descripci\u00f3n detallada"
     }
   },
   "required": [

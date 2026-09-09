@@ -1,0 +1,55 @@
+{
+  "name": "AccountReceivable",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Cliente"
+    },
+    "customer_name": {
+      "type": "string",
+      "title": "Nombre del cliente"
+    },
+    "invoice_id": {
+      "type": "string",
+      "title": "Factura"
+    },
+    "invoice_number": {
+      "type": "string",
+      "title": "N\u00famero de factura"
+    },
+    "initial_amount": {
+      "type": "number",
+      "title": "Valor inicial"
+    },
+    "payments": {
+      "type": "string",
+      "title": "Abonos (JSON)",
+      "description": "Array JSON: [{date, amount, method, note}]"
+    },
+    "balance": {
+      "type": "number",
+      "title": "Saldo"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de vencimiento"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Al d\u00eda",
+        "En mora",
+        "Vencida"
+      ],
+      "default": "Al d\u00eda"
+    }
+  },
+  "required": [
+    "customer_id",
+    "initial_amount",
+    "balance"
+  ]
+}

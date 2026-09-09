@@ -46,10 +46,101 @@
       "type": "string",
       "title": "Mec\u00e1nico asignado"
     },
+    "technician_id": {
+      "type": "string",
+      "title": "T\u00e9cnico responsable"
+    },
     "entry_date": {
       "type": "string",
       "format": "date",
       "title": "Fecha de ingreso"
+    },
+    "entry_time": {
+      "type": "string",
+      "title": "Hora de ingreso"
+    },
+    "fuel_level": {
+      "type": "string",
+      "title": "Nivel de combustible",
+      "enum": [
+        "1/4",
+        "1/2",
+        "3/4",
+        "Full"
+      ],
+      "default": "1/2"
+    },
+    "visual_condition": {
+      "type": "string",
+      "title": "Estado visual"
+    },
+    "accessories": {
+      "type": "string",
+      "title": "Accesorios entregados"
+    },
+    "photos": {
+      "type": "string",
+      "title": "Fotos de la moto"
+    },
+    "customer_complaint": {
+      "type": "string",
+      "title": "Queja del cliente"
+    },
+    "reported_fault": {
+      "type": "string",
+      "title": "Falla reportada"
+    },
+    "technical_diagnosis": {
+      "type": "string",
+      "title": "Diagn\u00f3stico t\u00e9cnico"
+    },
+    "recommendations": {
+      "type": "string",
+      "title": "Recomendaciones"
+    },
+    "tests_performed": {
+      "type": "string",
+      "title": "Pruebas realizadas"
+    },
+    "labor_description": {
+      "type": "string",
+      "title": "Descripci\u00f3n de mano de obra"
+    },
+    "labor_cost": {
+      "type": "number",
+      "title": "Costo de mano de obra"
+    },
+    "parts_cost": {
+      "type": "number",
+      "title": "Costo de repuestos"
+    },
+    "lubricants_cost": {
+      "type": "number",
+      "title": "Costo de lubricantes"
+    },
+    "hours_worked": {
+      "type": "number",
+      "title": "Horas trabajadas"
+    },
+    "technician_commission": {
+      "type": "number",
+      "title": "Comisi\u00f3n del t\u00e9cnico"
+    },
+    "work_done": {
+      "type": "string",
+      "title": "Trabajo realizado"
+    },
+    "delivery_recommendations": {
+      "type": "string",
+      "title": "Recomendaciones de entrega"
+    },
+    "warranty": {
+      "type": "string",
+      "title": "Garant\u00eda"
+    },
+    "customer_signature": {
+      "type": "string",
+      "title": "Firma/autorizaci\u00f3n del cliente"
     },
     "delivery_date": {
       "type": "string",

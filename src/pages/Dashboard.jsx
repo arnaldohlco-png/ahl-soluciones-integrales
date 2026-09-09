@@ -1,48 +1,95 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Wrench, Users, Package, Bike, AlertTriangle, TrendingUp, Clock, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
+  Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard
+} from "lucide-react";
+import moment from "moment";
+
+const fmt = (n) => `$${(n || 0).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    activeOrders: 0,
-    completedOrders: 0,
-    customers: 0,
-    motorcycles: 0,
-    products: 0,
-    lowStock: 0,
-    revenue: 0,
-  });
-  const [recentOrders, setRecentOrders] = useState([]);
-  const [lowStockProducts, setLowStockProducts] = useState([]);
+  const [d, setD] = useState({});
 
   useEffect(() => {
     (async () => {
       try {
-        const [orders, customers, motorcycles, products] = await Promise.all([
-          base44.entities.ServiceOrder.list("-created_date", 100),
+        const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians] = await Promise.all([
+          base44.entities.Sale.list("-created_date", 200),
+          base44.entities.ServiceOrder.list("-created_date", 200),
           base44.entities.Customer.list("-created_date", 100),
           base44.entities.Motorcycle.list("-created_date", 100),
           base44.entities.Product.list("-created_date", 200),
+          base44.entities.Expense.list("-created_date", 200),
+          base44.entities.AccountReceivable.list("-created_date", 200),
+          base44.entities.Invoice.list("-created_date", 200),
+          base44.entities.Technician.list("-created_date", 100),
         ]);
 
-        const active = orders.filter((o) => o.status === "Ingresado" || o.status === "En proceso");
-        const completed = orders.filter((o) => o.status === "Completado" || o.status === "Entregado");
-        const revenue = completed.reduce((sum, o) => sum + (o.cost || 0), 0);
-        const low = products.filter((p) => (p.stock || 0) <= (p.min_stock || 5));
+        const today = moment().format("YYYY-MM-DD");
+        const startWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
+        const startMonth = moment().startOf("month").format("YYYY-MM-DD");
 
-        setStats({
-          activeOrders: active.length,
-          completedOrders: completed.length,
-          customers: customers.length,
-          motorcycles: motorcycles.length,
-          products: products.length,
-          lowStock: low.length,
-          revenue,
+        const salesToday = sales.filter(s => (s.date || "") >= today).reduce((s, x) => s + (x.total || 0), 0);
+        const salesWeek = sales.filter(s => (s.date || "") >= startWeek).reduce((s, x) => s + (x.total || 0), 0);
+        const salesMonth = sales.filter(s => (s.date || "") >= startMonth).reduce((s, x) => s + (x.total || 0), 0);
+
+        const workshopIncome = orders.filter(o => o.status === "Completado" || o.status === "Entregado").reduce((s, o) => s + (o.cost || 0), 0);
+        const storeIncome = sales.reduce((s, x) => s + (x.total || 0), 0);
+        const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+        const monthExpenses = expenses.filter(e => (e.date || "") >= startMonth).reduce((s, e) => s + (e.amount || 0), 0);
+        const estimatedProfit = (workshopIncome + storeIncome) - totalExpenses;
+        const totalReceivables = receivables.reduce((s, r) => s + (r.balance || 0), 0);
+
+        const lowStock = products.filter(p => (p.stock || 0) <= (p.min_stock || 5));
+
+        const productSales = {};
+        sales.forEach(s => {
+          try {
+            const items = JSON.parse(s.items || "[]");
+            items.forEach(item => {
+              const key = item.name || "N/A";
+              if (!productSales[key]) productSales[key] = { qty: 0, revenue: 0 };
+              productSales[key].qty += item.quantity || 0;
+              productSales[key].revenue += item.subtotal || 0;
+            });
+          } catch (_) {}
         });
-        setRecentOrders(active.slice(0, 5));
-        setLowStockProducts(low.slice(0, 5));
+        const topProducts = Object.entries(productSales).sort((a, b) => b[1].qty - a[1].qty).slice(0, 5);
+
+        const svcCount = {};
+        orders.forEach(o => { svcCount[o.service_type] = (svcCount[o.service_type] || 0) + 1; });
+        const topServices = Object.entries(svcCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+        const techMap = {};
+        technicians.forEach(t => { techMap[t.id] = t.name; });
+        const techCommissions = {};
+        orders.forEach(o => {
+          if (o.technician_id) {
+            if (!techCommissions[o.technician_id]) techCommissions[o.technician_id] = { name: techMap[o.technician_id] || "—", commission: 0, count: 0 };
+            techCommissions[o.technician_id].commission += o.technician_commission || 0;
+            techCommissions[o.technician_id].count += 1;
+          }
+        });
+        const topTechnicians = Object.values(techCommissions).sort((a, b) => b.commission - a.commission);
+
+        const motosInWorkshop = orders.filter(o => o.status === "Ingresado" || o.status === "En proceso");
+        const pendingOrders = orders.filter(o => o.status !== "Entregado");
+        const pendingInvoices = invoices.filter(i => i.status === "Pendiente");
+
+        setD({
+          salesToday, salesWeek, salesMonth,
+          workshopIncome, storeIncome, totalExpenses, monthExpenses, estimatedProfit,
+          totalReceivables,
+          lowStock, topProducts, topServices, topTechnicians,
+          motosInWorkshop: motosInWorkshop.slice(0, 5), motosInWorkshopCount: motosInWorkshop.length,
+          pendingOrders: pendingOrders.length, pendingInvoices: pendingInvoices.length,
+          customers: customers.length, motorcycles: motorcycles.length, products: products.length,
+          lowStockProducts: lowStock.slice(0, 5),
+          completedOrders: orders.filter(o => o.status === "Completado" || o.status === "Entregado").length,
+        });
       } catch (e) {
         console.error(e);
       } finally {
@@ -59,13 +106,6 @@ export default function Dashboard() {
     );
   }
 
-  const cards = [
-    { label: "Órdenes Activas", value: stats.activeOrders, icon: Clock, color: "bg-blue-50 text-blue-600", to: "/ordenes" },
-    { label: "Clientes", value: stats.customers, icon: Users, color: "bg-purple-50 text-purple-600", to: "/clientes" },
-    { label: "Motocicletas", value: stats.motorcycles, icon: Bike, color: "bg-emerald-50 text-emerald-600", to: "/motocicletas" },
-    { label: "Productos", value: stats.products, icon: Package, color: "bg-amber-50 text-amber-600", to: "/inventario" },
-  ];
-
   const statusColors = {
     "Ingresado": "bg-blue-100 text-blue-700",
     "En proceso": "bg-amber-100 text-amber-700",
@@ -77,68 +117,129 @@ export default function Dashboard() {
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 mt-1">Resumen general del taller y almacén</p>
+        <p className="text-slate-500 mt-1">Resumen financiero y operativo en tiempo real</p>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link
-              key={card.label}
-              to={card.to}
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow"
-            >
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${card.color}`}>
-                <Icon className="w-6 h-6" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900">{card.value}</p>
-              <p className="text-sm text-slate-500 mt-0.5">{card.label}</p>
-            </Link>
-          );
-        })}
+      {/* Sales row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-5 text-white">
+          <ShoppingCart className="w-8 h-8 mb-2 opacity-80" />
+          <p className="text-3xl font-bold">{fmt(d.salesToday)}</p>
+          <p className="text-sm text-amber-100">Ventas del día</p>
+        </div>
+        <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-5 text-white">
+          <TrendingUp className="w-8 h-8 mb-2 opacity-80" />
+          <p className="text-3xl font-bold">{fmt(d.salesWeek)}</p>
+          <p className="text-sm text-slate-300">Ventas de la semana</p>
+        </div>
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 text-white">
+          <DollarSign className="w-8 h-8 mb-2 opacity-80" />
+          <p className="text-3xl font-bold">{fmt(d.salesMonth)}</p>
+          <p className="text-sm text-slate-400">Ventas del mes</p>
+        </div>
       </div>
 
-      {/* Revenue + Low stock alert */}
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white lg:col-span-1">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <DollarSign className="w-5 h-5" />
-            <span className="text-sm">Ingresos por servicios</span>
+      {/* Financial summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+        <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <Wrench className="w-5 h-5 text-blue-600 mb-2" />
+          <p className="text-xl font-bold text-slate-900">{fmt(d.workshopIncome)}</p>
+          <p className="text-xs text-slate-500">Ingresos taller</p>
+        </Link>
+        <Link to="/ventas" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <ShoppingCart className="w-5 h-5 text-emerald-600 mb-2" />
+          <p className="text-xl font-bold text-slate-900">{fmt(d.storeIncome)}</p>
+          <p className="text-xs text-slate-500">Ingresos almacén</p>
+        </Link>
+        <Link to="/creditos" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <CreditCard className="w-5 h-5 text-purple-600 mb-2" />
+          <p className="text-xl font-bold text-slate-900">{fmt(d.totalReceivables)}</p>
+          <p className="text-xs text-slate-500">Cuentas por cobrar</p>
+        </Link>
+        <Link to="/gastos" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <TrendingDown className="w-5 h-5 text-red-600 mb-2" />
+          <p className="text-xl font-bold text-slate-900">{fmt(d.totalExpenses)}</p>
+          <p className="text-xs text-slate-500">Gastos totales</p>
+        </Link>
+        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-4 text-white">
+          <DollarSign className="w-5 h-5 mb-2 opacity-80" />
+          <p className="text-xl font-bold">{fmt(d.estimatedProfit)}</p>
+          <p className="text-xs text-emerald-100">Utilidad estimada</p>
+        </div>
+      </div>
+
+      {/* Operational stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <Bike className="w-5 h-5 text-amber-600" />
+            <p className="text-2xl font-bold text-slate-900">{d.motosInWorkshopCount}</p>
           </div>
-          <p className="text-4xl font-bold">
-            ${stats.revenue.toLocaleString("es-CO", { minimumFractionDigits: 0 })}
-          </p>
-          <div className="flex items-center gap-2 mt-3 text-emerald-400 text-sm">
-            <TrendingUp className="w-4 h-4" />
-            <span>{stats.completedOrders} órdenes completadas</span>
+          <p className="text-xs text-slate-500 mt-1">Motos en taller</p>
+        </Link>
+        <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-blue-600" />
+            <p className="text-2xl font-bold text-slate-900">{d.pendingOrders}</p>
           </div>
+          <p className="text-xs text-slate-500 mt-1">Órdenes pendientes</p>
+        </Link>
+        <Link to="/facturacion" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-purple-600" />
+            <p className="text-2xl font-bold text-slate-900">{d.pendingInvoices}</p>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">Facturas pendientes</p>
+        </Link>
+        <Link to="/inventario" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <p className="text-2xl font-bold text-slate-900">{d.lowStock?.length || 0}</p>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">Productos stock bajo</p>
+        </Link>
+      </div>
+
+      {/* Two-column: Motos en taller + Stock bajo */}
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-900 flex items-center gap-2"><Bike className="w-5 h-5 text-amber-600" /> Motos en el taller</h3>
+            <Link to="/ordenes" className="text-sm text-amber-600 hover:underline font-medium">Ver todas</Link>
+          </div>
+          {d.motosInWorkshop?.length === 0 ? (
+            <p className="text-slate-400 text-sm py-4 text-center">No hay motos en el taller</p>
+          ) : (
+            <div className="space-y-2">
+              {d.motosInWorkshop?.map((o) => (
+                <div key={o.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                  <div>
+                    <p className="font-medium text-slate-800 text-sm">{o.service_type}</p>
+                    <p className="text-xs text-slate-400">{o.description?.slice(0, 40) || "Sin descripción"}</p>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[o.status] || "bg-slate-100"}`}>{o.status}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-2">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-              <h3 className="font-semibold text-slate-900">Stock bajo</h3>
-            </div>
-            <Link to="/inventario" className="text-sm text-amber-600 hover:underline font-medium">
-              Ver inventario
-            </Link>
+            <h3 className="font-semibold text-slate-900 flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-red-500" /> Inventario bajo</h3>
+            <Link to="/inventario" className="text-sm text-amber-600 hover:underline font-medium">Ver inventario</Link>
           </div>
-          {lowStockProducts.length === 0 ? (
+          {d.lowStockProducts?.length === 0 ? (
             <p className="text-slate-400 text-sm py-4 text-center">Todo el inventario está en niveles correctos ✓</p>
           ) : (
             <div className="space-y-2">
-              {lowStockProducts.map((p) => (
+              {d.lowStockProducts?.map((p) => (
                 <div key={p.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                   <div>
                     <p className="font-medium text-slate-800 text-sm">{p.name}</p>
                     <p className="text-xs text-slate-400">{p.brand} · {p.category}</p>
                   </div>
-                  <span className="text-sm font-semibold text-red-600">
-                    {p.stock} unidades
-                  </span>
+                  <span className="text-sm font-semibold text-red-600">{p.stock} u.</span>
                 </div>
               ))}
             </div>
@@ -146,43 +247,70 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Active orders */}
+      {/* Top products + services */}
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2"><Package className="w-5 h-5 text-emerald-600" /> Productos más vendidos</h3>
+          {d.topProducts?.length === 0 ? (
+            <p className="text-slate-400 text-sm py-4 text-center">Sin ventas registradas</p>
+          ) : (
+            <div className="space-y-2">
+              {d.topProducts?.map(([name, info], i) => (
+                <div key={name} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
+                  <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-800 text-sm">{name}</p>
+                    <p className="text-xs text-slate-400">{info.qty} unidades</p>
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700">{fmt(info.revenue)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2"><Wrench className="w-5 h-5 text-blue-600" /> Servicios más realizados</h3>
+          {d.topServices?.length === 0 ? (
+            <p className="text-slate-400 text-sm py-4 text-center">Sin órdenes registradas</p>
+          ) : (
+            <div className="space-y-2">
+              {d.topServices?.map(([type, count], i) => (
+                <div key={type} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
+                  <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                  <p className="flex-1 font-medium text-slate-800 text-sm">{type}</p>
+                  <span className="text-sm text-slate-500">{count} órdenes</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Technicians and commissions */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Wrench className="w-5 h-5 text-slate-700" />
-            <h3 className="font-semibold text-slate-900">Órdenes activas recientes</h3>
-          </div>
-          <Link to="/ordenes" className="text-sm text-amber-600 hover:underline font-medium">
-            Ver todas
-          </Link>
+          <h3 className="font-semibold text-slate-900 flex items-center gap-2"><HardHat className="w-5 h-5 text-amber-600" /> Técnicos y comisiones</h3>
+          <Link to="/tecnicos" className="text-sm text-amber-600 hover:underline font-medium">Ver técnicos</Link>
         </div>
-        {recentOrders.length === 0 ? (
-          <p className="text-slate-400 text-sm py-8 text-center">No hay órdenes activas</p>
+        {d.topTechnicians?.length === 0 ? (
+          <p className="text-slate-400 text-sm py-4 text-center">No hay comisiones registradas</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-slate-400 border-b border-slate-100">
-                  <th className="pb-2 font-medium">Tipo</th>
-                  <th className="pb-2 font-medium">Mecánico</th>
-                  <th className="pb-2 font-medium">Estado</th>
-                  <th className="pb-2 font-medium text-right">Costo</th>
+                  <th className="pb-2 font-medium">Técnico</th>
+                  <th className="pb-2 font-medium text-center">Servicios</th>
+                  <th className="pb-2 font-medium text-right">Comisión generada</th>
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.map((o) => (
-                  <tr key={o.id} className="border-b border-slate-50 last:border-0">
-                    <td className="py-3 font-medium text-slate-800">{o.service_type}</td>
-                    <td className="py-3 text-slate-600">{o.mechanic || "—"}</td>
-                    <td className="py-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[o.status] || "bg-slate-100 text-slate-600"}`}>
-                        {o.status}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right font-semibold text-slate-800">
-                      ${(o.cost || 0).toLocaleString("es-CO")}
-                    </td>
+                {d.topTechnicians?.map((t, i) => (
+                  <tr key={i} className="border-b border-slate-50 last:border-0">
+                    <td className="py-3 font-medium text-slate-800">{t.name}</td>
+                    <td className="py-3 text-center text-slate-600">{t.count}</td>
+                    <td className="py-3 text-right font-semibold text-amber-600">{fmt(t.commission)}</td>
                   </tr>
                 ))}
               </tbody>

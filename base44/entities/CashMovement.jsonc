@@ -1,0 +1,74 @@
+{
+  "name": "CashMovement",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Fecha y hora"
+    },
+    "type": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "Entrada",
+        "Salida"
+      ],
+      "default": "Entrada"
+    },
+    "category": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Venta",
+        "Abono",
+        "Gasto",
+        "Compra",
+        "Retiro",
+        "Pago",
+        "Otro ingreso",
+        "Otro egreso"
+      ],
+      "default": "Otro ingreso"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Monto"
+    },
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n"
+    },
+    "payment_method": {
+      "type": "string",
+      "title": "Forma de pago",
+      "enum": [
+        "Efectivo",
+        "Transferencia",
+        "Tarjeta",
+        "Otros"
+      ],
+      "default": "Efectivo"
+    },
+    "register_type": {
+      "type": "string",
+      "title": "Caja",
+      "enum": [
+        "Caja principal",
+        "Caja taller",
+        "Caja almac\u00e9n",
+        "Bancos"
+      ],
+      "default": "Caja principal"
+    },
+    "reference_id": {
+      "type": "string",
+      "title": "Referencia"
+    }
+  },
+  "required": [
+    "date",
+    "type",
+    "amount"
+  ]
+}

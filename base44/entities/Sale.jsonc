@@ -1,0 +1,80 @@
+{
+  "name": "Sale",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Cliente"
+    },
+    "customer_name": {
+      "type": "string",
+      "title": "Nombre del cliente"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha"
+    },
+    "items": {
+      "type": "string",
+      "title": "Productos (JSON)",
+      "description": "Array JSON de items: [{product_id, name, quantity, unit_price, subtotal}]"
+    },
+    "subtotal": {
+      "type": "number",
+      "title": "Subtotal"
+    },
+    "iva_total": {
+      "type": "number",
+      "title": "IVA total"
+    },
+    "discount": {
+      "type": "number",
+      "title": "Descuento",
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "title": "Total"
+    },
+    "payment_method": {
+      "type": "string",
+      "title": "Medio de pago",
+      "enum": [
+        "Efectivo",
+        "Transferencia",
+        "Tarjeta",
+        "Otros"
+      ],
+      "default": "Efectivo"
+    },
+    "payment_type": {
+      "type": "string",
+      "title": "Tipo de pago",
+      "enum": [
+        "Contado",
+        "Cr\u00e9dito"
+      ],
+      "default": "Contado"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pagada",
+        "Pendiente"
+      ],
+      "default": "Pagada"
+    },
+    "balance": {
+      "type": "number",
+      "title": "Saldo",
+      "default": 0
+    }
+  },
+  "required": [
+    "date",
+    "total",
+    "payment_type"
+  ]
+}

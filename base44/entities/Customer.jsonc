@@ -4,12 +4,31 @@
   "properties": {
     "name": {
       "type": "string",
-      "title": "Nombre",
-      "description": "Nombre completo del cliente"
+      "title": "Nombre / Raz\u00f3n social",
+      "description": "Nombre completo o raz\u00f3n social del cliente"
+    },
+    "document_type": {
+      "type": "string",
+      "title": "Tipo de documento",
+      "enum": [
+        "C\u00e9dula",
+        "NIT",
+        "C\u00e9dula de extranjer\u00eda",
+        "Pasaporte"
+      ],
+      "default": "C\u00e9dula"
+    },
+    "document_number": {
+      "type": "string",
+      "title": "C\u00e9dula / NIT"
     },
     "phone": {
       "type": "string",
       "title": "Tel\u00e9fono"
+    },
+    "whatsapp": {
+      "type": "string",
+      "title": "WhatsApp"
     },
     "email": {
       "type": "string",
@@ -19,6 +38,16 @@
     "address": {
       "type": "string",
       "title": "Direcci\u00f3n"
+    },
+    "credit_limit": {
+      "type": "number",
+      "title": "L\u00edmite de cr\u00e9dito",
+      "default": 0
+    },
+    "balance": {
+      "type": "number",
+      "title": "Saldo pendiente",
+      "default": 0
     },
     "notes": {
       "type": "string",

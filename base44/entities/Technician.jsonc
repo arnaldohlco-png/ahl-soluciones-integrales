@@ -1,0 +1,48 @@
+{
+  "name": "Technician",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Nombre completo"
+    },
+    "document_number": {
+      "type": "string",
+      "title": "C\u00e9dula"
+    },
+    "phone": {
+      "type": "string",
+      "title": "Tel\u00e9fono"
+    },
+    "specialty": {
+      "type": "string",
+      "title": "Especialidad"
+    },
+    "hire_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de ingreso"
+    },
+    "salary": {
+      "type": "number",
+      "title": "Salario"
+    },
+    "commission_percentage": {
+      "type": "number",
+      "title": "Porcentaje de comisi\u00f3n (%)",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activo",
+        "Inactivo"
+      ],
+      "default": "Activo"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

@@ -17,6 +17,14 @@ import Customers from '@/pages/Customers';
 import Motorcycles from '@/pages/Motorcycles';
 import ServiceOrders from '@/pages/ServiceOrders';
 import Products from '@/pages/Products';
+import Technicians from '@/pages/Technicians';
+import Suppliers from '@/pages/Suppliers';
+import Ventas from '@/pages/Ventas';
+import Expenses from '@/pages/Expenses';
+import Cash from '@/pages/Cash';
+import Purchases from '@/pages/Purchases';
+import Credits from '@/pages/Credits';
+import Invoices from '@/pages/Invoices';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -56,6 +64,14 @@ const AuthenticatedApp = () => {
           <Route path="/motocicletas" element={<Motorcycles />} />
           <Route path="/ordenes" element={<ServiceOrders />} />
           <Route path="/inventario" element={<Products />} />
+          <Route path="/tecnicos" element={<Technicians />} />
+          <Route path="/proveedores" element={<Suppliers />} />
+          <Route path="/ventas" element={<Ventas />} />
+          <Route path="/compras" element={<Purchases />} />
+          <Route path="/facturacion" element={<Invoices />} />
+          <Route path="/creditos" element={<Credits />} />
+          <Route path="/gastos" element={<Expenses />} />
+          <Route path="/caja" element={<Cash />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

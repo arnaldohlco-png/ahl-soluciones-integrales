@@ -1,0 +1,81 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Cliente"
+    },
+    "customer_name": {
+      "type": "string",
+      "title": "Nombre del cliente"
+    },
+    "type": {
+      "type": "string",
+      "title": "Tipo de documento",
+      "enum": [
+        "Factura de venta",
+        "Cotizaci\u00f3n",
+        "Proforma",
+        "Nota cr\u00e9dito",
+        "Recibo de pago",
+        "Comprobante de abono",
+        "Factura de taller"
+      ],
+      "default": "Factura de venta"
+    },
+    "number": {
+      "type": "string",
+      "title": "N\u00famero"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha"
+    },
+    "items": {
+      "type": "string",
+      "title": "Items (JSON)"
+    },
+    "subtotal": {
+      "type": "number",
+      "title": "Subtotal"
+    },
+    "iva": {
+      "type": "number",
+      "title": "IVA"
+    },
+    "discount": {
+      "type": "number",
+      "title": "Descuento",
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "title": "Total"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pendiente",
+        "Pagada",
+        "Anulada"
+      ],
+      "default": "Pendiente"
+    },
+    "related_sale_id": {
+      "type": "string",
+      "title": "Venta relacionada"
+    },
+    "related_order_id": {
+      "type": "string",
+      "title": "Orden relacionada"
+    }
+  },
+  "required": [
+    "date",
+    "type",
+    "total"
+  ]
+}

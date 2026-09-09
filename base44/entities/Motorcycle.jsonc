@@ -11,6 +11,10 @@
       "type": "string",
       "title": "Marca"
     },
+    "line": {
+      "type": "string",
+      "title": "L\u00ednea"
+    },
     "model": {
       "type": "string",
       "title": "Modelo"
@@ -27,13 +31,26 @@
       "type": "string",
       "title": "VIN / Chasis"
     },
+    "engine_number": {
+      "type": "string",
+      "title": "N\u00famero de motor"
+    },
     "color": {
       "type": "string",
       "title": "Color"
     },
+    "displacement": {
+      "type": "number",
+      "title": "Cilindraje (cc)"
+    },
     "mileage": {
       "type": "number",
       "title": "Kilometraje"
+    },
+    "registration_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de matr\u00edcula"
     }
   },
   "required": [

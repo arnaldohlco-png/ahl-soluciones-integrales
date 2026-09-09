@@ -1,0 +1,84 @@
+{
+  "name": "Purchase",
+  "type": "object",
+  "properties": {
+    "supplier_id": {
+      "type": "string",
+      "title": "Proveedor"
+    },
+    "supplier_name": {
+      "type": "string",
+      "title": "Nombre del proveedor"
+    },
+    "invoice_number": {
+      "type": "string",
+      "title": "Factura de compra"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha"
+    },
+    "items": {
+      "type": "string",
+      "title": "Productos (JSON)",
+      "description": "Array JSON de items: [{product_id, name, quantity, unit_cost, subtotal}]"
+    },
+    "subtotal": {
+      "type": "number",
+      "title": "Subtotal"
+    },
+    "iva_total": {
+      "type": "number",
+      "title": "IVA total"
+    },
+    "transport_cost": {
+      "type": "number",
+      "title": "Transporte",
+      "default": 0
+    },
+    "discount": {
+      "type": "number",
+      "title": "Descuento",
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "title": "Total"
+    },
+    "payment_method": {
+      "type": "string",
+      "title": "Forma de pago",
+      "enum": [
+        "Efectivo",
+        "Transferencia",
+        "Tarjeta",
+        "Cr\u00e9dito",
+        "Otros"
+      ],
+      "default": "Efectivo"
+    },
+    "payment_type": {
+      "type": "string",
+      "title": "Tipo de pago",
+      "enum": [
+        "Contado",
+        "Cr\u00e9dito"
+      ],
+      "default": "Contado"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pagada",
+        "Pendiente"
+      ],
+      "default": "Pagada"
+    }
+  },
+  "required": [
+    "date",
+    "total"
+  ]
+}
