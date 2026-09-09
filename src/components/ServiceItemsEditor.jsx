@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 
-export default function ServiceItemsEditor({ items, setItems, products }) {
+export default function ServiceItemsEditor({ items, setItems, products, services }) {
   const [newItem, setNewItem] = useState({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
 
   const addItem = () => {
@@ -34,6 +34,13 @@ export default function ServiceItemsEditor({ items, setItems, products }) {
     }
   };
 
+  const onServiceSelect = (serviceId) => {
+    const s = services?.find((x) => x.id === serviceId);
+    if (s) {
+      setNewItem({ type: "Servicio", name: s.name, quantity: 1, unit_price: s.price || 0, service_id: serviceId });
+    }
+  };
+
   const total = items.reduce((s, i) => s + (i.subtotal || 0), 0);
 
   return (
@@ -55,6 +62,15 @@ export default function ServiceItemsEditor({ items, setItems, products }) {
               <SelectTrigger><SelectValue placeholder="Seleccionar producto..." /></SelectTrigger>
               <SelectContent>
                 {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} — ${p.price?.toLocaleString("es-CO")}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : newItem.type === "Servicio" && services?.length > 0 ? (
+          <div className="flex-1 min-w-[150px]">
+            <Select onValueChange={onServiceSelect}>
+              <SelectTrigger><SelectValue placeholder="Seleccionar servicio..." /></SelectTrigger>
+              <SelectContent>
+                {services.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} — ${s.price?.toLocaleString("es-CO")}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

@@ -33,6 +33,7 @@ export default function ServiceOrders() {
   const [customers, setCustomers] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
   const [company, setCompany] = useState(null);
   const [serviceItems, setServiceItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,16 +47,17 @@ export default function ServiceOrders() {
   const load = async () => {
     setLoading(true);
     try {
-      const [o, m, c, t, p, comp] = await Promise.all([
+      const [o, m, c, t, p, sv, comp] = await Promise.all([
         base44.entities.ServiceOrder.list("-created_date", 200),
         base44.entities.Motorcycle.list("-created_date", 200),
         base44.entities.Customer.list("-created_date", 200),
         base44.entities.Technician.list("-created_date", 100),
         base44.entities.Product.list("-created_date", 200),
+        base44.entities.Service.list("-created_date", 500),
         base44.entities.Company.list("-created_date", 10),
       ]);
       setOrders(o); setMotos(m); setCustomers(c); setTechnicians(t);
-      setProducts(p); if (comp.length > 0) setCompany(comp[0]);
+      setProducts(p); setServices(sv); if (comp.length > 0) setCompany(comp[0]);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -358,7 +360,7 @@ export default function ServiceOrders() {
 
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Productos y servicios</p>
-              <ServiceItemsEditor items={serviceItems} setItems={setServiceItems} products={products} />
+              <ServiceItemsEditor items={serviceItems} setItems={setServiceItems} products={products} services={services} />
             </div>
 
             <div className="border-t border-slate-100 pt-3">

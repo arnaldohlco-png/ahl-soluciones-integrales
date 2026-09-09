@@ -1,0 +1,63 @@
+{
+  "name": "Service",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Nombre del servicio"
+    },
+    "category": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Mantenimiento",
+        "Reparaci\u00f3n",
+        "Diagn\u00f3stico",
+        "Cambio de aceite",
+        "Frenos",
+        "Motor",
+        "El\u00e9ctrico",
+        "Lubricaci\u00f3n",
+        "Afinaci\u00f3n",
+        "Otros"
+      ],
+      "default": "Mantenimiento"
+    },
+    "price": {
+      "type": "number",
+      "title": "Precio"
+    },
+    "cost": {
+      "type": "number",
+      "title": "Costo estimado",
+      "default": 0
+    },
+    "estimated_hours": {
+      "type": "number",
+      "title": "Horas estimadas",
+      "default": 0
+    },
+    "iva_rate": {
+      "type": "number",
+      "title": "IVA (%)",
+      "default": 0
+    },
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activo",
+        "Inactivo"
+      ],
+      "default": "Activo"
+    }
+  },
+  "required": [
+    "name",
+    "price"
+  ]
+}

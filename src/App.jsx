@@ -31,6 +31,7 @@ import IncomeStatement from '@/pages/IncomeStatement';
 import Quotations from '@/pages/Quotations';
 import TechnicianLoans from '@/pages/TechnicianLoans';
 import CommissionPayments from '@/pages/CommissionPayments';
+import Services from '@/pages/ServicesModule';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
           <Route path="/clientes" element={<Customers />} />
           <Route path="/motocicletas" element={<Motorcycles />} />
           <Route path="/ordenes" element={<ServiceOrders />} />
+          <Route path="/servicios" element={<Services />} />
           <Route path="/inventario" element={<Products />} />
           <Route path="/tecnicos" element={<Technicians />} />
           <Route path="/proveedores" element={<Suppliers />} />

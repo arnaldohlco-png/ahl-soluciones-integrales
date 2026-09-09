@@ -17,7 +17,8 @@ const navGroups = [
   items: [
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/motocicletas", label: "Motocicletas", icon: Bike },
-  { to: "/ordenes", label: "Órdenes de Servicio", icon: Wrench }]
+  { to: "/ordenes", label: "Órdenes de Servicio", icon: Wrench },
+  { to: "/servicios", label: "Catálogo de Servicios", icon: Wrench }]
 
 },
 {
