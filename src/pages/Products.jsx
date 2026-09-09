@@ -32,8 +32,8 @@ export default function Products() {
     setLoading(true);
     try {
       const [p, s] = await Promise.all([
-        base44.entities.Product.list("-created_date", 300),
-        base44.entities.Supplier.list("-created_date", 100),
+        base44.entities.Product.list("-created_date", 5000),
+        base44.entities.Supplier.list("-created_date", 5000),
       ]);
       setProducts(p); setSuppliers(s);
     } catch (e) { console.error(e); }
