@@ -93,6 +93,16 @@
       "format": "date",
       "title": "Fecha de vencimiento"
     },
+    "amount_paid": {
+      "type": "number",
+      "title": "Recibido",
+      "default": 0
+    },
+    "change": {
+      "type": "number",
+      "title": "Cambio/Vueltas",
+      "default": 0
+    },
     "related_sale_id": {
       "type": "string",
       "title": "Venta relacionada"

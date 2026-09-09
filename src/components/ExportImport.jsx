@@ -3,11 +3,21 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, Loader2 } from "lucide-react";
 
-function toCSV(rows, fields) {
-  const headers = fields.join(",");
+const NUM_FIELDS = [
+  "price", "cost", "stock", "min_stock", "iva_rate", "balance", "credit_limit",
+  "salary", "commission_percentage", "labor_cost", "parts_cost", "lubricants_cost",
+  "hours_worked", "technician_commission", "previous_mileage", "current_mileage",
+  "oil_change_interval", "next_oil_change", "amount", "credit_default_days",
+  "subtotal", "iva", "iva_total", "discount", "total", "amount_paid", "change",
+  "installment_amount", "credit_days", "installments", "year", "displacement", "mileage"
+];
+const ITEM_NUM_KEYS = ["quantity", "unit_price", "unit_cost", "subtotal"];
+
+function toCSV(rows, headers) {
+  const headerLine = headers.join(",");
   const lines = rows.map((r) =>
-    fields.map((f) => {
-      let v = r[f];
+    headers.map((h) => {
+      let v = r[h];
       if (v === null || v === undefined) v = "";
       if (typeof v === "object") v = JSON.stringify(v);
       v = String(v).replace(/"/g, '""');
@@ -15,7 +25,7 @@ function toCSV(rows, fields) {
       return v;
     }).join(",")
   );
-  return [headers, ...lines].join("\n");
+  return [headerLine, ...lines].join("\n");
 }
 
 function parseCSV(text) {
@@ -40,7 +50,95 @@ function parseCSV(text) {
   return rows;
 }
 
-export default function ExportImport({ entityName, fields, label = "Exportar" }) {
+// Flatten JSON array fields into separate columns (items_1_name, items_1_quantity, etc.)
+function flattenRecords(records, fields, itemFields) {
+  const maxItems = {};
+  const subkeys = {};
+
+  itemFields.forEach((f) => {
+    maxItems[f] = 0;
+    const keySet = new Set();
+    records.forEach((r) => {
+      let items = [];
+      try { items = JSON.parse(r[f] || "[]"); } catch { items = []; }
+      if (items.length > maxItems[f]) maxItems[f] = items.length;
+      items.forEach((item) => {
+        if (typeof item === "object") {
+          Object.keys(item).forEach((k) => keySet.add(k));
+        }
+      });
+    });
+    subkeys[f] = Array.from(keySet);
+  });
+
+  const headers = [];
+  fields.forEach((f) => {
+    if (itemFields.includes(f) && maxItems[f] > 0) {
+      for (let i = 1; i <= maxItems[f]; i++) {
+        subkeys[f].forEach((k) => headers.push(`${f}_${i}_${k}`));
+      }
+    } else if (!itemFields.includes(f)) {
+      headers.push(f);
+    } else {
+      headers.push(f);
+    }
+  });
+
+  const flatRows = records.map((r) => {
+    const row = {};
+    fields.forEach((f) => {
+      if (itemFields.includes(f) && maxItems[f] > 0) {
+        let items = [];
+        try { items = JSON.parse(r[f] || "[]"); } catch { items = []; }
+        for (let i = 1; i <= maxItems[f]; i++) {
+          subkeys[f].forEach((k) => {
+            row[`${f}_${i}_${k}`] = items[i - 1]?.[k] ?? "";
+          });
+        }
+      } else {
+        row[f] = r[f];
+      }
+    });
+    return row;
+  });
+
+  return { headers, flatRows };
+}
+
+// Reassemble JSON array fields from flattened columns
+function reassembleItems(obj, itemFields) {
+  const result = {};
+  Object.keys(obj).forEach((k) => {
+    if (obj[k] !== undefined && obj[k] !== "") result[k] = obj[k];
+  });
+
+  itemFields.forEach((f) => {
+    const items = [];
+    let i = 1;
+    while (true) {
+      const prefix = `${f}_${i}_`;
+      const keys = Object.keys(result).filter((k) => k.startsWith(prefix));
+      if (keys.length === 0) break;
+      const item = {};
+      keys.forEach((k) => {
+        const subkey = k.slice(prefix.length);
+        let val = result[k];
+        if (ITEM_NUM_KEYS.includes(subkey) && val !== "") val = Number(val) || 0;
+        if (val !== "" && val !== undefined) item[subkey] = val;
+      });
+      if (Object.keys(item).length > 0) items.push(item);
+      i++;
+    }
+    if (items.length > 0) result[f] = JSON.stringify(items);
+    Object.keys(result).forEach((k) => {
+      if (k.startsWith(f + "_")) delete result[k];
+    });
+  });
+
+  return result;
+}
+
+export default function ExportImport({ entityName, fields, label = "Exportar", itemFields = [] }) {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef(null);
 
@@ -48,8 +146,10 @@ export default function ExportImport({ entityName, fields, label = "Exportar" })
     setBusy(true);
     try {
       const data = await base44.entities[entityName].list("-created_date", 5000);
-      const csv = toCSV(data, fields);
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const { headers, flatRows } = flattenRecords(data, fields, itemFields);
+      const csv = toCSV(flatRows, headers);
+      // BOM for proper UTF-8 in Excel (Spanish characters)
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -72,15 +172,12 @@ export default function ExportImport({ entityName, fields, label = "Exportar" })
       const records = rows.slice(1).map((r) => {
         const obj = {};
         headers.forEach((h, i) => {
-          let v = r[i] || "";
-          const f = fields.find((x) => x === h);
-          if (!f) return;
-          const numFields = ["price", "cost", "stock", "min_stock", "iva_rate", "balance", "credit_limit", "salary", "commission_percentage", "labor_cost", "parts_cost", "lubricants_cost", "hours_worked", "technician_commission", "cost", "previous_mileage", "current_mileage", "oil_change_interval", "next_oil_change", "amount", "credit_default_days"];
-          if (numFields.includes(h) && v !== "") v = Number(v) || 0;
-          if (v === "") v = undefined;
+          let v = r[i] !== undefined ? r[i] : "";
+          if (v === "") return;
+          if (NUM_FIELDS.includes(h) && v !== "") v = Number(v) || 0;
           obj[h] = v;
         });
-        return obj;
+        return reassembleItems(obj, itemFields);
       }).filter((r) => r && Object.keys(r).length > 0);
       if (records.length === 0) { alert("No se encontraron registros válidos"); setBusy(false); return; }
       await base44.entities[entityName].bulkCreate(records);

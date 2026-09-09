@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Receipt, Plus, Search, Trash2, Pencil } from "lucide-react";
+import ExportImport from "@/components/ExportImport";
 import moment from "moment";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
@@ -26,6 +27,7 @@ export default function Invoices() {
     customer_id: "", customer_name: "", type: "Factura de venta", number: "",
     date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente",
     payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "",
+    amount_paid: 0, change: 0,
   });
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function Invoices() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ customer_id: "", customer_name: "", type: "Factura de venta", number: "", date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente", payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "" });
+    setForm({ customer_id: "", customer_name: "", type: "Factura de venta", number: "", date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente", payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "", amount_paid: 0, change: 0 });
     setModalOpen(true);
   };
 
@@ -67,7 +69,7 @@ export default function Invoices() {
       const dueDate = form.payment_terms === "Crédito" && form.credit_days > 0 ? moment(form.date).add(Number(form.credit_days), "days").format("YYYY-MM-DD") : "";
       const inst = Number(form.installments) || 1;
       const instAmt = form.payment_terms === "Crédito" && inst > 0 ? Math.ceil(Number(form.total) / inst) : 0;
-      const payload = { ...form, subtotal: Number(form.subtotal), iva: Number(form.iva), discount: Number(form.discount), total: Number(form.total), credit_days: Number(form.credit_days) || 0, installments: inst, installment_amount: instAmt, payment_due_date: dueDate };
+      const payload = { ...form, subtotal: Number(form.subtotal), iva: Number(form.iva), discount: Number(form.discount), total: Number(form.total), credit_days: Number(form.credit_days) || 0, installments: inst, installment_amount: instAmt, payment_due_date: dueDate, amount_paid: Number(form.amount_paid) || 0, change: Number(form.change) || 0 };
       if (editing) await base44.entities.Invoice.update(editing.id, payload);
       else await base44.entities.Invoice.create(payload);
       setModalOpen(false);
@@ -109,9 +111,12 @@ export default function Invoices() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Facturación</h1>
           <p className="text-slate-500 mt-1">{list.length} documentos registrados</p>
         </div>
-        <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4" /> Nuevo Documento
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportImport entityName="Invoice" fields={["number", "type", "customer_name", "date", "items", "subtotal", "iva", "discount", "total", "status", "payment_terms", "credit_days", "installments", "amount_paid", "change"]} itemFields={["items"]} />
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Plus className="w-4 h-4" /> Nuevo Documento
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -248,6 +253,16 @@ export default function Invoices() {
                   <SelectItem value="Anulada">Anulada</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Recibido (con cuánto pagó)</Label>
+                <Input type="number" value={form.amount_paid} onChange={(e) => setForm({ ...form, amount_paid: parseFloat(e.target.value) || 0, change: Math.max(0, (parseFloat(e.target.value) || 0) - Number(form.total)) })} />
+              </div>
+              <div>
+                <Label>Cambio/Vueltas</Label>
+                <Input type="number" value={form.change} readOnly className="bg-slate-50" />
+              </div>
             </div>
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Plazo de pago</p>

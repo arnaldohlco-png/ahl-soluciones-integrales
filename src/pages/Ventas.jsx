@@ -17,6 +17,7 @@ export default function Ventas() {
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
   const [paymentType, setPaymentType] = useState("Contado");
   const [discount, setDiscount] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
   const [checkoutMsg, setCheckoutMsg] = useState("");
 
   useEffect(() => {
@@ -98,6 +99,8 @@ export default function Ventas() {
         payment_type: paymentType,
         status: paymentType === "Contado" ? "Pagada" : "Pendiente",
         balance: paymentType === "Crédito" ? totals.total : 0,
+        amount_paid: paymentMethod === "Efectivo" && paymentType === "Contado" ? amountPaid : 0,
+        change: paymentMethod === "Efectivo" && paymentType === "Contado" ? Math.max(0, amountPaid - totals.total) : 0,
       });
 
       await Promise.all(cart.map(item =>
@@ -136,6 +139,7 @@ export default function Ventas() {
       setCustomerId("");
       setCustomerName("Cliente mostrador");
       setDiscount(0);
+      setAmountPaid(0);
       setCheckoutMsg("¡Venta registrada! Stock actualizado.");
       setTimeout(() => setCheckoutMsg(""), 3000);
     } catch (e) {
@@ -247,6 +251,20 @@ export default function Ventas() {
                   <Input type="number" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="w-20 h-7 text-right text-sm" />
                 </div>
                 <div className="flex justify-between font-bold text-slate-900 text-base pt-1"><span>Total</span><span>${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+                {paymentMethod === "Efectivo" && paymentType === "Contado" && (
+                  <>
+                    <div className="flex justify-between items-center text-slate-600 pt-1">
+                      <span>Recibido</span>
+                      <Input type="number" value={amountPaid || ""} onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)} className="w-24 h-7 text-right text-sm" placeholder="0" />
+                    </div>
+                    {amountPaid > 0 && (
+                      <div className="flex justify-between font-semibold text-emerald-700">
+                        <span>Cambio/Vueltas</span>
+                        <span>${Math.max(0, amountPaid - totals.total).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="space-y-3 mt-4">

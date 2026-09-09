@@ -70,6 +70,16 @@
       "type": "number",
       "title": "Saldo",
       "default": 0
+    },
+    "amount_paid": {
+      "type": "number",
+      "title": "Recibido",
+      "default": 0
+    },
+    "change": {
+      "type": "number",
+      "title": "Cambio/Vueltas",
+      "default": 0
     }
   },
   "required": [
