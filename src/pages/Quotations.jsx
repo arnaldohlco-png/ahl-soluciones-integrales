@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { FileText, Plus, Trash2, FileCheck, Loader2 } from "lucide-react";
+import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil } from "lucide-react";
 import moment from "moment";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
@@ -17,6 +17,7 @@ export default function Quotations() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ customer_id: "", date: moment().format("YYYY-MM-DD") });
   const [items, setItems] = useState([]);
 
@@ -37,8 +38,18 @@ export default function Quotations() {
   const custName = (id) => customers.find((c) => c.id === id)?.name || "—";
 
   const openNew = () => {
+    setEditing(null);
     setForm({ customer_id: "", date: moment().format("YYYY-MM-DD") });
     setItems([]);
+    setModalOpen(true);
+  };
+
+  const openEdit = (q) => {
+    setEditing(q);
+    let parsedItems = [];
+    try { parsedItems = JSON.parse(q.items || "[]"); } catch { parsedItems = []; }
+    setItems(parsedItems);
+    setForm({ customer_id: q.customer_id || "", date: q.date ? moment(q.date).format("YYYY-MM-DD") : moment().format("YYYY-MM-DD") });
     setModalOpen(true);
   };
 
@@ -69,15 +80,23 @@ export default function Quotations() {
     if (!form.customer_id || items.length === 0) return;
     setSaving(true);
     try {
-      await base44.entities.Invoice.create({
-        customer_id: form.customer_id, customer_name: custName(form.customer_id),
-        type: "Cotización", number: `COT-${Date.now().toString().slice(-6)}`,
-        date: form.date, items: JSON.stringify(items),
-        subtotal, iva, discount: 0, total, status: "Pendiente",
-        payment_terms: "Contado",
-      });
+      if (editing) {
+        await base44.entities.Invoice.update(editing.id, {
+          customer_id: form.customer_id, customer_name: custName(form.customer_id),
+          date: form.date, items: JSON.stringify(items),
+          subtotal, iva, discount: 0, total,
+        });
+      } else {
+        await base44.entities.Invoice.create({
+          customer_id: form.customer_id, customer_name: custName(form.customer_id),
+          type: "Cotización", number: `COT-${Date.now().toString().slice(-6)}`,
+          date: form.date, items: JSON.stringify(items),
+          subtotal, iva, discount: 0, total, status: "Pendiente",
+          payment_terms: "Contado",
+        });
+      }
       setModalOpen(false); await load();
-    } catch (e) { console.error(e); alert("Error al crear cotización"); }
+    } catch (e) { console.error(e); alert("Error al guardar cotización"); }
     setSaving(false);
   };
 
@@ -153,6 +172,9 @@ export default function Quotations() {
                   <span className="font-bold text-slate-900">{fmt(q.total)}</span>
                 </div>
                 <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(q)} className="flex-1">
+                    <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
+                  </Button>
                   <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1">
                     <FileCheck className="w-3.5 h-3.5 mr-1" /> Facturar
                   </Button>
@@ -168,7 +190,7 @@ export default function Quotations() {
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Nueva Cotización</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -239,7 +261,7 @@ export default function Quotations() {
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button onClick={save} disabled={saving || !form.customer_id || items.length === 0} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-              {saving ? "Guardando..." : "Crear Cotización"}
+              {saving ? "Guardando..." : editing ? "Guardar Cambios" : "Crear Cotización"}
             </Button>
           </DialogFooter>
         </DialogContent>

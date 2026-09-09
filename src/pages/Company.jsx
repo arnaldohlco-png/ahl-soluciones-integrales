@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, Save, Loader2, Cloud } from "lucide-react";
+import { Building2, Save, Loader2, Cloud, Upload } from "lucide-react";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
@@ -18,6 +18,7 @@ export default function Company() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [backing, setBacking] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -68,6 +69,20 @@ export default function Company() {
       alert("Error al respaldar: " + e.message);
     }
     setBacking(false);
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setForm({ ...form, logo: file_url });
+    } catch (err) {
+      console.error(err);
+      alert("Error al subir el logo");
+    }
+    setUploading(false);
   };
 
   if (loading) {
@@ -133,8 +148,26 @@ export default function Company() {
             <Input type="number" value={form.credit_default_days} onChange={(e) => setForm({ ...form, credit_default_days: e.target.value })} className="mt-1" />
           </div>
           <div>
-            <Label>Logo (URL)</Label>
-            <Input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} className="mt-1" placeholder="https://..." />
+            <Label>Logo de la empresa</Label>
+            <div className="mt-1 flex items-center gap-3">
+              {form.logo ? (
+                <img src={form.logo} alt="Logo" className="w-16 h-16 rounded-lg object-contain border border-slate-200 bg-white p-1" />
+              ) : (
+                <div className="w-16 h-16 rounded-lg border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
+                  <Building2 className="w-6 h-6" />
+                </div>
+              )}
+              <div>
+                <label className="inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-slate-200 rounded-md cursor-pointer hover:bg-slate-50 transition-colors">
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  {uploading ? "Subiendo..." : "Cargar logo"}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploading} />
+                </label>
+                {form.logo && (
+                  <button onClick={() => setForm({ ...form, logo: "" })} className="block text-xs text-red-500 mt-1 hover:underline">Quitar logo</button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         <div>
