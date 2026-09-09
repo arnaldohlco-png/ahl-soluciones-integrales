@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Building2, Plus, Pencil, Trash2, Search, Phone, Mail, MapPin } from "lucide-react";
+import ExportImport from "@/components/ExportImport";
 
 export default function Suppliers() {
   const [list, setList] = useState([]);
@@ -75,9 +76,12 @@ export default function Suppliers() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Proveedores</h1>
           <p className="text-slate-500 mt-1">{list.length} proveedores registrados</p>
         </div>
-        <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4" /> Nuevo Proveedor
-        </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ExportImport entityName="Supplier" fields={["name", "document_number", "phone", "email", "address", "notes"]} />
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Plus className="w-4 h-4" /> Nuevo Proveedor
+          </Button>
+        </div>
       </div>
 
       <div className="relative mb-6">

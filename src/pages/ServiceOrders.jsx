@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Wrench, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart } from "lucide-react";
+import ExportImport from "@/components/ExportImport";
+import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
 const statuses = ["Ingresado", "En proceso", "Completado", "Entregado"];
@@ -20,6 +22,8 @@ const empty = {
   tests_performed: "", labor_description: "", labor_cost: "", parts_cost: "", lubricants_cost: "",
   hours_worked: "", technician_commission: "", work_done: "", delivery_recommendations: "",
   warranty: "", delivery_date: "", cost: "", parts_used: "",
+  previous_mileage: "", current_mileage: "", oil_change_interval: 1000, next_oil_change: "",
+  admin_footer: "",
 };
 
 export default function ServiceOrders() {
@@ -27,6 +31,9 @@ export default function ServiceOrders() {
   const [motos, setMotos] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [company, setCompany] = useState(null);
+  const [serviceItems, setServiceItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -38,13 +45,16 @@ export default function ServiceOrders() {
   const load = async () => {
     setLoading(true);
     try {
-      const [o, m, c, t] = await Promise.all([
+      const [o, m, c, t, p, comp] = await Promise.all([
         base44.entities.ServiceOrder.list("-created_date", 200),
         base44.entities.Motorcycle.list("-created_date", 200),
         base44.entities.Customer.list("-created_date", 200),
         base44.entities.Technician.list("-created_date", 100),
+        base44.entities.Product.list("-created_date", 200),
+        base44.entities.Company.list("-created_date", 10),
       ]);
       setOrders(o); setMotos(m); setCustomers(c); setTechnicians(t);
+      setProducts(p); if (comp.length > 0) setCompany(comp[0]);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -61,8 +71,8 @@ export default function ServiceOrders() {
   const openNew = () => {
     const today = new Date().toISOString().split("T")[0];
     const now = new Date().toTimeString().slice(0, 5);
-    setForm({ ...empty, entry_date: today, entry_time: now });
-    setEditing(null); setOpen(true);
+    setForm({ ...empty, entry_date: today, entry_time: now, admin_footer: company?.footer_text || "" });
+    setServiceItems([]); setEditing(null); setOpen(true);
   };
   const openEdit = (o) => {
     setForm({
@@ -79,7 +89,11 @@ export default function ServiceOrders() {
       work_done: o.work_done || "", delivery_recommendations: o.delivery_recommendations || "",
       warranty: o.warranty || "", delivery_date: o.delivery_date || "",
       cost: o.cost ?? "", parts_used: o.parts_used || "",
+      previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "",
+      oil_change_interval: o.oil_change_interval || 1000, next_oil_change: o.next_oil_change ?? "",
+      admin_footer: o.admin_footer || company?.footer_text || "",
     });
+    try { setServiceItems(JSON.parse(o.service_items || "[]")); } catch { setServiceItems([]); }
     setEditing(o); setOpen(true);
   };
 
@@ -88,12 +102,13 @@ export default function ServiceOrders() {
     setForm({ ...form, motorcycle_id: motoId, customer_id: m?.customer_id || form.customer_id });
   };
 
-  const numFields = ["labor_cost", "parts_cost", "lubricants_cost", "hours_worked", "technician_commission", "cost"];
+  const numFields = ["labor_cost", "parts_cost", "lubricants_cost", "hours_worked", "technician_commission", "cost", "previous_mileage", "current_mileage", "oil_change_interval", "next_oil_change"];
 
   const save = async () => {
     if (!form.motorcycle_id || !form.customer_id) return;
     setSaving(true);
-    const payload = { ...form };
+    const nextOil = (Number(form.current_mileage) || 0) + (Number(form.oil_change_interval) || 0);
+    const payload = { ...form, service_items: JSON.stringify(serviceItems), next_oil_change: nextOil };
     numFields.forEach((f) => { payload[f] = Number(payload[f]) || 0; });
     try {
       if (editing) { await base44.entities.ServiceOrder.update(editing.id, payload); }
@@ -114,6 +129,38 @@ export default function ServiceOrders() {
     const next = statuses[(idx + 1) % statuses.length];
     await base44.entities.ServiceOrder.update(o.id, { status: next });
     await load();
+  };
+
+  const convertToQuotation = async (o) => {
+    try {
+      const items = JSON.parse(o.service_items || "[]");
+      const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
+      const iva = Math.round(subtotal * 0.19);
+      await base44.entities.Invoice.create({
+        customer_id: o.customer_id, customer_name: customerName(o.customer_id),
+        type: "Cotización", number: `COT-${Date.now().toString().slice(-6)}`,
+        date: new Date().toISOString().slice(0, 10),
+        items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
+        subtotal, iva, total: subtotal + iva, status: "Pendiente", related_order_id: o.id,
+      });
+      alert("Cotización creada correctamente");
+    } catch (e) { console.error(e); alert("Error al crear cotización"); }
+  };
+
+  const convertToSale = async (o) => {
+    try {
+      const items = JSON.parse(o.service_items || "[]");
+      const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
+      const iva = Math.round(subtotal * 0.19);
+      await base44.entities.Sale.create({
+        customer_id: o.customer_id, customer_name: customerName(o.customer_id),
+        date: new Date().toISOString().slice(0, 10),
+        items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
+        subtotal, iva_total: iva, discount: 0, total: subtotal + iva,
+        payment_method: "Efectivo", payment_type: "Contado", status: "Pagada", balance: 0,
+      });
+      alert("Venta creada correctamente");
+    } catch (e) { console.error(e); alert("Error al crear venta"); }
   };
 
   const filtered = orders.filter((o) => {
@@ -139,9 +186,12 @@ export default function ServiceOrders() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Órdenes de Servicio</h1>
           <p className="text-slate-500 mt-1">{orders.length} órdenes registradas</p>
         </div>
-        <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4 mr-1" /> Nueva Orden
-        </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ExportImport entityName="ServiceOrder" fields={["motorcycle_id", "customer_id", "service_type", "description", "status", "technician_id", "mechanic", "entry_date", "delivery_date", "cost", "previous_mileage", "current_mileage", "oil_change_interval", "next_oil_change", "parts_used"]} />
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Plus className="w-4 h-4 mr-1" /> Nueva Orden
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-3 mb-4 flex-wrap">
@@ -196,6 +246,8 @@ export default function ServiceOrders() {
                     {o.delivery_date && <p className="text-xs text-slate-400">Entrega: {o.delivery_date}</p>}
                   </div>
                   <div className="flex gap-1">
+                    <button onClick={() => convertToQuotation(o)} title="Convertir a cotización" className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"><FileText className="w-4 h-4" /></button>
+                    <button onClick={() => convertToSale(o)} title="Convertir a venta" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => remove(o)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>
@@ -271,6 +323,34 @@ export default function ServiceOrders() {
                 <div><Label>Estado visual</Label><Input value={form.visual_condition} onChange={(e) => setForm({ ...form, visual_condition: e.target.value })} className="mt-1" placeholder="Rayones, abolladuras..." /></div>
                 <div><Label>Accesorios entregados</Label><Input value={form.accessories} onChange={(e) => setForm({ ...form, accessories: e.target.value })} className="mt-1" placeholder="Espejos, llaves, etc." /></div>
               </div>
+            </div>
+
+            <div className="border-t border-slate-100 pt-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Kilometraje y mantenimiento</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div><Label>Km anterior</Label><Input type="number" value={form.previous_mileage} onChange={(e) => setForm({ ...form, previous_mileage: e.target.value })} className="mt-1" /></div>
+                <div><Label>Km actual</Label><Input type="number" value={form.current_mileage} onChange={(e) => setForm({ ...form, current_mileage: e.target.value, next_oil_change: (Number(e.target.value) || 0) + (Number(form.oil_change_interval) || 0) })} className="mt-1" /></div>
+                <div>
+                  <Label>Intervalo aceite</Label>
+                  <Select value={String(form.oil_change_interval)} onValueChange={(v) => setForm({ ...form, oil_change_interval: Number(v), next_oil_change: (Number(form.current_mileage) || 0) + Number(v) })}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1000">1000 km</SelectItem>
+                      <SelectItem value="1500">1500 km</SelectItem>
+                      <SelectItem value="2000">2000 km</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Próx. cambio</Label><Input type="number" value={form.current_mileage && form.oil_change_interval ? Number(form.current_mileage) + Number(form.oil_change_interval) : ""} readOnly className="mt-1 bg-slate-50" placeholder="Auto" /></div>
+              </div>
+              {form.current_mileage && form.oil_change_interval && (
+                <p className="text-xs text-amber-600 mt-2">Próximo cambio de aceite: {(Number(form.current_mileage) + Number(form.oil_change_interval)).toLocaleString()} km</p>
+              )}
+            </div>
+
+            <div className="border-t border-slate-100 pt-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Productos y servicios</p>
+              <ServiceItemsEditor items={serviceItems} setItems={setServiceItems} products={products} />
             </div>
 
             <div className="border-t border-slate-100 pt-3">

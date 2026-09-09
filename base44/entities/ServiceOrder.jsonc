@@ -154,6 +154,37 @@
     "parts_used": {
       "type": "string",
       "title": "Repuestos utilizados"
+    },
+    "previous_mileage": {
+      "type": "number",
+      "title": "Kilometraje anterior"
+    },
+    "current_mileage": {
+      "type": "number",
+      "title": "Kilometraje actual"
+    },
+    "oil_change_interval": {
+      "type": "number",
+      "title": "Intervalo cambio de aceite (km)",
+      "enum": [
+        1000,
+        1500,
+        2000
+      ],
+      "default": 1000
+    },
+    "next_oil_change": {
+      "type": "number",
+      "title": "Pr\u00f3ximo cambio de aceite (km)"
+    },
+    "service_items": {
+      "type": "string",
+      "title": "Items (productos y servicios)",
+      "description": "JSON: [{type, name, quantity, unit_price, subtotal, product_id?}]"
+    },
+    "admin_footer": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina admin"
     }
   },
   "required": [

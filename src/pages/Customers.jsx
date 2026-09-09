@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Phone, Mail, Search, Users, MessageCircle, CreditCard, FileText } from "lucide-react";
+import ExportImport from "@/components/ExportImport";
 
 const docTypes = ["Cédula", "NIT", "Cédula de extranjería", "Pasaporte"];
 
@@ -83,9 +84,12 @@ export default function Customers() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Clientes</h1>
           <p className="text-slate-500 mt-1">{customers.length} clientes registrados</p>
         </div>
-        <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4 mr-1" /> Nuevo Cliente
-        </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ExportImport entityName="Customer" fields={["name", "document_type", "document_number", "phone", "whatsapp", "email", "address", "credit_limit", "balance", "notes"]} />
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Plus className="w-4 h-4 mr-1" /> Nuevo Cliente
+          </Button>
+        </div>
       </div>
 
       <div className="relative mb-4 max-w-sm">

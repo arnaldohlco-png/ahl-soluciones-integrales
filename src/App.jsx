@@ -26,6 +26,8 @@ import Purchases from '@/pages/PurchasesModule';
 import Credits from '@/pages/CreditsModule';
 import Invoices from '@/pages/InvoicesModule';
 import BrandLines from '@/pages/BrandLines';
+import Company from '@/pages/Company';
+import IncomeStatement from '@/pages/IncomeStatement';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -68,6 +70,8 @@ const AuthenticatedApp = () => {
           <Route path="/tecnicos" element={<Technicians />} />
           <Route path="/proveedores" element={<Suppliers />} />
           <Route path="/marcas" element={<BrandLines />} />
+          <Route path="/empresa" element={<Company />} />
+          <Route path="/estado-resultados" element={<IncomeStatement />} />
           <Route path="/ventas" element={<Ventas />} />
           <Route path="/compras" element={<Purchases />} />
           <Route path="/facturacion" element={<Invoices />} />

@@ -1,0 +1,57 @@
+{
+  "name": "Company",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Nombre / Raz\u00f3n social"
+    },
+    "document_type": {
+      "type": "string",
+      "title": "Tipo de persona",
+      "enum": [
+        "Persona natural",
+        "Persona jur\u00eddica"
+      ],
+      "default": "Persona jur\u00eddica"
+    },
+    "document_number": {
+      "type": "string",
+      "title": "NIT / C\u00e9dula"
+    },
+    "phone": {
+      "type": "string",
+      "title": "Tel\u00e9fono"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email",
+      "format": "email"
+    },
+    "address": {
+      "type": "string",
+      "title": "Direcci\u00f3n"
+    },
+    "city": {
+      "type": "string",
+      "title": "Ciudad"
+    },
+    "logo": {
+      "type": "string",
+      "title": "Logo (URL)"
+    },
+    "footer_text": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina para \u00f3rdenes de servicio",
+      "description": "Texto que aparece al pie de las \u00f3rdenes de servicio"
+    },
+    "credit_default_days": {
+      "type": "number",
+      "title": "D\u00edas de cr\u00e9dito por defecto",
+      "default": 30
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

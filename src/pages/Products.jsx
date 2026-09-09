@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Package, Search, AlertTriangle, MapPin, Barcode } from "lucide-react";
+import ExportImport from "@/components/ExportImport";
 
 const categories = ["Repuestos", "Accesorios", "Lubricantes", "Llantas", "Baterías", "Consumibles", "Herramientas", "Indumentaria", "Otros"];
 
@@ -99,9 +100,12 @@ export default function Products() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Inventario</h1>
           <p className="text-slate-500 mt-1">{products.length} productos en almacén</p>
         </div>
-        <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4 mr-1" /> Nuevo Producto
-        </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ExportImport entityName="Product" fields={["name", "category", "brand", "sku", "barcode", "reference", "compatibility", "price", "cost", "iva_rate", "stock", "min_stock", "location", "description"]} />
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Plus className="w-4 h-4 mr-1" /> Nuevo Producto
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-3 mb-4 flex-wrap">
