@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, Save, Loader2 } from "lucide-react";
+import { Building2, Save, Loader2, Cloud } from "lucide-react";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
@@ -17,6 +17,7 @@ export default function Company() {
   const [form, setForm] = useState(empty);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [backing, setBacking] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -51,6 +52,22 @@ export default function Company() {
       alert("Empresa guardada");
     } catch (e) { console.error(e); alert("Error al guardar"); }
     setSaving(false);
+  };
+
+  const backupToDrive = async () => {
+    setBacking(true);
+    try {
+      const res = await base44.functions.invoke('backupToDrive', {});
+      if (res.data?.success) {
+        alert(`Respaldo creado en Google Drive: ${res.data.file?.name || 'archivo'}`);
+      } else {
+        alert("Error: " + (res.data?.error || "desconocido"));
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error al respaldar: " + e.message);
+    }
+    setBacking(false);
   };
 
   if (loading) {
@@ -130,6 +147,24 @@ export default function Company() {
           <Button onClick={save} disabled={saving || !form.name.trim()} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Save className="w-4 h-4 mr-1" />}
             {saving ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+              <Cloud className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Respaldo en Google Drive</h3>
+              <p className="text-sm text-slate-500">Guarda una copia de todos los datos del taller en tu Google Drive</p>
+            </div>
+          </div>
+          <Button onClick={backupToDrive} disabled={backing} variant="outline">
+            {backing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Cloud className="w-4 h-4 mr-1" />}
+            {backing ? "Respaldando..." : "Respaldar ahora"}
           </Button>
         </div>
       </div>
