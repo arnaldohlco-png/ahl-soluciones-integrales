@@ -17,14 +17,14 @@ import Customers from '@/pages/Customers';
 import Motorcycles from '@/pages/Motorcycles';
 import ServiceOrders from '@/pages/ServiceOrders';
 import Products from '@/pages/Products';
-import Technicians from '@/pages/Technicians';
-import Suppliers from '@/pages/Suppliers';
+import Technicians from '@/pages/TechniciansModule';
+import Suppliers from '@/pages/SuppliersModule';
 import Ventas from '@/pages/Ventas';
-import Expenses from '@/pages/Expenses';
-import Cash from '@/pages/Cash';
-import Purchases from '@/pages/Purchases';
-import Credits from '@/pages/Credits';
-import Invoices from '@/pages/Invoices';
+import Expenses from '@/pages/ExpensesModule';
+import Cash from '@/pages/CashModule';
+import Purchases from '@/pages/PurchasesModule';
+import Credits from '@/pages/CreditsModule';
+import Invoices from '@/pages/InvoicesModule';
 // Add page imports here
 
 const AuthenticatedApp = () => {
