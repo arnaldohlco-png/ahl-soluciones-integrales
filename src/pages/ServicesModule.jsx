@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Wrench, Search } from "lucide-react";
 
-const categories = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Lubricación", "Afinación", "Otros"];
+const defaultCategories = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Lubricación", "Afinación", "Otros"];
 
 const empty = { name: "", category: "Mantenimiento", price: "", cost: 0, estimated_hours: 0, iva_rate: 0, description: "", status: "Activo" };
 
@@ -56,6 +56,8 @@ export default function ServicesModule() {
     await base44.entities.Service.delete(s.id);
     await load();
   };
+
+  const categories = [...new Set([...defaultCategories, ...services.map((s) => s.category).filter(Boolean)])];
 
   const filtered = services.filter((s) => {
     const matchSearch = s.name?.toLowerCase().includes(search.toLowerCase()) || s.description?.toLowerCase().includes(search.toLowerCase());
@@ -143,10 +145,8 @@ export default function ServicesModule() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Categoría</Label>
-                <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                </Select>
+                <Input list="cat-list" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="mt-1" placeholder="Ej: Servicio de Taller" />
+                <datalist id="cat-list">{categories.map((c) => <option key={c} value={c} />)}</datalist>
               </div>
               <div>
                 <Label>Estado</Label>

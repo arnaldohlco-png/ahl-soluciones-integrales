@@ -9,23 +9,12 @@
     "category": {
       "type": "string",
       "title": "Categor\u00eda",
-      "enum": [
-        "Mantenimiento",
-        "Reparaci\u00f3n",
-        "Diagn\u00f3stico",
-        "Cambio de aceite",
-        "Frenos",
-        "Motor",
-        "El\u00e9ctrico",
-        "Lubricaci\u00f3n",
-        "Afinaci\u00f3n",
-        "Otros"
-      ],
-      "default": "Mantenimiento"
+      "default": "Otros"
     },
     "price": {
       "type": "number",
-      "title": "Precio"
+      "title": "Precio",
+      "default": 0
     },
     "cost": {
       "type": "number",
@@ -57,7 +46,6 @@
     }
   },
   "required": [
-    "name",
-    "price"
+    "name"
   ]
 }
