@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { CreditCard, Search, DollarSign, CheckCircle } from "lucide-react";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import moment from "moment";
 
 export default function Credits() {
   const [list, setList] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -23,8 +25,11 @@ export default function Credits() {
 
   const load = async () => {
     try {
-      const data = await base44.entities.AccountReceivable.list("-created_date", 200);
-      setList(data);
+      const [data, cust] = await Promise.all([
+        base44.entities.AccountReceivable.list("-created_date", 200),
+        base44.entities.Customer.list("-created_date", 200),
+      ]);
+      setList(data); setCustomers(cust);
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
@@ -47,6 +52,9 @@ export default function Credits() {
     const matchStatus = filterStatus === "all" || st === filterStatus;
     return matchSearch && matchStatus;
   }), [list, search, filterStatus]);
+
+  const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
+  const buildReminderMsg = (r) => `Hola ${r.customer_name}, te recordamos que tienes un saldo pendiente de $${(r.balance || 0).toLocaleString("es-CO")}.${r.invoice_number ? " Factura: " + r.invoice_number + "." : ""}${r.due_date ? " Vencimiento: " + moment(r.due_date).format("DD/MM/YYYY") + "." : ""} Saludos, HR MOTOCICLETAS`;
 
   const totalBalance = filtered.reduce((s, r) => s + (r.balance || 0), 0);
   const totalOverdue = filtered.filter(r => computeStatus(r) === "En mora").reduce((s, r) => s + (r.balance || 0), 0);
@@ -165,9 +173,14 @@ export default function Credits() {
                       <td className="px-4 py-3 text-center">{days > 0 ? <span className="text-red-600 font-medium">{days}</span> : "—"}</td>
                       <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[st]}`}>{st}</span></td>
                       <td className="px-4 py-3 text-right">
-                        {r.balance > 0 && (
-                          <Button size="sm" variant="outline" onClick={() => openPay(r)} className="h-7 text-xs">Registrar abono</Button>
-                        )}
+                        <div className="flex items-center justify-end gap-1">
+                          {r.balance > 0 && (
+                            <>
+                              <WhatsAppButton phone={customerPhone(r.customer_id)} message={buildReminderMsg(r)} label="Recordar por WhatsApp" />
+                              <Button size="sm" variant="outline" onClick={() => openPay(r)} className="h-7 text-xs">Registrar abono</Button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

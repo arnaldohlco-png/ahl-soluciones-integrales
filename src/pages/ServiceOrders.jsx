@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
 const statuses = ["Ingresado", "En proceso", "Completado", "Entregado"];
@@ -66,6 +67,12 @@ export default function ServiceOrders() {
     return m ? `${m.brand} ${m.model} (${m.plate || "sin placa"})` : "—";
   };
   const customerName = (id) => customers.find((c) => c.id === id)?.name || "—";
+  const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
+  const buildOrderMsg = (o) => {
+    const moto = motos.find((m) => m.id === o.motorcycle_id);
+    const motoInfo = moto ? `${moto.brand} ${moto.model}${moto.plate ? ` (Placa: ${moto.plate})` : ""}` : "";
+    return `Hola ${customerName(o.customer_id)}, te informamos que tu motocicleta ${motoInfo} tiene el estado: ${o.status}. Tipo de servicio: ${o.service_type}. Saludos, HR MOTOCICLETAS`;
+  };
   const technicianName = (id) => technicians.find((t) => t.id === id)?.name || "";
 
   const openNew = () => {
@@ -246,6 +253,7 @@ export default function ServiceOrders() {
                     {o.delivery_date && <p className="text-xs text-slate-400">Entrega: {o.delivery_date}</p>}
                   </div>
                   <div className="flex gap-1">
+                    <WhatsAppButton phone={customerPhone(o.customer_id)} message={buildOrderMsg(o)} label="Enviar estado por WhatsApp" />
                     <button onClick={() => convertToQuotation(o)} title="Convertir a cotización" className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"><FileText className="w-4 h-4" /></button>
                     <button onClick={() => convertToSale(o)} title="Convertir a venta" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
