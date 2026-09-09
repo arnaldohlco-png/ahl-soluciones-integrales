@@ -1,0 +1,22 @@
+{
+  "name": "Brand",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Marca"
+    },
+    "country": {
+      "type": "string",
+      "title": "Pa\u00eds de origen"
+    },
+    "lines": {
+      "type": "string",
+      "title": "L\u00edneas",
+      "description": "Lista de l\u00edneas separadas por comas"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

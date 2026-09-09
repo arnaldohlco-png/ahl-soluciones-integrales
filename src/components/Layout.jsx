@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
-  Truck, HardHat, Building2, Menu, X } from
+  Truck, HardHat, Building2, Menu, X, Tag } from
 "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,9 +41,9 @@ const navGroups = [
   title: "Administración",
   items: [
   { to: "/tecnicos", label: "Técnicos", icon: HardHat },
-  { to: "/proveedores", label: "Proveedores", icon: Building2 }]
-
-}];
+  { to: "/proveedores", label: "Proveedores", icon: Building2 },
+  { to: "/marcas", label: "Marcas y Líneas", icon: Tag }]
+  }];
 
 
 export default function Layout() {
