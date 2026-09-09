@@ -186,7 +186,13 @@ export default function Motorcycles() {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Marca *</Label><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="mt-1" placeholder="Honda, Yamaha..." /></div>
+              <div>
+                  <Label>Marca *</Label>
+                  <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="mt-1" placeholder="Honda, Yamaha..." list="brands-list" />
+                  <datalist id="brands-list">
+                    {brands.map((b) => <option key={b.id} value={b.name} />)}
+                  </datalist>
+                </div>
               <div>
                 <Label>Línea</Label>
                 <Input value={form.line} onChange={(e) => setForm({ ...form, line: e.target.value })} className="mt-1" placeholder="CB, YBR..." list="lines-list" />
