@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Package, Search, AlertTriangle, MapPin, Barcode } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Search, AlertTriangle, MapPin, Barcode, TrendingUp } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 
 const categories = ["Repuestos", "Accesorios", "Lubricantes", "Llantas", "Baterías", "Consumibles", "Herramientas", "Indumentaria", "Otros"];
@@ -93,6 +93,19 @@ export default function Products() {
 
   const isLow = (p) => (p.stock || 0) <= (p.min_stock || 5);
 
+  const totals = products.reduce((acc, p) => {
+    const stock = p.stock || 0;
+    const cost = p.cost || 0;
+    const price = p.price || 0;
+    acc.totalCost += cost * stock;
+    acc.totalSale += price * stock;
+    acc.margin += (price - cost) * stock;
+    return acc;
+  }, { totalCost: 0, totalSale: 0, margin: 0 });
+
+  const marginPct = totals.totalSale > 0 ? (totals.margin / totals.totalSale) * 100 : 0;
+  const fmt = (n) => `$${n.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -105,6 +118,30 @@ export default function Products() {
           <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
             <Plus className="w-4 h-4 mr-1" /> Nuevo Producto
           </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <Package className="w-4 h-4" /> Costo del inventario
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-slate-900">{fmt(totals.totalCost)}</p>
+          <p className="text-xs text-slate-400 mt-1">Valor de los productos en stock</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <Barcode className="w-4 h-4" /> Valor de venta
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-slate-900">{fmt(totals.totalSale)}</p>
+          <p className="text-xs text-slate-400 mt-1">Precio total del inventario</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <TrendingUp className="w-4 h-4" /> Margen de utilidad
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-emerald-600">{fmt(totals.margin)}</p>
+          <p className="text-xs text-slate-400 mt-1">Utilidad bruta · {marginPct.toFixed(1)}%</p>
         </div>
       </div>
 
@@ -140,6 +177,7 @@ export default function Products() {
                   <th className="px-4 py-3 text-left font-medium">SKU</th>
                   <th className="px-4 py-3 text-right font-medium">Precio</th>
                   <th className="px-4 py-3 text-right font-medium">Costo</th>
+                  <th className="px-4 py-3 text-right font-medium">Margen</th>
                   <th className="px-4 py-3 text-center font-medium">Stock</th>
                   <th className="px-4 py-3 text-left font-medium">Ubic.</th>
                   <th className="px-4 py-3 text-right font-medium">Acciones</th>
@@ -163,6 +201,14 @@ export default function Products() {
                     <td className="px-4 py-3 font-mono text-slate-500">{p.sku || "—"}</td>
                     <td className="px-4 py-3 text-right font-semibold text-slate-900">${(p.price || 0).toLocaleString("es-CO")}</td>
                     <td className="px-4 py-3 text-right text-slate-500">{p.cost ? `$${p.cost.toLocaleString("es-CO")}` : "—"}</td>
+                    <td className="px-4 py-3 text-right">
+                      {p.cost > 0 ? (
+                        <span className="text-emerald-600 font-medium">
+                          ${((p.price || 0) - (p.cost || 0)).toLocaleString("es-CO")}
+                          <span className="block text-xs text-slate-400 font-normal">{((((p.price || 0) - (p.cost || 0)) / (p.cost || 1)) * 100).toFixed(0)}%</span>
+                        </span>
+                      ) : "—"}
+                    </td>
                     <td className="px-4 py-3 text-center">
                       {isLow(p) ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-50 text-red-600 text-xs font-semibold">
