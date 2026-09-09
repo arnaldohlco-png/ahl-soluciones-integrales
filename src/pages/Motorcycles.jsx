@@ -15,6 +15,7 @@ const empty = {
 export default function Motorcycles() {
   const [motos, setMotos] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -25,11 +26,12 @@ export default function Motorcycles() {
   const load = async () => {
     setLoading(true);
     try {
-      const [m, c] = await Promise.all([
+      const [m, c, b] = await Promise.all([
         base44.entities.Motorcycle.list("-created_date", 200),
         base44.entities.Customer.list("-created_date", 200),
+        base44.entities.Brand.list("-created_date", 200),
       ]);
-      setMotos(m); setCustomers(c);
+      setMotos(m); setCustomers(c); setBrands(b);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -37,6 +39,13 @@ export default function Motorcycles() {
   useEffect(() => { load(); }, []);
 
   const customerName = (id) => customers.find((c) => c.id === id)?.name || "—";
+
+  const brandLines = (() => {
+    if (!form.brand) return [];
+    const b = brands.find((x) => x.name?.toLowerCase() === form.brand.toLowerCase());
+    if (!b || !b.lines) return [];
+    return b.lines.split(",").map((l) => l.trim()).filter(Boolean);
+  })();
 
   const openNew = () => { setForm(empty); setEditing(null); setOpen(true); };
   const openEdit = (m) => {
@@ -61,6 +70,18 @@ export default function Motorcycles() {
     try {
       if (editing) { await base44.entities.Motorcycle.update(editing.id, payload); }
       else { await base44.entities.Motorcycle.create(payload); }
+
+      // If a new line was entered, add it to the brand
+      if (form.line && form.brand) {
+        const b = brands.find((x) => x.name?.toLowerCase() === form.brand.toLowerCase());
+        if (b && b.lines) {
+          const existing = b.lines.split(",").map((l) => l.trim()).filter(Boolean);
+          if (!existing.map((l) => l.toLowerCase()).includes(form.line.toLowerCase())) {
+            await base44.entities.Brand.update(b.id, { lines: [...existing, form.line].join(", ") });
+          }
+        }
+      }
+
       setOpen(false); await load();
     } catch (e) { console.error(e); alert("Error al guardar"); }
     setSaving(false);
@@ -164,7 +185,16 @@ export default function Motorcycles() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Marca *</Label><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="mt-1" placeholder="Honda, Yamaha..." /></div>
-              <div><Label>Línea</Label><Input value={form.line} onChange={(e) => setForm({ ...form, line: e.target.value })} className="mt-1" placeholder="CB, YBR..." /></div>
+              <div>
+                <Label>Línea</Label>
+                <Input value={form.line} onChange={(e) => setForm({ ...form, line: e.target.value })} className="mt-1" placeholder="CB, YBR..." list="lines-list" />
+                <datalist id="lines-list">
+                  {brandLines.map((l) => <option key={l} value={l} />)}
+                </datalist>
+                {form.line && !brandLines.map((l) => l.toLowerCase()).includes(form.line.toLowerCase()) && form.brand && (
+                  <p className="text-xs text-amber-600 mt-1">Línea nueva — se agregará a {form.brand} al guardar</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Modelo *</Label><Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="mt-1" /></div>
