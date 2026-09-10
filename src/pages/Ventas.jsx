@@ -156,7 +156,7 @@ export default function Ventas() {
       }
 
       const prods = await base44.entities.Product.list("-created_date", 200);
-      setProducts(prods.filter(p => (p.stock || 0) > 0));
+      setProducts(prods);
 
       setCart([]);
       setCustomerId("");
