@@ -158,7 +158,7 @@ export default function Quotations() {
           <p>No hay cotizaciones registradas</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {quotes.map((q) => {
             const parsed = (() => { try { return JSON.parse(q.items || "[]"); } catch { return []; } })();
             return (
@@ -184,11 +184,11 @@ export default function Quotations() {
                   <span className="text-sm text-slate-500">Total</span>
                   <span className="font-bold text-slate-900">{fmt(q.total)}</span>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(q)} className="flex-1">
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(q)} className="flex-1 min-w-[80px]">
                     <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1">
+                  <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1 min-w-[80px]">
                     <FileCheck className="w-3.5 h-3.5 mr-1" /> Facturar
                   </Button>
                   <WhatsAppButton size="sm" phone={customerPhone(q.customer_id)} message={buildDocMessage("quotation", q, company, { customer: customers.find((c) => c.id === q.customer_id) })} variant="outline" label="WhatsApp" />
@@ -207,7 +207,7 @@ export default function Quotations() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editing ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Cliente *</Label>
                 <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v })}>

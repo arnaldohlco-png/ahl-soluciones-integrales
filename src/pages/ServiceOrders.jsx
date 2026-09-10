@@ -300,7 +300,7 @@ export default function ServiceOrders() {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader><DialogTitle>{editing ? "Editar Orden de Servicio" : "Nueva Orden de Servicio"}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pr-1">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Motocicleta *</Label>
                 <Select value={form.motorcycle_id} onValueChange={onMotoChange}>
@@ -316,7 +316,7 @@ export default function ServiceOrders() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <Label>Tipo de servicio</Label>
                 <Select value={form.service_type} onValueChange={(v) => setForm({ ...form, service_type: v })}>
@@ -404,7 +404,7 @@ export default function ServiceOrders() {
                 <div><Label>Queja del cliente</Label><Textarea value={form.customer_complaint} onChange={(e) => setForm({ ...form, customer_complaint: e.target.value })} className="mt-1" rows={2} /></div>
                 <div><Label>Falla reportada</Label><Textarea value={form.reported_fault} onChange={(e) => setForm({ ...form, reported_fault: e.target.value })} className="mt-1" rows={2} /></div>
                 <div><Label>Diagnóstico técnico</Label><Textarea value={form.technical_diagnosis} onChange={(e) => setForm({ ...form, technical_diagnosis: e.target.value })} className="mt-1" rows={2} /></div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div><Label>Pruebas realizadas</Label><Textarea value={form.tests_performed} onChange={(e) => setForm({ ...form, tests_performed: e.target.value })} className="mt-1" rows={2} /></div>
                   <div><Label>Recomendaciones</Label><Textarea value={form.recommendations} onChange={(e) => setForm({ ...form, recommendations: e.target.value })} className="mt-1" rows={2} /></div>
                 </div>

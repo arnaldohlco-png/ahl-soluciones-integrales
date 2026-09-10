@@ -285,7 +285,7 @@ export default function Purchases() {
             <DialogTitle>{editingId ? "Editar compra" : "Nueva compra"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Proveedor</Label>
                 <Select value={supplierId} onValueChange={setSupplierId}>
@@ -300,7 +300,7 @@ export default function Purchases() {
                 <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder="N° de factura" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Fecha</Label>
                 <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -360,7 +360,7 @@ export default function Purchases() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Transporte</Label>
                 <Input type="number" value={transportCost} onChange={(e) => setTransportCost(parseFloat(e.target.value) || 0)} />
