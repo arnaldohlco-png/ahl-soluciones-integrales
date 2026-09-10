@@ -113,13 +113,12 @@
   }
 }
 
-/* Modo impresora térmica 80mm */
-@media print {
-  body.print-80mm {
-    width: 80mm !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
+/* Modo impresora térmica 80mm (aplica en captura de pantalla y en impresión) */
+body.print-80mm {
+  width: 80mm !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
   body.print-80mm .print-area {
     width: 76mm !important;
     max-width: 76mm !important;
@@ -168,4 +167,3 @@
   body.print-80mm .print-area .doc-header > div:first-child > img {
     margin: 0 auto !important;
   }
-}

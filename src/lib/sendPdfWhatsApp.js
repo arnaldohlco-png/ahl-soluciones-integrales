@@ -53,13 +53,25 @@ export async function generateAndSendPdf({ phone, message, format = "a4" }) {
     hidden.push([el, prev]);
   });
 
+  // Forzar el ancho del documento segun formato y simular viewport de escritorio
+  // para que el layout responsivo (sm:/md:) se renderice como A4/80mm y no apilado.
+  const is80 = format === "80mm";
+  const prevWidth = printArea.style.width;
+  const prevMaxWidth = printArea.style.maxWidth;
+  if (is80) {
+    document.body.classList.add("print-80mm");
+  } else {
+    printArea.style.width = "794px";
+    printArea.style.maxWidth = "none";
+  }
+
   try {
     const { jsPDF, html2canvas } = await loadLibs();
     const canvas = await html2canvas(printArea, {
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
-      windowWidth: printArea.scrollWidth,
+      windowWidth: 1024,
     });
 
     const pdf =
@@ -100,5 +112,8 @@ export async function generateAndSendPdf({ phone, message, format = "a4" }) {
     hidden.forEach(([el, prev]) => {
       el.style.display = prev;
     });
+    printArea.style.width = prevWidth;
+    printArea.style.maxWidth = prevMaxWidth;
+    document.body.classList.remove("print-80mm");
   }
 }
