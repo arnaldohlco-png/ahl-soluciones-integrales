@@ -54,6 +54,50 @@
       "type": "boolean",
       "title": "Responsable de IVA",
       "default": true
+    },
+    "dian_resolution": {
+      "type": "string",
+      "title": "N\u00famero de resoluci\u00f3n DIAN"
+    },
+    "dian_resolution_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de resoluci\u00f3n DIAN"
+    },
+    "dian_range_from": {
+      "type": "number",
+      "title": "Rango desde",
+      "default": 0
+    },
+    "dian_range_to": {
+      "type": "number",
+      "title": "Rango hasta",
+      "default": 0
+    },
+    "pos_prefix": {
+      "type": "string",
+      "title": "Prefijo facturas POS (ventas)",
+      "default": "VTA"
+    },
+    "quote_prefix": {
+      "type": "string",
+      "title": "Prefijo cotizaciones",
+      "default": "COT"
+    },
+    "purchase_prefix": {
+      "type": "string",
+      "title": "Prefijo compras",
+      "default": "COMP"
+    },
+    "order_prefix": {
+      "type": "string",
+      "title": "Prefijo \u00f3rdenes de servicio",
+      "default": "ORD"
+    },
+    "invoice_prefix": {
+      "type": "string",
+      "title": "Prefijo facturas",
+      "default": "FAC"
     }
   },
   "required": [

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Truck, Plus, Search, Trash2, Pencil, CheckCircle } from "lucide-react";
 import moment from "moment";
+import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 
 export default function Purchases() {
   const [list, setList] = useState([]);
@@ -138,6 +139,7 @@ export default function Purchases() {
         supplier_id: supplierId || "",
         supplier_name: supplier?.name || "Sin proveedor",
         invoice_number: invoiceNumber,
+        number: editingId ? (list.find(p => p.id === editingId)?.number || "") : await getNextDocNumber("Purchase", getPrefix(company, "purchase")),
         date,
         items: JSON.stringify(items),
         subtotal: totals.subtotal,

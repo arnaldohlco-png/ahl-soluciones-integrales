@@ -10,6 +10,7 @@ import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart } from "lu
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
 const statuses = ["Ingresado", "En proceso", "Completado", "Entregado"];
@@ -121,7 +122,10 @@ export default function ServiceOrders() {
     numFields.forEach((f) => { payload[f] = Number(payload[f]) || 0; });
     try {
       if (editing) { await base44.entities.ServiceOrder.update(editing.id, payload); }
-      else { await base44.entities.ServiceOrder.create(payload); }
+      else {
+        const orderNumber = await getNextDocNumber("ServiceOrder", getPrefix(company, "order"));
+        await base44.entities.ServiceOrder.create({ ...payload, number: orderNumber });
+      }
       setOpen(false); await load();
     } catch (e) { console.error(e); alert("Error al guardar"); }
     setSaving(false);
@@ -147,7 +151,7 @@ export default function ServiceOrders() {
       const iva = Math.round(subtotal * 0.19);
       await base44.entities.Invoice.create({
         customer_id: o.customer_id, customer_name: customerName(o.customer_id),
-        type: "Cotización", number: `COT-${Date.now().toString().slice(-6)}`,
+        type: "Cotización", number: await getNextDocNumber("Invoice", getPrefix(company, "quote")),
         date: new Date().toISOString().slice(0, 10),
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
         subtotal, iva, total: subtotal + iva, status: "Pendiente", related_order_id: o.id,
@@ -161,7 +165,9 @@ export default function ServiceOrders() {
       const items = JSON.parse(o.service_items || "[]");
       const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
       const iva = Math.round(subtotal * 0.19);
+      const saleNumber = await getNextDocNumber("Sale", getPrefix(company, "sale"));
       await base44.entities.Sale.create({
+        number: saleNumber,
         customer_id: o.customer_id, customer_name: customerName(o.customer_id),
         date: new Date().toISOString().slice(0, 10),
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),

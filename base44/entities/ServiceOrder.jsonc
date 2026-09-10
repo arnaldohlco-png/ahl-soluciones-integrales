@@ -2,6 +2,10 @@
   "name": "ServiceOrder",
   "type": "object",
   "properties": {
+    "number": {
+      "type": "string",
+      "title": "N\u00famero de orden"
+    },
     "motorcycle_id": {
       "type": "string",
       "title": "Motocicleta",

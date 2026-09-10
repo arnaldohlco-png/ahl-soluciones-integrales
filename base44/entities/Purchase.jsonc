@@ -2,6 +2,10 @@
   "name": "Purchase",
   "type": "object",
   "properties": {
+    "number": {
+      "type": "string",
+      "title": "N\u00famero interno"
+    },
     "supplier_id": {
       "type": "string",
       "title": "Proveedor"

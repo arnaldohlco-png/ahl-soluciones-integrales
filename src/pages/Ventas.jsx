@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle } from "lucide-react";
+import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
+import ColombianInvoice from "@/components/ColombianInvoice";
 
 export default function Ventas() {
   const [products, setProducts] = useState([]);
@@ -20,6 +22,7 @@ export default function Ventas() {
   const [amountPaid, setAmountPaid] = useState(0);
   const [company, setCompany] = useState(null);
   const [checkoutMsg, setCheckoutMsg] = useState("");
+  const [invoiceSale, setInvoiceSale] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -90,7 +93,9 @@ export default function Ventas() {
     setLoading(true);
     try {
       const cust = customers.find(c => c.id === customerId);
+      const saleNumber = await getNextDocNumber("Sale", getPrefix(company, "sale"));
       const sale = await base44.entities.Sale.create({
+        number: saleNumber,
         customer_id: customerId || "",
         customer_name: cust?.name || customerName,
         date: new Date().toISOString().split("T")[0],
@@ -145,6 +150,7 @@ export default function Ventas() {
       setDiscount(0);
       setAmountPaid(0);
       setCheckoutMsg("¡Venta registrada! Stock actualizado.");
+      setInvoiceSale(sale);
       setTimeout(() => setCheckoutMsg(""), 3000);
     } catch (e) {
       console.error(e);
@@ -320,6 +326,15 @@ export default function Ventas() {
           )}
         </div>
       </div>
+
+      {invoiceSale && (
+        <ColombianInvoice
+          sale={invoiceSale}
+          company={company}
+          customer={customers.find((c) => c.id === invoiceSale.customer_id)}
+          onClose={() => setInvoiceSale(null)}
+        />
+      )}
     </div>
   );
 }

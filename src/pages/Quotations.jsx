@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil } from "lucide-react";
 import moment from "moment";
+import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -14,6 +15,7 @@ export default function Quotations() {
   const [quotes, setQuotes] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -25,12 +27,14 @@ export default function Quotations() {
 
   const load = async () => {
     try {
-      const [q, c, p] = await Promise.all([
+      const [q, c, p, comps] = await Promise.all([
         base44.entities.Invoice.filter({ type: "Cotización" }, "-created_date", 200),
         base44.entities.Customer.list("-created_date", 200),
         base44.entities.Product.list("-created_date", 200),
+        base44.entities.Company.list("-created_date", 1),
       ]);
       setQuotes(q); setCustomers(c); setProducts(p);
+      if (comps.length > 0) setCompany(comps[0]);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -89,7 +93,7 @@ export default function Quotations() {
       } else {
         await base44.entities.Invoice.create({
           customer_id: form.customer_id, customer_name: custName(form.customer_id),
-          type: "Cotización", number: `COT-${Date.now().toString().slice(-6)}`,
+          type: "Cotización", number: await getNextDocNumber("Invoice", getPrefix(company, "quote")),
           date: form.date, items: JSON.stringify(items),
           subtotal, iva, discount: 0, total, status: "Pendiente",
           payment_terms: "Contado",
@@ -105,7 +109,7 @@ export default function Quotations() {
     try {
       await base44.entities.Invoice.update(q.id, {
         type: "Factura de venta", status: "Pendiente",
-        number: `FV-${Date.now().toString().slice(-6)}`,
+        number: await getNextDocNumber("Invoice", getPrefix(company, "invoice")),
       });
       await load();
       alert("Cotización convertida en factura");

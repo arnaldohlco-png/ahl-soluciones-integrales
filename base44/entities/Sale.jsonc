@@ -2,6 +2,10 @@
   "name": "Sale",
   "type": "object",
   "properties": {
+    "number": {
+      "type": "string",
+      "title": "N\u00famero de factura"
+    },
     "customer_id": {
       "type": "string",
       "title": "Cliente"
@@ -18,7 +22,7 @@
     "items": {
       "type": "string",
       "title": "Productos (JSON)",
-      "description": "Array JSON de items: [{product_id, name, quantity, unit_price, subtotal}]"
+      "description": "Array JSON de items: [{product_id, name, quantity, unit_price, iva_rate, subtotal}]"
     },
     "subtotal": {
       "type": "number",

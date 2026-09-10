@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Receipt, Plus, Search, Trash2, Pencil } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import moment from "moment";
+import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
 
@@ -73,8 +74,12 @@ export default function Invoices() {
       const inst = Number(form.installments) || 1;
       const instAmt = form.payment_terms === "Crédito" && inst > 0 ? Math.ceil(Number(form.total) / inst) : 0;
       const payload = { ...form, subtotal: Number(form.subtotal), iva: Number(form.iva), discount: Number(form.discount), total: Number(form.total), credit_days: Number(form.credit_days) || 0, installments: inst, installment_amount: instAmt, payment_due_date: dueDate, amount_paid: Number(form.amount_paid) || 0, change: Number(form.change) || 0 };
-      if (editing) await base44.entities.Invoice.update(editing.id, payload);
-      else await base44.entities.Invoice.create(payload);
+      if (editing) {
+        await base44.entities.Invoice.update(editing.id, payload);
+      } else {
+        const number = form.number || await getNextDocNumber("Invoice", prefixForInvoiceType(company, form.type));
+        await base44.entities.Invoice.create({ ...payload, number });
+      }
       setModalOpen(false);
       const data = await base44.entities.Invoice.list("-date", 200);
       setList(data);
