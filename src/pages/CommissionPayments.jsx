@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +36,7 @@ export default function CommissionPayments() {
           base44.entities.Technician.list("-created_date", 200),
           base44.entities.CommissionPayment.list("-created_date", 200),
           base44.entities.Motorcycle.list("-created_date", 500),
-          base44.entities.Customer.list("-created_date", 500),
+          fetchAllCustomers(),
         ]);
         setTechs(t.filter((x) => x.status === "Activo"));
         setPayments(p);

@@ -1,6 +1,7 @@
 // Créditos y Cartera
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ export default function Credits() {
     try {
       const [data, cust] = await Promise.all([
         base44.entities.AccountReceivable.list("-created_date", 200),
-        base44.entities.Customer.list("-created_date", 200),
+        fetchAllCustomers(),
       ]);
       setList(data); setCustomers(cust);
     } catch (e) { console.error(e); } finally { setLoading(false); }

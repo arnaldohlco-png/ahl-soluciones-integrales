@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,7 +63,7 @@ export default function Citas() {
     setLoading(true);
     const [apts, custs, motos, comps] = await Promise.all([
       base44.entities.Appointment.list("-date"),
-      base44.entities.Customer.list(),
+      fetchAllCustomers(),
       base44.entities.Motorcycle.list(),
       base44.entities.Company.list(),
     ]);

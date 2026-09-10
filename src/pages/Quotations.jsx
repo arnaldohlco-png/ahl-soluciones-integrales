@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,7 +47,7 @@ export default function Quotations() {
     try {
       const [q, c, p, s, comps] = await Promise.all([
         base44.entities.Invoice.filter({ type: "Cotización" }, "-created_date", 200),
-        base44.entities.Customer.list("-created_date", 200),
+        fetchAllCustomers(),
         fetchAllProducts(),
         base44.entities.Service.list("-created_date", 200),
         base44.entities.Company.list("-created_date", 1),

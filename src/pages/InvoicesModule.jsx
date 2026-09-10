@@ -1,6 +1,7 @@
 // Facturación
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +51,7 @@ export default function Invoices() {
       try {
         const [inv, cust, prods, servs] = await Promise.all([
           base44.entities.Invoice.list("-date", 200),
-          base44.entities.Customer.list("-created_date", 100),
+          fetchAllCustomers(),
           fetchAllProducts(),
           base44.entities.Service.list("-created_date", 200),
         ]);
