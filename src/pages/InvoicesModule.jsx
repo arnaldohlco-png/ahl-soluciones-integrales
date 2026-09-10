@@ -17,6 +17,7 @@ import moment from "moment";
 import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
 
@@ -244,15 +245,13 @@ export default function Invoices() {
                 <Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="Se genera automáticamente" />
               </div>
             </div>
-            <div>
-              <Label>Cliente</Label>
-              <Select value={form.customer_id} onValueChange={onCustomerChange}>
-                <SelectTrigger><SelectValue placeholder="Seleccionar cliente..." /></SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <SearchableSelect
+              label="Cliente"
+              placeholder="Buscar cliente..."
+              value={form.customer_id}
+              onValueChange={onCustomerChange}
+              items={customers.map(c => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))}
+            />
             <div>
               <Label>Fecha</Label>
               <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />

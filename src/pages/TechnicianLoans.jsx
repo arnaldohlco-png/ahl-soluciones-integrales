@@ -12,6 +12,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -164,15 +165,14 @@ export default function TechnicianLoans() {
         <DialogContent>
           <DialogHeader><DialogTitle>{editing ? "Editar Préstamo" : "Nuevo Préstamo"}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-2">
-            <div>
-              <Label>Técnico *</Label>
-              <Select value={form.technician_id} onValueChange={(v) => setForm({ ...form, technician_id: v })}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar técnico..." /></SelectTrigger>
-                <SelectContent>
-                  {techs.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <SearchableSelect
+              label="Técnico"
+              required
+              placeholder="Buscar técnico..."
+              value={form.technician_id}
+              onValueChange={(v) => setForm({ ...form, technician_id: v })}
+              items={techs.map((t) => ({ id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") }))}
+            />
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Fecha *</Label>

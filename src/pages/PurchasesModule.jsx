@@ -13,6 +13,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
+import SearchableSelect from "@/components/SearchableSelect";
 
 export default function Purchases() {
   const [list, setList] = useState([]);
@@ -286,15 +287,13 @@ export default function Purchases() {
           </DialogHeader>
           <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Proveedor</Label>
-                <Select value={supplierId} onValueChange={setSupplierId}>
-                  <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              <SearchableSelect
+                label="Proveedor"
+                placeholder="Buscar proveedor..."
+                value={supplierId}
+                onValueChange={setSupplierId}
+                items={suppliers.map(s => ({ id: s.id, label: s.name, sublabel: [s.document_number, s.phone].filter(Boolean).join(" · ") }))}
+              />
               <div>
                 <Label>Factura de compra</Label>
                 <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder="N° de factura" />

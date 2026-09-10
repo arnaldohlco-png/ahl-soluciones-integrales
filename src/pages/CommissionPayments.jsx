@@ -10,6 +10,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -153,15 +154,13 @@ export default function CommissionPayments() {
       {/* Calculator */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div>
-            <Label>Técnico</Label>
-            <Select value={selectedTech} onValueChange={setSelectedTech}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-              <SelectContent>
-                {techs.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          <SearchableSelect
+            label="Técnico"
+            placeholder="Buscar técnico..."
+            value={selectedTech}
+            onValueChange={setSelectedTech}
+            items={techs.map((t) => ({ id: t.id, label: t.name, sublabel: t.specialty || t.document_number }))}
+          />
           <div>
             <Label>Desde</Label>
             <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />

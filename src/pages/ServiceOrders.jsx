@@ -345,15 +345,13 @@ export default function ServiceOrders() {
                   <SelectContent>{statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Técnico responsable</Label>
-                <Select value={form.technician_id} onValueChange={(v) => setForm({ ...form, technician_id: v })}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
-                  <SelectContent>
-                    {technicians.filter(t => t.status === "Activo").map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              <SearchableSelect
+                label="Técnico responsable"
+                placeholder="Buscar técnico..."
+                value={form.technician_id}
+                onValueChange={(v) => setForm({ ...form, technician_id: v })}
+                items={technicians.filter(t => t.status === "Activo").map((t) => ({ id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") }))}
+              />
             </div>
             <div><Label>Descripción del trabajo</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1" rows={2} /></div>
 

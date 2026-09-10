@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle, Pause, Play, FilePlus2 } from "lucide-react";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
+import SearchableSelect from "@/components/SearchableSelect";
 
 export default function Ventas() {
   const [products, setProducts] = useState([]);
@@ -414,13 +415,12 @@ export default function Ventas() {
               <div className="space-y-3 mt-4">
                 <div>
                   <Label className="text-xs">Cliente</Label>
-                  <Select value={customerId} onValueChange={(v) => { setCustomerId(v === "walkin" ? "" : v); const c = customers.find(c => c.id === v); if (c) setCustomerName(c.name); }}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Cliente mostrador" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="walkin">Cliente mostrador</SelectItem>
-                      {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    placeholder="Buscar cliente..."
+                    value={customerId || "walkin"}
+                    onValueChange={(v) => { setCustomerId(v === "walkin" ? "" : v); const c = customers.find(c => c.id === v); if (c) setCustomerName(c.name); }}
+                    items={[{ id: "walkin", label: "Cliente mostrador" }, ...customers.map(c => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))]}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>

@@ -14,6 +14,7 @@ import CatalogPicker from "@/components/CatalogPicker";
 import { buildDocMessage } from "@/lib/docMessages";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -217,15 +218,14 @@ export default function Quotations() {
           <DialogHeader><DialogTitle>{editing ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Cliente *</Label>
-                <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v })}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                  <SelectContent>
-                    {customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              <SearchableSelect
+                label="Cliente"
+                required
+                placeholder="Buscar cliente..."
+                value={form.customer_id}
+                onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))}
+              />
               <div>
                 <Label>Fecha</Label>
                 <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="mt-1" />
