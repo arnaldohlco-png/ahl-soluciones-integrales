@@ -67,18 +67,12 @@ export default function IncomeStatement() {
     return Math.round(serviceSub * (tech.commission_percentage / 100));
   };
 
-  // Órdenes contabilizadas como ingreso de taller (evita doble conteo con facturas vinculadas)
-  const countedOrders = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status));
-  const countedOrderIds = new Set(countedOrders.map((o) => o.id));
-
-  // Facturas cobradas que no provienen del POS ni de una orden ya contada
+  // Facturas cobradas en Facturación (no provenientes del POS)
   const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
   const invoiceSales = fInvoices.filter(
-    (i) => i.status === "Pagada" &&
-          COBRABLES.includes(i.type) &&
-          !i.related_sale_id &&
-          !(i.related_order_id && countedOrderIds.has(i.related_order_id))
+    (i) => i.status === "Pagada" && COBRABLES.includes(i.type) && !i.related_sale_id
   );
+  const orderIdsWithPaidInvoice = new Set(invoiceSales.map((i) => i.related_order_id).filter(Boolean));
   const invoiceRevenue = invoiceSales.reduce((s, i) => s + (i.total || 0), 0);
   const invoiceCOGS = invoiceSales.reduce((s, i) => s + productCogsOf(itemsOf(i.items)), 0);
   const invoiceCommissions = invoiceSales.reduce((s, i) => {
@@ -89,8 +83,8 @@ export default function IncomeStatement() {
   const posRevenue = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.total || 0), 0);
   const posCOGS = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + productCogsOf(itemsOf(x.items)), 0);
 
-  const salesRevenue = posRevenue + invoiceRevenue;
-  const salesCOGS = posCOGS + invoiceCOGS;
+  // Órdenes contabilizadas como ingreso de taller (excluye las que ya se facturaron y cobraron)
+  const countedOrders = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status) && !orderIdsWithPaidInvoice.has(o.id));
 
   const workshopRevenue = countedOrders.reduce((s, o) => s + (o.cost || 0), 0);
   const workshopParts = countedOrders.reduce((s, o) => s + productCogsOf(itemsOf(o.service_items)), 0);
@@ -101,7 +95,8 @@ export default function IncomeStatement() {
   const purchaseCosts = fPurchases.filter((p) => p.status === "Pagada").reduce((s, p) => s + (p.subtotal || 0), 0);
   const operatingExpenses = fExpenses.reduce((s, e) => s + (e.amount || 0), 0);
 
-  const totalRevenue = salesRevenue + workshopRevenue;
+  const salesCOGS = posCOGS + invoiceCOGS;
+  const totalRevenue = posRevenue + invoiceRevenue + workshopRevenue;
   const totalCOGS = salesCOGS + workshopParts + workshopLubricants + purchaseCosts;
   const grossProfit = totalRevenue - totalCOGS;
   const operatingCosts = operatingExpenses + workshopLabor + workshopCommissions + invoiceCommissions;
@@ -158,9 +153,9 @@ export default function IncomeStatement() {
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
         <h3 className="font-semibold text-slate-900 mb-3">Detalle del período</h3>
 
-        <Row label="Ventas de almacén (Pagadas)" value={salesRevenue} bold />
-        <Row label="Facturas cobradas (Facturación)" value={invoiceRevenue} indent />
-        <Row label="Ingresos de taller (Completadas/Entregadas/Cobradas)" value={workshopRevenue} indent />
+        <Row label="Ventas POS (almacén)" value={posRevenue} bold />
+        <Row label="Facturas cobradas (Facturación)" value={invoiceRevenue} bold />
+        <Row label="Ingresos de taller (Completadas/Entregadas/Cobradas)" value={workshopRevenue} bold />
         <Row label="Total Ingresos" value={totalRevenue} bold color="text-emerald-600" />
 
         <div className="my-3" />
