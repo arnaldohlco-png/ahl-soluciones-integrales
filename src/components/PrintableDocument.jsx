@@ -73,7 +73,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           )}
         </div>
 
-        <div className="p-8 text-[13px] leading-relaxed print:p-6">
+        <div className="p-8 text-[13px] leading-relaxed print:p-0 print:text-[10px] print-inner">
           {/* Header */}
           <div className="flex flex-col items-center text-center gap-3 border-b-2 border-slate-800 pb-4">
             {company?.logo ? <img src={company.logo} alt="logo" className="w-20 h-20 object-contain" /> : null}
@@ -232,8 +232,8 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           )}
 
           {/* Totals */}
-          <div className="flex justify-end mt-3">
-            <div className="w-72 text-xs space-y-1">
+          <div className="flex justify-end mt-3 print:block print:w-full">
+            <div className="w-72 text-xs space-y-1 print:w-full print-totals">
               {type === "order" && (
                 <>
                   <div className="flex justify-between"><span>Subtotal</span><span>{fmt(items.reduce((s, i) => s + (i.subtotal || 0), 0))}</span></div>

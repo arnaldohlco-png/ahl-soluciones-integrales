@@ -39,7 +39,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
         </div>
 
         {/* Invoice */}
-        <div className="p-8 text-[13px] leading-relaxed print:p-6">
+        <div className="p-8 text-[13px] leading-relaxed print:p-0 print:text-[10px] print-inner">
           {/* Header */}
           <div className="flex flex-col items-center text-center gap-3 border-b-2 border-slate-800 pb-4">
             {company?.logo ? (
@@ -108,8 +108,8 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
           </table>
 
           {/* Totals */}
-          <div className="flex justify-end mt-3">
-            <div className="w-72 text-xs space-y-1">
+          <div className="flex justify-end mt-3 print:block print:w-full">
+            <div className="w-72 text-xs space-y-1 print:w-full print-totals">
               <div className="flex justify-between"><span>Subtotal</span><span>{fmt(sale.subtotal)}</span></div>
               {ivaRates.map((r) => (
                 <div key={r} className="flex justify-between"><span>IVA {r}%</span><span>{fmt(ivaGroups[r].iva)}</span></div>
