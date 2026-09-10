@@ -27,7 +27,7 @@ const empty = {
   tests_performed: "", labor_description: "", labor_cost: "", parts_cost: "", lubricants_cost: "",
   hours_worked: "", technician_commission: "", work_done: "", delivery_recommendations: "",
   warranty: "", delivery_date: "", cost: "", parts_used: "",
-  previous_mileage: "", current_mileage: "", oil_change_interval: 1000, next_oil_change: "",
+  previous_mileage: "", current_mileage: "", kms_traveled: 0, oil_change_interval: 1000, next_oil_change: "",
   photos: "[]", admin_footer: "",
 };
 
@@ -117,7 +117,7 @@ export default function ServiceOrders() {
       work_done: o.work_done || "", delivery_recommendations: o.delivery_recommendations || "",
       warranty: o.warranty || "", delivery_date: o.delivery_date || "",
       cost: o.cost ?? "", parts_used: o.parts_used || "",
-      previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "",
+      previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "", kms_traveled: o.kms_traveled ?? 0,
       oil_change_interval: o.oil_change_interval || 1000, next_oil_change: o.next_oil_change ?? "",
       photos: o.photos || "[]", admin_footer: o.admin_footer || company?.footer_text || "",
     });
@@ -127,10 +127,20 @@ export default function ServiceOrders() {
 
   const onMotoChange = (motoId) => {
     const m = motos.find((x) => x.id === motoId);
-    setForm({ ...form, motorcycle_id: motoId, customer_id: m?.customer_id || form.customer_id });
+    // Km anterior = current_mileage de la última orden de esta moto
+    const motoOrders = orders.filter((o) => o.motorcycle_id === motoId && o.current_mileage);
+    const lastOrder = motoOrders.sort((a, b) => (b.entry_date || "").localeCompare(a.entry_date || ""))[0];
+    const prevKm = lastOrder ? Number(lastOrder.current_mileage) : "";
+    setForm({ ...form, motorcycle_id: motoId, customer_id: m?.customer_id || form.customer_id, previous_mileage: prevKm, kms_traveled: prevKm ? Math.max(0, (Number(form.current_mileage) || 0) - Number(prevKm)) : 0 });
   };
 
-  const numFields = ["labor_cost", "parts_cost", "lubricants_cost", "hours_worked", "technician_commission", "cost", "previous_mileage", "current_mileage", "oil_change_interval", "next_oil_change"];
+  const onCurrentMileageChange = (val) => {
+    const prev = Number(form.previous_mileage) || 0;
+    const cur = Number(val) || 0;
+    setForm({ ...form, current_mileage: val, kms_traveled: Math.max(0, cur - prev), next_oil_change: cur + (Number(form.oil_change_interval) || 0) });
+  };
+
+  const numFields = ["labor_cost", "parts_cost", "lubricants_cost", "hours_worked", "technician_commission", "cost", "previous_mileage", "current_mileage", "kms_traveled", "oil_change_interval", "next_oil_change"];
 
   const save = async () => {
     if (!form.motorcycle_id || !form.customer_id) return;
@@ -371,9 +381,10 @@ export default function ServiceOrders() {
 
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Kilometraje y mantenimiento</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div><Label>Km anterior</Label><Input type="number" value={form.previous_mileage} onChange={(e) => setForm({ ...form, previous_mileage: e.target.value })} className="mt-1" /></div>
-                <div><Label>Km actual</Label><Input type="number" value={form.current_mileage} onChange={(e) => setForm({ ...form, current_mileage: e.target.value, next_oil_change: (Number(e.target.value) || 0) + (Number(form.oil_change_interval) || 0) })} className="mt-1" /></div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div><Label>Km anterior</Label><Input type="number" value={form.previous_mileage} onChange={(e) => setForm({ ...form, previous_mileage: e.target.value, kms_traveled: Math.max(0, (Number(form.current_mileage) || 0) - (Number(e.target.value) || 0)) })} className="mt-1" /></div>
+                <div><Label>Km actual</Label><Input type="number" value={form.current_mileage} onChange={(e) => onCurrentMileageChange(e.target.value)} className="mt-1" /></div>
+                <div><Label>Km recorridos</Label><Input type="number" value={form.kms_traveled} readOnly className="mt-1 bg-amber-50 font-semibold" placeholder="Auto" /></div>
                 <div>
                   <Label>Intervalo aceite</Label>
                   <Select value={String(form.oil_change_interval)} onValueChange={(v) => setForm({ ...form, oil_change_interval: Number(v), next_oil_change: (Number(form.current_mileage) || 0) + Number(v) })}>

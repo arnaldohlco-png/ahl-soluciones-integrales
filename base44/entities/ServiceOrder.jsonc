@@ -167,6 +167,11 @@
       "type": "number",
       "title": "Kilometraje actual"
     },
+    "kms_traveled": {
+      "type": "number",
+      "title": "Km recorridos",
+      "default": 0
+    },
     "oil_change_interval": {
       "type": "number",
       "title": "Intervalo cambio de aceite (km)",
