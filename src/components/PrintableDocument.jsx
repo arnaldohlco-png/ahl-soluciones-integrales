@@ -75,9 +75,9 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
 
         <div className="p-8 text-[13px] leading-relaxed print:p-6">
           {/* Header */}
-          <div className="flex items-start justify-between gap-4 border-b-2 border-slate-800 pb-4">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 border-b-2 border-slate-800 pb-4">
             <div className="flex items-start gap-3">
-              {company?.logo ? <img src={company.logo} alt="logo" className="w-16 h-16 object-contain" /> : null}
+              {company?.logo ? <img src={company.logo} alt="logo" className="w-16 h-16 object-contain shrink-0" /> : null}
               <div>
                 <h1 className="text-xl font-bold uppercase">{company?.name || "Taller"}</h1>
                 <p>NIT: {company?.document_number || "—"}</p>
@@ -86,7 +86,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                 <p>Tel: {company?.phone || "—"}</p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="md:text-right">
               <h2 className="text-lg font-bold uppercase">{title}</h2>
               <p className="font-mono text-base font-bold">{doc.number || "—"}</p>
               <p>Fecha: {fmtDate(doc.date || doc.entry_date)}</p>
@@ -98,7 +98,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           )}
 
           {/* Parties */}
-          <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b border-slate-200">
             <div>
               {type === "order" && (
                 <>
@@ -137,7 +137,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                 </>
               )}
             </div>
-            <div className="text-right">
+            <div className="md:text-right">
               {type === "order" && (
                 <>
                   <p><span className="text-slate-500">Estado:</span> {doc.status}</p>

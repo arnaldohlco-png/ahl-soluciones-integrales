@@ -41,10 +41,10 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
         {/* Invoice */}
         <div className="p-8 text-[13px] leading-relaxed print:p-6">
           {/* Header */}
-          <div className="flex items-start justify-between gap-4 border-b-2 border-slate-800 pb-4">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 border-b-2 border-slate-800 pb-4">
             <div className="flex items-start gap-3">
               {company?.logo ? (
-                <img src={company.logo} alt="logo" className="w-16 h-16 object-contain" />
+                <img src={company.logo} alt="logo" className="w-16 h-16 object-contain shrink-0" />
               ) : null}
               <div>
                 <h1 className="text-xl font-bold uppercase">{company?.name || "Taller"}</h1>
@@ -54,7 +54,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
                 <p>Tel: {company?.phone || "—"}</p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="md:text-right">
               <h2 className="text-lg font-bold uppercase">Factura de Venta</h2>
               <p className="font-mono text-base font-bold">{sale.number || "—"}</p>
               <p>Original</p>
@@ -67,7 +67,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
           )}
 
           {/* Customer + dates */}
-          <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b border-slate-200">
             <div>
               <p className="font-semibold uppercase text-xs text-slate-500">Facturar a</p>
               <p className="font-medium">{customer?.name || sale.customer_name || "Cliente mostrador"}</p>
@@ -75,7 +75,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
               {customer?.address && <p>{customer.address}</p>}
               {customer?.phone && <p>Tel: {customer.phone}</p>}
             </div>
-            <div className="text-right">
+            <div className="md:text-right">
               <p><span className="text-slate-500">Fecha:</span> {sale.date ? moment(sale.date).format("DD/MM/YYYY") : dt.format("DD/MM/YYYY")}</p>
               <p><span className="text-slate-500">Hora:</span> {dt.format("hh:mm A")}</p>
               <p><span className="text-slate-500">Pago:</span> {sale.payment_type} · {sale.payment_method}</p>
