@@ -121,21 +121,27 @@ export default function Dashboard() {
       </div>
 
       {/* Sales row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-5 text-white">
-          <ShoppingCart className="w-8 h-8 mb-2 opacity-80" />
-          <p className="text-3xl font-bold">{fmt(d.salesToday)}</p>
-          <p className="text-sm text-amber-100">Ventas del día</p>
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-3 text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <ShoppingCart className="w-4 h-4 opacity-80" />
+            <p className="text-xs text-amber-100">Ventas del día</p>
+          </div>
+          <p className="text-lg font-bold leading-tight">{fmt(d.salesToday)}</p>
         </div>
-        <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-5 text-white">
-          <TrendingUp className="w-8 h-8 mb-2 opacity-80" />
-          <p className="text-3xl font-bold">{fmt(d.salesWeek)}</p>
-          <p className="text-sm text-slate-300">Ventas de la semana</p>
+        <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-xl p-3 text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4 opacity-80" />
+            <p className="text-xs text-slate-300">Ventas de la semana</p>
+          </div>
+          <p className="text-lg font-bold leading-tight">{fmt(d.salesWeek)}</p>
         </div>
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 text-white">
-          <DollarSign className="w-8 h-8 mb-2 opacity-80" />
-          <p className="text-3xl font-bold">{fmt(d.salesMonth)}</p>
-          <p className="text-sm text-slate-400">Ventas del mes</p>
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-3 text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <DollarSign className="w-4 h-4 opacity-80" />
+            <p className="text-xs text-slate-400">Ventas del mes</p>
+          </div>
+          <p className="text-lg font-bold leading-tight">{fmt(d.salesMonth)}</p>
         </div>
       </div>
 

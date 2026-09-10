@@ -187,24 +187,30 @@ export default function Ventas() {
               className="pl-10"
             />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {filtered.map(p => (
-              <button
-                key={p.id}
-                onClick={() => addToCart(p)}
-                className="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-amber-400 hover:shadow-md transition-all"
-              >
-                <p className="font-medium text-slate-800 text-sm line-clamp-2">{p.name}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{p.brand} · {p.sku || ""}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="font-bold text-slate-900">${(p.price || 0).toLocaleString("es-CO")}</span>
-                  <span className="text-xs text-slate-400">Stock: {p.stock}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-          {filtered.length === 0 && (
-            <p className="text-center text-slate-400 py-12">No se encontraron productos</p>
+          {search ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {filtered.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => addToCart(p)}
+                    className="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-amber-400 hover:shadow-md transition-all"
+                  >
+                    <p className="font-medium text-slate-800 text-sm line-clamp-2">{p.name}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{p.brand} · {p.sku || ""}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-bold text-slate-900">${(p.price || 0).toLocaleString("es-CO")}</span>
+                      <span className="text-xs text-slate-400">Stock: {p.stock}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {filtered.length === 0 && (
+                <p className="text-center text-slate-400 py-12">No se encontraron productos</p>
+              )}
+            </>
+          ) : (
+            <p className="text-center text-slate-400 py-12 text-sm">Busca un producto por nombre, SKU o código de barras para agregarlo al carrito</p>
           )}
         </div>
 
