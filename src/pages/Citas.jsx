@@ -164,6 +164,32 @@ export default function Citas() {
     setAppointments((arr) => arr.map((x) => (x.id === a.id ? { ...x, status, ...extra } : x)));
   };
 
+  const buildRescheduleMessage = (a) => {
+    const c = customerById[a.customer_id];
+    const name = a.customer_name || c?.name || "";
+    const biz = company?.name || "el taller";
+    const fecha = fmtDate(a.date);
+    const hora = a.time || "";
+    return `Hola ${name}, su cita del ${fecha}${hora ? ` a las ${hora}` : ""} en ${biz} ha sido cancelada. ¿Desea reagendarla? Responda a este mensaje para coordinar una nueva fecha. ¡Gracias!`;
+  };
+
+  const cancelAppointment = async (a) => {
+    if (!confirm("¿Cancelar la cita y preguntar al cliente si desea reagendar?")) return;
+    await base44.entities.Appointment.update(a.id, { status: "Cancelada" });
+    setAppointments((arr) => arr.map((x) => (x.id === a.id ? { ...x, status: "Cancelada" } : x)));
+    const c = customerById[a.customer_id];
+    const phone = sanitizePhone(a.phone || c?.whatsapp || c?.phone);
+    if (!phone) { alert("El cliente no tiene teléfono para enviar el mensaje de reagendamiento"); return; }
+    const text = encodeURIComponent(buildRescheduleMessage(a));
+    window.open(`https://wa.me/${phone}?text=${text}`, "_blank");
+  };
+
+  const completeAppointment = async (a) => {
+    if (!confirm("¿Marcar como completada y eliminar del sistema?")) return;
+    await base44.entities.Appointment.delete(a.id);
+    setAppointments((arr) => arr.filter((x) => x.id !== a.id));
+  };
+
   const save = async () => {
     if (!form.customer_id) { alert("Seleccione un cliente"); return; }
     if (!form.date) { alert("Seleccione una fecha"); return; }
@@ -297,12 +323,12 @@ export default function Citas() {
                       </button>
                     )}
                     {a.status !== "Cancelada" && a.status !== "Completada" && (
-                      <button onClick={() => setStatus(a, "Cancelada")} title="Cancelar" className="p-1.5 rounded-md hover:bg-rose-50 text-rose-600">
+                      <button onClick={() => cancelAppointment(a)} title="Cancelar y reagendar" className="p-1.5 rounded-md hover:bg-rose-50 text-rose-600">
                         <X className="w-4 h-4" />
                       </button>
                     )}
                     {a.status === "Confirmada" && (
-                      <button onClick={() => setStatus(a, "Completada")} title="Marcar completada" className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600">
+                      <button onClick={() => completeAppointment(a)} title="Marcar completada y eliminar" className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600">
                         <CheckCheck className="w-4 h-4" />
                       </button>
                     )}
