@@ -2,11 +2,14 @@
   "properties": {
     "role": {
       "type": "string",
-      "description": "The role of the user in the app",
+      "description": "Rol del usuario en la aplicaci\u00f3n",
       "enum": [
-        "admin",
-        "user"
-      ]
+        "administrador",
+        "gerente",
+        "vendedor",
+        "tecnico"
+      ],
+      "default": "vendedor"
     }
   },
   "required": [

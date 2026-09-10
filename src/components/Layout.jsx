@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
   Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote } from
 "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/AuthContext";
+import { canAccess } from "@/lib/roles";
 
 const navGroups = [
 {
@@ -54,11 +56,23 @@ const navGroups = [
 
 export default function Layout() {
   const location = useLocation();
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const role = user?.role;
+  const visibleGroups = navGroups
+    .map((g) => {
+      return { ...g, items: g.items.filter((it) => canAccess(role, it.to)) };
+    })
+    .filter((g) => g.items.length > 0);
+
+  if (!canAccess(role, location.pathname)) {
+    return <Navigate to="/" replace />;
+  }
 
   const NavContent = () =>
   <>
-      {navGroups.map((group) =>
+      {visibleGroups.map((group) =>
     <div key={group.title} className="mb-4">
           <p className="px-3 mb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{group.title}</p>
           {group.items.map((item) => {
