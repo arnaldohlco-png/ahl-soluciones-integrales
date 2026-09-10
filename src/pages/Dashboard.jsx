@@ -119,31 +119,29 @@ export default function Dashboard() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       {/* Encabezado con datos de la empresa */}
-      <div className="mb-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 md:p-6 text-white shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
+      <div className="mb-6 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl px-4 py-3 text-white shadow-sm">
+        <div className="flex items-center gap-3">
           {company?.logo ? (
-            <img src={company.logo} alt="Logo" className="w-16 h-16 rounded-lg object-contain bg-white/95 p-1 shrink-0" />
+            <img src={company.logo} alt="Logo" className="w-11 h-11 rounded-md object-contain bg-white/95 p-0.5 shrink-0" />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
-              <Bike className="w-8 h-8 text-white" />
+            <div className="w-11 h-11 rounded-md bg-amber-500 flex items-center justify-center shrink-0">
+              <Bike className="w-6 h-6 text-white" />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl md:text-2xl font-bold truncate">{company?.name || "Mi Taller"}</h1>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-slate-300">
-              {company?.document_number && <span>NIT/C.C.: {company.document_number}</span>}
-              {company?.phone && <span className="flex items-center gap-1">· {company.phone}</span>}
-              {company?.email && <span className="truncate">· {company.email}</span>}
-            </div>
-            {(company?.address || company?.city) && (
-              <p className="text-sm text-slate-400 mt-0.5 truncate">
-                {[company.address, company.city].filter(Boolean).join(" · ")}
-              </p>
-            )}
+            <h1 className="text-base md:text-lg font-bold leading-tight truncate">{company?.name || "Mi Taller"}</h1>
+            <p className="text-xs text-slate-300 truncate mt-0.5">
+              {[
+                company?.document_number && `NIT/C.C.: ${company.document_number}`,
+                company?.phone,
+                company?.email,
+                [company?.address, company?.city].filter(Boolean).join(" · "),
+              ].filter(Boolean).join("  ·  ")}
+            </p>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-xs text-slate-400">{moment().format("dddd")}</p>
-            <p className="text-lg font-semibold">{moment().format("DD/MM/YYYY")}</p>
+          <div className="text-right shrink-0 hidden sm:block">
+            <p className="text-xs text-slate-400 capitalize">{moment().format("dddd")}</p>
+            <p className="text-sm font-semibold">{moment().format("DD/MM/YYYY")}</p>
           </div>
         </div>
       </div>
