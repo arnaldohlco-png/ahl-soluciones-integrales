@@ -27,6 +27,8 @@ export default function Products() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("all");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 50;
 
   const load = async () => {
     setLoading(true);
@@ -92,6 +94,11 @@ export default function Products() {
   });
 
   const isLow = (p) => (p.stock || 0) <= (p.min_stock || 5);
+
+  useEffect(() => { setPage(1); }, [search, filterCat]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const totals = products.reduce((acc, p) => {
     const stock = p.stock || 0;
@@ -184,7 +191,7 @@ export default function Products() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((p) => (
+                {paged.map((p) => (
                   <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -229,6 +236,16 @@ export default function Products() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+          <p className="text-sm text-slate-500">Página {page} de {totalPages} · {filtered.length} productos</p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Anterior</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Siguiente</Button>
           </div>
         </div>
       )}

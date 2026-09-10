@@ -7,32 +7,33 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import Layout from '@/components/Layout';
-import Dashboard from '@/pages/Dashboard';
-import Customers from '@/pages/Customers';
-import Motorcycles from '@/pages/Motorcycles';
-import ServiceOrders from '@/pages/ServiceOrders';
-import Products from '@/pages/Products';
-import Technicians from '@/pages/TechniciansModule';
-import Suppliers from '@/pages/SuppliersModule';
-import Ventas from '@/pages/Ventas';
-import Expenses from '@/pages/ExpensesModule';
-import Cash from '@/pages/CashModule';
-import Purchases from '@/pages/PurchasesModule';
-import Credits from '@/pages/CreditsModule';
-import Invoices from '@/pages/InvoicesModule';
-import BrandLines from '@/pages/BrandLines';
-import Company from '@/pages/Company';
-import IncomeStatement from '@/pages/IncomeStatement';
-import Quotations from '@/pages/Quotations';
-import TechnicianLoans from '@/pages/TechnicianLoans';
-import CommissionPayments from '@/pages/CommissionPayments';
-import Services from '@/pages/ServicesModule';
-import Citas from '@/pages/Citas';
+import { lazy, Suspense } from "react";
+import Layout from "@/components/Layout";
+const Login = lazy(() => import("@/pages/Login"));
+const Register = lazy(() => import("@/pages/Register"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Customers = lazy(() => import("@/pages/Customers"));
+const Motorcycles = lazy(() => import("@/pages/Motorcycles"));
+const ServiceOrders = lazy(() => import("@/pages/ServiceOrders"));
+const Products = lazy(() => import("@/pages/Products"));
+const Technicians = lazy(() => import("@/pages/TechniciansModule"));
+const Suppliers = lazy(() => import("@/pages/SuppliersModule"));
+const Ventas = lazy(() => import("@/pages/Ventas"));
+const Expenses = lazy(() => import("@/pages/ExpensesModule"));
+const Cash = lazy(() => import("@/pages/CashModule"));
+const Purchases = lazy(() => import("@/pages/PurchasesModule"));
+const Credits = lazy(() => import("@/pages/CreditsModule"));
+const Invoices = lazy(() => import("@/pages/InvoicesModule"));
+const BrandLines = lazy(() => import("@/pages/BrandLines"));
+const Company = lazy(() => import("@/pages/Company"));
+const IncomeStatement = lazy(() => import("@/pages/IncomeStatement"));
+const Quotations = lazy(() => import("@/pages/Quotations"));
+const TechnicianLoans = lazy(() => import("@/pages/TechnicianLoans"));
+const CommissionPayments = lazy(() => import("@/pages/CommissionPayments"));
+const Services = lazy(() => import("@/pages/ServicesModule"));
+const Citas = lazy(() => import("@/pages/Citas"));
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -60,6 +61,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" /></div>}>
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -92,6 +94,7 @@ const AuthenticatedApp = () => {
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 
