@@ -65,6 +65,12 @@ export default function ServiceOrders() {
 
   useEffect(() => { load(); }, []);
 
+  // Auto-fill cost from selected products/services
+  useEffect(() => {
+    const total = serviceItems.reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
+    if (total > 0) setForm((f) => ({ ...f, cost: total }));
+  }, [serviceItems]);
+
   const motoLabel = (id) => {
     const m = motos.find((x) => x.id === id);
     return m ? `${m.brand} ${m.model} (${m.plate || "sin placa"})` : "—";
@@ -77,6 +83,14 @@ export default function ServiceOrders() {
     return `Hola ${customerName(o.customer_id)}, te informamos que tu motocicleta ${motoInfo} tiene el estado: ${o.status}. Tipo de servicio: ${o.service_type}. Saludos, HR MOTOCICLETAS`;
   };
   const technicianName = (id) => technicians.find((t) => t.id === id)?.name || "";
+
+  const itemsTotal = (o) => {
+    try {
+      const items = JSON.parse(o.service_items || "[]");
+      const t = items.reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
+      return t > 0 ? t : (o.cost || 0);
+    } catch { return o.cost || 0; }
+  };
 
   const openNew = () => {
     const today = new Date().toISOString().split("T")[0];
@@ -255,7 +269,7 @@ export default function ServiceOrders() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="text-lg font-bold text-slate-900">${(o.cost || 0).toLocaleString("es-CO")}</p>
+                    <p className="text-lg font-bold text-slate-900">${itemsTotal(o).toLocaleString("es-CO")}</p>
                     {o.mechanic && <p className="text-xs text-slate-400">{o.mechanic}</p>}
                     {o.entry_date && <p className="text-xs text-slate-400">Ingreso: {o.entry_date}</p>}
                     {o.delivery_date && <p className="text-xs text-slate-400">Entrega: {o.delivery_date}</p>}
