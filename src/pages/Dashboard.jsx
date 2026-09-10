@@ -38,11 +38,18 @@ export default function Dashboard() {
         const startWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
         const startMonth = moment().startOf("month").format("YYYY-MM-DD");
 
+        // Órdenes ya convertidas en cotización/factura/venta no cuentan en el dashboard (igual que en el módulo Órdenes)
+        const convertedOrderIds = new Set([
+          ...invoices.map((i) => i.related_order_id).filter(Boolean),
+          ...sales.map((s) => s.related_order_id).filter(Boolean),
+        ]);
+        const visibleOrders = orders.filter((o) => !convertedOrderIds.has(o.id));
+
         const salesToday = sales.filter((s) => (s.date || "") >= today).reduce((s, x) => s + (x.total || 0), 0);
         const salesWeek = sales.filter((s) => (s.date || "") >= startWeek).reduce((s, x) => s + (x.total || 0), 0);
         const salesMonth = sales.filter((s) => (s.date || "") >= startMonth).reduce((s, x) => s + (x.total || 0), 0);
 
-        const workshopIncome = orders.filter((o) => o.status === "Completado" || o.status === "Entregado").reduce((s, o) => s + (o.cost || 0), 0);
+        const workshopIncome = visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado").reduce((s, o) => s + (o.cost || 0), 0);
         const storeIncome = sales.reduce((s, x) => s + (x.total || 0), 0);
         const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
         const monthExpenses = expenses.filter((e) => (e.date || "") >= startMonth).reduce((s, e) => s + (e.amount || 0), 0);
@@ -66,13 +73,13 @@ export default function Dashboard() {
         const topProducts = Object.entries(productSales).sort((a, b) => b[1].qty - a[1].qty).slice(0, 5);
 
         const svcCount = {};
-        orders.forEach((o) => {svcCount[o.service_type] = (svcCount[o.service_type] || 0) + 1;});
+        visibleOrders.forEach((o) => {svcCount[o.service_type] = (svcCount[o.service_type] || 0) + 1;});
         const topServices = Object.entries(svcCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
         const techMap = {};
         technicians.forEach((t) => {techMap[t.id] = t.name;});
         const techCommissions = {};
-        orders.forEach((o) => {
+        visibleOrders.forEach((o) => {
           if (o.technician_id) {
             if (!techCommissions[o.technician_id]) techCommissions[o.technician_id] = { name: techMap[o.technician_id] || "—", commission: 0, count: 0 };
             techCommissions[o.technician_id].commission += o.technician_commission || 0;
@@ -81,8 +88,8 @@ export default function Dashboard() {
         });
         const topTechnicians = Object.values(techCommissions).sort((a, b) => b.commission - a.commission);
 
-        const motosInWorkshop = orders.filter((o) => o.status === "Ingresado" || o.status === "En proceso");
-        const pendingOrders = orders.filter((o) => o.status !== "Entregado");
+        const motosInWorkshop = visibleOrders.filter((o) => o.status === "Ingresado" || o.status === "En proceso");
+        const pendingOrders = visibleOrders.filter((o) => o.status !== "Entregado" && o.status !== "Cobrada");
         const pendingInvoices = invoices.filter((i) => i.status === "Pendiente");
 
         const activeAppointments = appointments.filter((a) => a.status === "Pendiente" || a.status === "Confirmada");
@@ -101,7 +108,7 @@ export default function Dashboard() {
           pendingOrders: pendingOrders.length, pendingInvoices: pendingInvoices.length,
           customers: customers.length, motorcycles: motorcycles.length, products: products.length,
           lowStockProducts: lowStock.slice(0, 5),
-          completedOrders: orders.filter((o) => o.status === "Completado" || o.status === "Entregado").length,
+          completedOrders: visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado").length,
           appointmentsTodayCount: appointmentsToday.length,
           upcomingAppointments
         });
