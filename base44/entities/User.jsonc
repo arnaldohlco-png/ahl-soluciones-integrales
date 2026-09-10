@@ -2,13 +2,7 @@
   "properties": {
     "role": {
       "type": "string",
-      "description": "Rol del usuario en la aplicaci\u00f3n",
-      "enum": [
-        "administrador",
-        "gerente",
-        "vendedor",
-        "tecnico"
-      ],
+      "description": "Rol del usuario (clave de un rol definido en el m\u00f3dulo Empresa)",
       "default": "vendedor"
     }
   },

@@ -1,0 +1,85 @@
+{
+  "name": "Role",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Identificador (clave)",
+      "description": "Clave \u00fanica del rol, ej: vendedor. Se usa al asignar el rol a usuarios."
+    },
+    "label": {
+      "type": "string",
+      "title": "Etiqueta",
+      "description": "Nombre visible del rol"
+    },
+    "routes": {
+      "type": "string",
+      "title": "Rutas permitidas",
+      "description": "'*' para acceso total, o JSON array de rutas permitidas"
+    }
+  },
+  "required": [
+    "name",
+    "label"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2, Save, Loader2, Cloud, Upload, RotateCcw, FileDown, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import RolesManager from "@/components/RolesManager";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
@@ -292,6 +293,8 @@ export default function Company() {
           </Button>
         </div>
       </div>
+
+      <RolesManager />
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-4">
         <div className="flex items-center justify-between flex-wrap gap-3">

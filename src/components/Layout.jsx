@@ -7,6 +7,7 @@ import {
 "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
+import { useRoles } from "@/hooks/useRoles";
 import { canAccess } from "@/lib/roles";
 
 const navGroups = [
@@ -57,16 +58,17 @@ const navGroups = [
 export default function Layout() {
   const location = useLocation();
   const { user } = useAuth();
+  const { roles } = useRoles();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const role = user?.role;
   const visibleGroups = navGroups
     .map((g) => {
-      return { ...g, items: g.items.filter((it) => canAccess(role, it.to)) };
+      return { ...g, items: g.items.filter((it) => canAccess(role, it.to, roles)) };
     })
     .filter((g) => g.items.length > 0);
 
-  if (!canAccess(role, location.pathname)) {
+  if (!canAccess(role, location.pathname, roles)) {
     return <Navigate to="/" replace />;
   }
 
