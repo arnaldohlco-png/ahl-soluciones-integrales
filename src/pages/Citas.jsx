@@ -54,6 +54,8 @@ export default function Citas() {
   const [form, setForm] = useState(emptyForm);
   const [filter, setFilter] = useState("Todas");
   const [search, setSearch] = useState("");
+  const [custSearch, setCustSearch] = useState("");
+  const [custOpen, setCustOpen] = useState(false);
 
   const loadAll = async () => {
     setLoading(true);
@@ -105,6 +107,7 @@ export default function Citas() {
   const openNew = () => {
     setForm(emptyForm);
     setEditingId(null);
+    setCustSearch("");
     setModalOpen(true);
   };
 
@@ -120,11 +123,13 @@ export default function Citas() {
       notes: a.notes || "",
     });
     setEditingId(a.id);
+    setCustSearch(a.customer_name || customerById[a.customer_id]?.name || "");
     setModalOpen(true);
   };
 
   const onCustomerChange = (cid) => {
     const c = customerById[cid];
+    setCustSearch(c?.name || "");
     setForm((f) => ({
       ...f,
       customer_id: cid,
@@ -132,6 +137,10 @@ export default function Citas() {
       phone: c?.whatsapp || c?.phone || "",
     }));
   };
+
+  const customerMatches = customers.filter((c) =>
+    c.name?.toLowerCase().includes(custSearch.toLowerCase())
+  );
 
   const buildMessage = (a) => {
     const c = customerById[a.customer_id];
@@ -364,14 +373,33 @@ export default function Citas() {
             </div>
             <div>
               <Label>Cliente *</Label>
-              <Select value={form.customer_id} onValueChange={onCustomerChange}>
-                <SelectTrigger><SelectValue placeholder="Seleccione cliente" /></SelectTrigger>
-                <SelectContent>
-                  {customers.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Input
+                  placeholder="Buscar cliente por nombre..."
+                  value={custSearch}
+                  onChange={(e) => {
+                    setCustSearch(e.target.value);
+                    setForm((f) => ({ ...f, customer_id: "", motorcycle_id: "" }));
+                    setCustOpen(true);
+                  }}
+                  onFocus={() => setCustOpen(true)}
+                  onBlur={() => setTimeout(() => setCustOpen(false), 150)}
+                />
+                {custOpen && customerMatches.length > 0 && (
+                  <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-56 overflow-y-auto">
+                    {customerMatches.slice(0, 50).map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onMouseDown={(e) => { e.preventDefault(); onCustomerChange(c.id); setCustOpen(false); }}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-amber-50 ${c.id === form.customer_id ? "bg-amber-50 font-medium" : ""}`}
+                      >
+                        {c.name}{c.phone ? <span className="text-slate-400 ml-1">· {c.phone}</span> : null}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             {form.customer_id && customerMotos.length > 0 && (
               <div>
