@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
+import OrderPhotosUploader from "@/components/OrderPhotosUploader";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
@@ -27,7 +28,7 @@ const empty = {
   hours_worked: "", technician_commission: "", work_done: "", delivery_recommendations: "",
   warranty: "", delivery_date: "", cost: "", parts_used: "",
   previous_mileage: "", current_mileage: "", oil_change_interval: 1000, next_oil_change: "",
-  admin_footer: "",
+  photos: "[]", admin_footer: "",
 };
 
 export default function ServiceOrders() {
@@ -118,7 +119,7 @@ export default function ServiceOrders() {
       cost: o.cost ?? "", parts_used: o.parts_used || "",
       previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "",
       oil_change_interval: o.oil_change_interval || 1000, next_oil_change: o.next_oil_change ?? "",
-      admin_footer: o.admin_footer || company?.footer_text || "",
+      photos: o.photos || "[]", admin_footer: o.admin_footer || company?.footer_text || "",
     });
     try { setServiceItems(JSON.parse(o.service_items || "[]")); } catch { setServiceItems([]); }
     setEditing(o); setOpen(true);
@@ -356,6 +357,12 @@ export default function ServiceOrders() {
               <div className="grid grid-cols-2 gap-3 mt-3">
                 <div><Label>Estado visual</Label><Input value={form.visual_condition} onChange={(e) => setForm({ ...form, visual_condition: e.target.value })} className="mt-1" placeholder="Rayones, abolladuras..." /></div>
                 <div><Label>Accesorios entregados</Label><Input value={form.accessories} onChange={(e) => setForm({ ...form, accessories: e.target.value })} className="mt-1" placeholder="Espejos, llaves, etc." /></div>
+              </div>
+              <div className="mt-3">
+                <Label>Fotos de la moto</Label>
+                <div className="mt-1">
+                  <OrderPhotosUploader value={form.photos} onChange={(v) => setForm({ ...form, photos: v })} />
+                </div>
               </div>
             </div>
 
