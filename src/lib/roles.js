@@ -10,6 +10,7 @@ export const MODULE_OPTIONS = [
   { path: "/inventario", label: "Inventario" },
   { path: "/compras", label: "Compras" },
   { path: "/ventas", label: "Ventas / POS" },
+  { path: "/devoluciones", label: "Devoluciones" },
   { path: "/cotizaciones", label: "Cotizaciones" },
   { path: "/facturacion", label: "Facturación" },
   { path: "/creditos", label: "Créditos y Cartera" },
@@ -30,14 +31,14 @@ export const DEFAULT_ROLE_DEFS = [
   { name: "administrador", label: "Administrador", routes: "*" },
   { name: "gerente", label: "Gerente", routes: [
     "/", "/clientes", "/motocicletas", "/ordenes", "/servicios", "/citas",
-    "/inventario", "/compras", "/ventas", "/cotizaciones", "/facturacion",
+    "/inventario", "/compras", "/ventas", "/devoluciones", "/cotizaciones", "/facturacion",
     "/creditos", "/gastos", "/caja", "/estado-resultados",
     "/tecnicos", "/proveedores", "/marcas",
     "/prestamos-tecnicos", "/pago-comisiones",
   ] },
   { name: "vendedor", label: "Vendedor", routes: [
     "/", "/clientes", "/motocicletas", "/ordenes", "/citas",
-    "/cotizaciones", "/ventas", "/facturacion", "/creditos",
+    "/cotizaciones", "/ventas", "/devoluciones", "/facturacion", "/creditos",
   ] },
   { name: "tecnico", label: "Técnico", routes: [
     "/", "/ordenes", "/citas", "/motocicletas", "/clientes",

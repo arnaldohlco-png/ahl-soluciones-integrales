@@ -1,0 +1,158 @@
+{
+  "name": "Return",
+  "type": "object",
+  "properties": {
+    "number": {
+      "type": "string",
+      "title": "N\u00famero"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha"
+    },
+    "customer_id": {
+      "type": "string",
+      "title": "Cliente"
+    },
+    "customer_name": {
+      "type": "string",
+      "title": "Nombre del cliente"
+    },
+    "source_type": {
+      "type": "string",
+      "title": "Documento origen",
+      "enum": [
+        "Factura",
+        "Venta POS"
+      ],
+      "default": "Factura"
+    },
+    "source_id": {
+      "type": "string",
+      "title": "ID documento origen"
+    },
+    "source_number": {
+      "type": "string",
+      "title": "N\u00famero documento origen"
+    },
+    "reason": {
+      "type": "string",
+      "title": "Motivo de devoluci\u00f3n"
+    },
+    "items": {
+      "type": "string",
+      "title": "Items devueltos (JSON)",
+      "description": "Array JSON: [{product_id, name, quantity, unit_price, subtotal}]"
+    },
+    "subtotal": {
+      "type": "number",
+      "title": "Subtotal",
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "title": "Total devoluci\u00f3n",
+      "default": 0
+    },
+    "payment_method": {
+      "type": "string",
+      "title": "Medio de devoluci\u00f3n",
+      "enum": [
+        "Efectivo",
+        "Transferencia",
+        "Tarjeta",
+        "Otros"
+      ],
+      "default": "Efectivo"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Aplicada",
+        "Anulada"
+      ],
+      "default": "Aplicada"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "date",
+    "total",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendedor"
+          }
+        }
+      ]
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendedor"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    }
+  }
+}

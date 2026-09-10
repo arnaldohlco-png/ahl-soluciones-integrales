@@ -315,8 +315,12 @@ export default function ServiceOrders() {
                         <button onClick={() => convertToSale(o)} title="Convertir a venta" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
                       </>
                     )}
-                    <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => remove(o)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    {o.status !== "Cobrada" && (
+                      <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                    )}
+                    {o.status !== "Cobrada" && (
+                      <button onClick={() => remove(o)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    )}
                   </div>
                 </div>
               </div>

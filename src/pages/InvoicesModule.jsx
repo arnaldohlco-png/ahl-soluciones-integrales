@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign } from "lucide-react";
+import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign, Undo2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -26,6 +27,7 @@ const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito
 const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
 
 export default function Invoices() {
+  const navigate = useNavigate();
   const [list, setList] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -248,8 +250,15 @@ export default function Invoices() {
                         )}
                         <WhatsAppButton phone={customerPhone(inv.customer_id)} message={buildDocMessage("invoice", inv, company, { customer: customers.find((c) => c.id === inv.customer_id) })} />
                         <button onClick={() => setPrintInv(inv)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
-                        <button onClick={() => openEdit(inv)} className="p-1.5 text-slate-400 hover:text-amber-600"><Pencil className="w-4 h-4" /></button>
-                        <button onClick={() => remove(inv.id)} className="p-1.5 text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                        {inv.status === "Pagada" && COBRABLES.includes(inv.type) && (
+                          <button onClick={() => navigate("/devoluciones", { state: { sourceType: "Factura", sourceId: inv.id } })} title="Devolución" className="p-1.5 text-blue-500 hover:bg-blue-50 rounded"><Undo2 className="w-4 h-4" /></button>
+                        )}
+                        {inv.status !== "Pagada" && (
+                          <button onClick={() => openEdit(inv)} className="p-1.5 text-slate-400 hover:text-amber-600"><Pencil className="w-4 h-4" /></button>
+                        )}
+                        {inv.status !== "Pagada" && (
+                          <button onClick={() => remove(inv.id)} className="p-1.5 text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                        )}
                       </div>
                     </td>
                   </tr>

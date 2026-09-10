@@ -34,6 +34,7 @@ const TechnicianLoans = lazy(() => import("@/pages/TechnicianLoans"));
 const CommissionPayments = lazy(() => import("@/pages/CommissionPayments"));
 const Services = lazy(() => import("@/pages/ServicesModule"));
 const Citas = lazy(() => import("@/pages/Citas"));
+const Returns = lazy(() => import("@/pages/ReturnsModule"));
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -87,6 +88,7 @@ const AuthenticatedApp = () => {
           <Route path="/ventas" element={<Ventas />} />
           <Route path="/compras" element={<Purchases />} />
           <Route path="/facturacion" element={<Invoices />} />
+          <Route path="/devoluciones" element={<Returns />} />
           <Route path="/creditos" element={<Credits />} />
           <Route path="/gastos" element={<Expenses />} />
           <Route path="/caja" element={<Cash />} />
