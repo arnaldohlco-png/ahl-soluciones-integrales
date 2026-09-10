@@ -12,6 +12,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import CatalogPicker from "@/components/CatalogPicker";
 import { buildDocMessage } from "@/lib/docMessages";
+import { chargesIva, calcIvaFlat } from "@/lib/iva";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -84,8 +85,9 @@ export default function Quotations() {
   const removeItem = (idx) => setItems(items.filter((_, i) => i !== idx));
 
   const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0);
-  const iva = Math.round(subtotal * 0.19);
+  const iva = Math.round(calcIvaFlat(subtotal, company));
   const total = subtotal + iva;
+  const aplicaIva = chargesIva(company);
 
   const save = async () => {
     if (!form.customer_id || items.length === 0) return;
@@ -261,7 +263,7 @@ export default function Quotations() {
 
             <div className="bg-slate-50 rounded-lg p-4 space-y-1">
               <div className="flex justify-between text-sm"><span className="text-slate-600">Subtotal</span><span>{fmt(subtotal)}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-slate-600">IVA (19%)</span><span>{fmt(iva)}</span></div>
+              {aplicaIva && <div className="flex justify-between text-sm"><span className="text-slate-600">IVA (19%)</span><span>{fmt(iva)}</span></div>}
               <div className="flex justify-between font-bold text-lg pt-1 border-t border-slate-200"><span className="text-slate-900">Total</span><span className="text-slate-900">{fmt(total)}</span></div>
             </div>
           </div>
