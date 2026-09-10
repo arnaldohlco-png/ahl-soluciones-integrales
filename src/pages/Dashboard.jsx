@@ -116,8 +116,8 @@ export default function Dashboard() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto bg-[#f91515]">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Resumen</h1>
-        <p className="text-slate-500 mt-1">Resumen financiero y operativo en tiempo real</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-[hsl(var(--background))]">Resumen</h1>
+        <p className="mt-1 text-[hsl(var(--background))]">Resumen financiero y operativo en tiempo real</p>
       </div>
 
       {/* Sales row */}
