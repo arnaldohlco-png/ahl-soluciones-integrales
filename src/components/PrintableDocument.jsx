@@ -8,6 +8,21 @@ const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO", { maximumFract
 const fmtDate = (d) => (d ? moment(d).format("DD/MM/YYYY") : "—");
 const parseItems = (s) => { try { return JSON.parse(s || "[]"); } catch { return []; } };
 
+// Base de comisión: solo servicios (type "Servicio"), excluyendo los denominados "terceros"
+const commissionBase = (o) => {
+  const items = parseItems(o.service_items);
+  return items
+    .filter((i) => String(i.type || "").toLowerCase() === "servicio")
+    .filter((i) => !/tercero/i.test((i.name || "").trim()))
+    .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
+};
+const serviceConcept = (o) => {
+  const items = parseItems(o.service_items)
+    .filter((i) => String(i.type || "").toLowerCase() === "servicio")
+    .filter((i) => !/tercero/i.test((i.name || "").trim()));
+  return items.map((i) => i.name).filter(Boolean).join(", ") || o.service_type || "—";
+};
+
 const TITLES = {
   order: "Orden de Servicio",
   quotation: "Cotización",
@@ -27,6 +42,17 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
   const technician = extras.technician;
 
   const items = parseItems(type === "order" ? doc.service_items : doc.items);
+
+  // Desglose de comisiones recalculado desde las órdenes (base = solo servicios)
+  const commBreakdown = type === "commission"
+    ? (extras.orders || []).map((o) => {
+        const base = commissionBase(o);
+        const pct = technician?.commission_percentage || 0;
+        return { order: o, base, commission: base * pct / 100, concept: serviceConcept(o) };
+      })
+    : [];
+  const commTotal = commBreakdown.reduce((s, b) => s + b.commission, 0);
+  const commNet = commTotal - (Number(doc.loans_deducted) || 0);
 
   const whatsappPhone =
     type === "purchase" ? supplier?.phone
@@ -202,31 +228,34 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
 
           {type === "commission" && (
             <div className="py-4">
-              <p className="font-semibold uppercase text-xs text-slate-500 mb-2">Detalle de órdenes (servicios y motos atendidas)</p>
+              <p className="font-semibold uppercase text-xs text-slate-500 mb-2">Concepto: Pago de comisiones por servicios prestados</p>
               <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-100 text-slate-700">
                     <th className="text-left py-2 px-2 border border-slate-300">Fecha</th>
-                    <th className="text-left py-2 px-2 border border-slate-300">Servicio</th>
+                    <th className="text-left py-2 px-2 border border-slate-300">Orden</th>
+                    <th className="text-left py-2 px-2 border border-slate-300">Concepto</th>
                     <th className="text-left py-2 px-2 border border-slate-300">Motocicleta</th>
+                    <th className="text-right py-2 px-2 border border-slate-300">Base</th>
                     <th className="text-right py-2 px-2 border border-slate-300">Comisión</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(extras.orders || []).map((o) => {
-                    const m = extras.motos?.find((x) => x.id === o.motorcycle_id);
-                    const comm = o.technician_commission || ((o.cost || 0) * (technician?.commission_percentage || 0) / 100);
+                  {commBreakdown.map((b) => {
+                    const m = extras.motos?.find((x) => x.id === b.order.motorcycle_id);
                     return (
-                      <tr key={o.id}>
-                        <td className="py-1.5 px-2 border border-slate-300">{fmtDate(o.entry_date || (o.created_date || "").slice(0, 10))}</td>
-                        <td className="py-1.5 px-2 border border-slate-300">{o.service_type || "—"}</td>
+                      <tr key={b.order.id}>
+                        <td className="py-1.5 px-2 border border-slate-300">{fmtDate(b.order.entry_date || (b.order.created_date || "").slice(0, 10))}</td>
+                        <td className="py-1.5 px-2 border border-slate-300">{b.order.number || "—"}</td>
+                        <td className="py-1.5 px-2 border border-slate-300">{b.concept}</td>
                         <td className="py-1.5 px-2 border border-slate-300">{motoLabel(m)}</td>
-                        <td className="py-1.5 px-2 border border-slate-300 text-right">{fmt(comm)}</td>
+                        <td className="py-1.5 px-2 border border-slate-300 text-right">{fmt(b.base)}</td>
+                        <td className="py-1.5 px-2 border border-slate-300 text-right font-medium">{fmt(b.commission)}</td>
                       </tr>
                     );
                   })}
-                  {(extras.orders || []).length === 0 && (
-                    <tr><td colSpan={4} className="py-2 px-2 border border-slate-300 text-center text-slate-400">Sin órdenes</td></tr>
+                  {commBreakdown.length === 0 && (
+                    <tr><td colSpan={6} className="py-2 px-2 border border-slate-300 text-center text-slate-400">Sin órdenes</td></tr>
                   )}
                 </tbody>
               </table>
@@ -264,9 +293,9 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
               )}
               {type === "commission" && (
                 <>
-                  <div className="flex justify-between"><span>Total comisiones</span><span>{fmt(doc.total_commission)}</span></div>
+                  <div className="flex justify-between"><span>Total comisiones</span><span>{fmt(commTotal)}</span></div>
                   <div className="flex justify-between"><span>Descuentos</span><span>-{fmt(doc.loans_deducted)}</span></div>
-                  <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Neto a pagar</span><span>{fmt(doc.net_amount)}</span></div>
+                  <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Neto a pagar</span><span>{fmt(commNet)}</span></div>
                 </>
               )}
             </div>
