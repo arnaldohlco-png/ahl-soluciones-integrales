@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ export default function Ventas() {
   const [company, setCompany] = useState(null);
   const [checkoutMsg, setCheckoutMsg] = useState("");
   const [invoiceSale, setInvoiceSale] = useState(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -62,6 +63,8 @@ export default function Ventas() {
         subtotal: product.price,
       }]);
     }
+    setSearch("");
+    setTimeout(() => searchRef.current?.focus(), 0);
   };
 
   const updateQty = (productId, delta) => {
@@ -188,6 +191,7 @@ export default function Ventas() {
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
+              ref={searchRef}
               placeholder="Buscar por nombre, SKU o código de barras..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
