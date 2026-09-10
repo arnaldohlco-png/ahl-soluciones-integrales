@@ -24,7 +24,7 @@ import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
-const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
+const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono", "Cotización"];
 
 export default function Invoices() {
   const navigate = useNavigate();
