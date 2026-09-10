@@ -15,6 +15,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import moment from "moment";
 import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
+import { fetchAllProducts } from "@/lib/productsLoader";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
 
@@ -48,7 +49,7 @@ export default function Invoices() {
         const [inv, cust, prods, servs] = await Promise.all([
           base44.entities.Invoice.list("-date", 200),
           base44.entities.Customer.list("-created_date", 100),
-          base44.entities.Product.list("-created_date", 500),
+          fetchAllProducts(),
           base44.entities.Service.list("-created_date", 200),
         ]);
         setList(inv);

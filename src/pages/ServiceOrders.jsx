@@ -15,6 +15,7 @@ import SearchableSelect from "@/components/SearchableSelect";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
+import { fetchAllProducts } from "@/lib/productsLoader";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
 const statuses = ["Ingresado", "En proceso", "Completado", "Entregado"];
@@ -58,7 +59,7 @@ export default function ServiceOrders() {
         base44.entities.Motorcycle.list("-created_date", 200),
         base44.entities.Customer.list("-created_date", 200),
         base44.entities.Technician.list("-created_date", 100),
-        base44.entities.Product.list("-created_date", 200),
+        fetchAllProducts(),
         base44.entities.Service.list("-created_date", 500),
         base44.entities.Company.list("-created_date", 10),
       ]);

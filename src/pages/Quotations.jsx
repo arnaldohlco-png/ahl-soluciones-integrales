@@ -13,6 +13,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import CatalogPicker from "@/components/CatalogPicker";
 import { buildDocMessage } from "@/lib/docMessages";
 import { chargesIva, calcIvaFlat } from "@/lib/iva";
+import { fetchAllProducts } from "@/lib/productsLoader";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -46,7 +47,7 @@ export default function Quotations() {
       const [q, c, p, s, comps] = await Promise.all([
         base44.entities.Invoice.filter({ type: "Cotización" }, "-created_date", 200),
         base44.entities.Customer.list("-created_date", 200),
-        base44.entities.Product.list("-created_date", 200),
+        fetchAllProducts(),
         base44.entities.Service.list("-created_date", 200),
         base44.entities.Company.list("-created_date", 1),
       ]);
