@@ -11,6 +11,7 @@ import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import OrderPhotosUploader from "@/components/OrderPhotosUploader";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import SearchableSelect from "@/components/SearchableSelect";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
@@ -313,20 +314,22 @@ export default function ServiceOrders() {
           <DialogHeader><DialogTitle>{editing ? "Editar Orden de Servicio" : "Nueva Orden de Servicio"}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Motocicleta *</Label>
-                <Select value={form.motorcycle_id} onValueChange={onMotoChange}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                  <SelectContent>{motos.map((m) => <SelectItem key={m.id} value={m.id}>{m.brand} {m.model} — {m.plate || "sin placa"}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Cliente *</Label>
-                <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v })}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                  <SelectContent>{customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+              <SearchableSelect
+                label="Motocicleta"
+                placeholder="Buscar por placa, marca o modelo..."
+                value={form.motorcycle_id}
+                onValueChange={(id) => onMotoChange(id)}
+                required
+                items={motos.map((m) => ({ id: m.id, label: `${m.brand} ${m.model}`, sublabel: m.plate ? `Placa: ${m.plate}` : "Sin placa" }))}
+              />
+              <SearchableSelect
+                label="Cliente"
+                placeholder="Buscar cliente..."
+                value={form.customer_id}
+                onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                required
+                items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: c.document_number || c.phone }))}
+              />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
