@@ -73,6 +73,8 @@ export default function IncomeStatement() {
     (i) => i.status === "Pagada" && COBRABLES.includes(i.type) && !i.related_sale_id
   );
   const orderIdsWithPaidInvoice = new Set(invoiceSales.map((i) => i.related_order_id).filter(Boolean));
+  // Órdenes ya convertidas en venta POS: se contabilizan como ingreso POS, no como taller (evita duplicidad)
+  const orderIdsWithSale = new Set(fSales.filter((s) => s.status === "Pagada" && s.related_order_id).map((s) => s.related_order_id));
   const invoiceRevenue = invoiceSales.reduce((s, i) => s + (i.total || 0), 0);
   const invoiceCOGS = invoiceSales.reduce((s, i) => s + productCogsOf(itemsOf(i.items)), 0);
   const invoiceCommissions = invoiceSales.reduce((s, i) => {
@@ -84,7 +86,7 @@ export default function IncomeStatement() {
   const posCOGS = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + productCogsOf(itemsOf(x.items)), 0);
 
   // Órdenes contabilizadas como ingreso de taller (excluye las que ya se facturaron y cobraron)
-  const countedOrders = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status) && !orderIdsWithPaidInvoice.has(o.id));
+  const countedOrders = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status) && !orderIdsWithPaidInvoice.has(o.id) && !orderIdsWithSale.has(o.id));
 
   const workshopRevenue = countedOrders.reduce((s, o) => s + (o.cost || 0), 0);
   const workshopParts = countedOrders.reduce((s, o) => s + productCogsOf(itemsOf(o.service_items)), 0);
