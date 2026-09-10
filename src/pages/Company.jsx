@@ -12,6 +12,8 @@ const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
   email: "", address: "", city: "", logo: "", footer_text: "", credit_default_days: 30,
   charges_iva: true,
+  dian_resolution: "", dian_resolution_date: "", dian_range_from: 0, dian_range_to: 0,
+  pos_prefix: "VTA", quote_prefix: "COT", purchase_prefix: "COMP", order_prefix: "ORD", invoice_prefix: "FAC",
 };
 
 export default function Company() {
@@ -41,6 +43,11 @@ export default function Company() {
             logo: data[0].logo || "", footer_text: data[0].footer_text || "",
             credit_default_days: data[0].credit_default_days ?? 30,
             charges_iva: data[0].charges_iva ?? (data[0].document_type === "Persona jurídica"),
+            dian_resolution: data[0].dian_resolution || "", dian_resolution_date: data[0].dian_resolution_date || "",
+            dian_range_from: data[0].dian_range_from ?? 0, dian_range_to: data[0].dian_range_to ?? 0,
+            pos_prefix: data[0].pos_prefix || "VTA", quote_prefix: data[0].quote_prefix || "COT",
+            purchase_prefix: data[0].purchase_prefix || "COMP", order_prefix: data[0].order_prefix || "ORD",
+            invoice_prefix: data[0].invoice_prefix || "FAC",
           });
         }
       } catch (e) { console.error(e); }
@@ -226,6 +233,58 @@ export default function Company() {
             placeholder="Ej: Garantía de 3 meses en repuestos. No nos hacemos responsables por objetos dejados en la motocicleta..." />
           <p className="text-xs text-slate-400 mt-1">Este texto aparecerá al final de cada orden de servicio impresa</p>
         </div>
+
+        <div className="border-t border-slate-100 pt-4">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Resolución DIAN</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Número de resolución</Label>
+              <Input value={form.dian_resolution} onChange={(e) => setForm({ ...form, dian_resolution: e.target.value })} className="mt-1" placeholder="Ej: 18764000" />
+            </div>
+            <div>
+              <Label>Fecha de resolución</Label>
+              <Input type="date" value={form.dian_resolution_date} onChange={(e) => setForm({ ...form, dian_resolution_date: e.target.value })} className="mt-1" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 mt-3">
+            <div>
+              <Label>Rango desde</Label>
+              <Input type="number" value={form.dian_range_from} onChange={(e) => setForm({ ...form, dian_range_from: Number(e.target.value) || 0 })} className="mt-1" />
+            </div>
+            <div>
+              <Label>Rango hasta</Label>
+              <Input type="number" value={form.dian_range_to} onChange={(e) => setForm({ ...form, dian_range_to: Number(e.target.value) || 0 })} className="mt-1" />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-100 pt-4">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Prefijos de numeración</p>
+          <div className="grid grid-cols-5 gap-3">
+            <div>
+              <Label className="text-xs">Ventas (POS)</Label>
+              <Input value={form.pos_prefix} onChange={(e) => setForm({ ...form, pos_prefix: e.target.value })} className="mt-1" maxLength={6} />
+            </div>
+            <div>
+              <Label className="text-xs">Facturas</Label>
+              <Input value={form.invoice_prefix} onChange={(e) => setForm({ ...form, invoice_prefix: e.target.value })} className="mt-1" maxLength={6} />
+            </div>
+            <div>
+              <Label className="text-xs">Cotizaciones</Label>
+              <Input value={form.quote_prefix} onChange={(e) => setForm({ ...form, quote_prefix: e.target.value })} className="mt-1" maxLength={6} />
+            </div>
+            <div>
+              <Label className="text-xs">Compras</Label>
+              <Input value={form.purchase_prefix} onChange={(e) => setForm({ ...form, purchase_prefix: e.target.value })} className="mt-1" maxLength={6} />
+            </div>
+            <div>
+              <Label className="text-xs">Órdenes</Label>
+              <Input value={form.order_prefix} onChange={(e) => setForm({ ...form, order_prefix: e.target.value })} className="mt-1" maxLength={6} />
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">Estos prefijos se usan al generar automáticamente la numeración consecutiva de cada documento.</p>
+        </div>
+
         <div className="flex justify-end pt-2">
           <Button onClick={save} disabled={saving || !form.name.trim()} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Save className="w-4 h-4 mr-1" />}

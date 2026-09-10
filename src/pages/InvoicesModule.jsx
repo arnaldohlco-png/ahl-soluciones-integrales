@@ -211,8 +211,8 @@ export default function Invoices() {
                 </Select>
               </div>
               <div>
-                <Label>Número</Label>
-                <Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="Ej: FAC-001" />
+                <Label>Número <span className="text-xs text-slate-400 font-normal">(vacío = automático)</span></Label>
+                <Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="Se genera automáticamente" />
               </div>
             </div>
             <div>
