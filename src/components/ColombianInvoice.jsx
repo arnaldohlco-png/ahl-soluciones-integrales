@@ -2,6 +2,7 @@ import React from "react";
 import moment from "moment";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
+import PrintToolbar from "@/components/PrintToolbar";
 
 const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
@@ -26,20 +27,10 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto p-4 print:bg-white print:p-0 print:block">
       <div className="print-area bg-white text-slate-900 w-full max-w-3xl my-4 shadow-xl print:shadow-none print:my-0 print:max-w-none">
-        {/* Toolbar */}
-        <div className="no-print flex justify-end gap-2 p-3 border-b border-slate-200">
-          <Button onClick={() => window.print()} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-            <Printer className="w-4 h-4 mr-1" /> Imprimir
-          </Button>
-          {onClose && (
-            <Button variant="outline" onClick={onClose}>
-              <X className="w-4 h-4 mr-1" /> Cerrar
-            </Button>
-          )}
-        </div>
+        <PrintToolbar onClose={onClose} />
 
         {/* Invoice */}
-        <div className="p-8 text-[13px] leading-relaxed print:p-0 print:text-[10px] print-inner">
+        <div className="p-8 text-[13px] leading-relaxed print:p-6 print-inner">
           {/* Header */}
           <div className="flex flex-col items-center text-center gap-3 border-b-2 border-slate-800 pb-4">
             {company?.logo ? (
@@ -108,8 +99,8 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
           </table>
 
           {/* Totals */}
-          <div className="flex justify-end mt-3 print:block print:w-full">
-            <div className="w-72 text-xs space-y-1 print:w-full print-totals">
+          <div className="flex justify-end mt-3">
+            <div className="w-72 text-xs space-y-1 print-totals">
               <div className="flex justify-between"><span>Subtotal</span><span>{fmt(sale.subtotal)}</span></div>
               {ivaRates.map((r) => (
                 <div key={r} className="flex justify-between"><span>IVA {r}%</span><span>{fmt(ivaGroups[r].iva)}</span></div>
