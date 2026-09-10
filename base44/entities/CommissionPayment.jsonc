@@ -57,6 +57,16 @@
     "notes": {
       "type": "string",
       "title": "Notas"
+    },
+    "technician_signature": {
+      "type": "string",
+      "title": "Firma digital del t\u00e9cnico",
+      "description": "Data URL (PNG) de la firma del t\u00e9cnico (recibido)"
+    },
+    "admin_signature": {
+      "type": "string",
+      "title": "Firma digital del administrador",
+      "description": "Data URL (PNG) de la firma del administrador (autoriza el pago)"
     }
   },
   "required": [

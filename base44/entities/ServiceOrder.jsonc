@@ -145,7 +145,13 @@
     },
     "customer_signature": {
       "type": "string",
-      "title": "Firma/autorizaci\u00f3n del cliente"
+      "title": "Firma digital del cliente",
+      "description": "Data URL (PNG) de la firma del cliente"
+    },
+    "technician_signature": {
+      "type": "string",
+      "title": "Firma digital del t\u00e9cnico",
+      "description": "Data URL (PNG) de la firma del t\u00e9cnico"
     },
     "delivery_date": {
       "type": "string",

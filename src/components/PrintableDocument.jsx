@@ -32,6 +32,18 @@ const TITLES = {
   commission: "Comprobante de Pago de Comisiones",
 };
 
+const SignatureBlock = ({ label, img, name, docId }) => (
+  <div className="text-center">
+    {img ? <img src={img} alt={label} className="h-16 mx-auto object-contain" /> : <div className="h-16" />}
+    <div className="border-t border-slate-400 mt-1 pt-1">
+      <p className="text-xs font-semibold text-slate-700">{label}</p>
+      {(name || docId) && (
+        <p className="text-[11px] text-slate-500">{name}{name && docId ? " · " : ""}{docId ? `CC/NIT: ${docId}` : ""}</p>
+      )}
+    </div>
+  </div>
+);
+
 export default function PrintableDocument({ type, doc, company, extras = {}, onClose }) {
   if (!doc) return null;
   const title = TITLES[type] || doc.type || "Documento";
@@ -300,6 +312,24 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
               )}
             </div>
           </div>
+
+          {/* Firmas digitales */}
+          {((type === "order") || (type === "commission")) && (
+            <div className="mt-8 grid grid-cols-2 gap-8">
+              {type === "order" && (
+                <>
+                  <SignatureBlock label="Firma del Cliente" img={doc.customer_signature} name={customer?.name} docId={customer?.document_number} />
+                  <SignatureBlock label="Firma del Técnico" img={doc.technician_signature} name={technician?.name} docId={technician?.document_number} />
+                </>
+              )}
+              {type === "commission" && (
+                <>
+                  <SignatureBlock label="Firma del Técnico (Recibido)" img={doc.technician_signature} name={technician?.name} docId={technician?.document_number} />
+                  <SignatureBlock label="Firma del Administrador (Autoriza)" img={doc.admin_signature} name={company?.name} docId={company?.document_number} />
+                </>
+              )}
+            </div>
+          )}
 
           {/* Footer */}
           <div className="mt-6 pt-3 border-t border-slate-200 text-[11px] text-slate-600 text-center space-y-1">

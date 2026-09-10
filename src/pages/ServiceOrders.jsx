@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, 
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import OrderPhotosUploader from "@/components/OrderPhotosUploader";
+import SignaturePad from "@/components/SignaturePad";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SearchableSelect from "@/components/SearchableSelect";
 import PrintableDocument from "@/components/PrintableDocument";
@@ -34,6 +35,7 @@ const empty = {
   warranty: "", delivery_date: "", cost: "", parts_used: "",
   previous_mileage: "", current_mileage: "", kms_traveled: 0, oil_change_interval: 1000, next_oil_change: "",
   photos: "[]", admin_footer: "",
+  customer_signature: "", technician_signature: "",
 };
 
 export default function ServiceOrders() {
@@ -130,6 +132,7 @@ export default function ServiceOrders() {
       previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "", kms_traveled: o.kms_traveled ?? 0,
       oil_change_interval: o.oil_change_interval || 1000, next_oil_change: o.next_oil_change ?? "",
       photos: o.photos || "[]", admin_footer: o.admin_footer || company?.footer_text || "",
+      customer_signature: o.customer_signature || "", technician_signature: o.technician_signature || "",
     });
     try { setServiceItems(JSON.parse(o.service_items || "[]")); } catch { setServiceItems([]); }
     setEditing(o); setOpen(true);
@@ -474,9 +477,17 @@ export default function ServiceOrders() {
                 <div><Label>Recomendaciones de entrega</Label><Textarea value={form.delivery_recommendations} onChange={(e) => setForm({ ...form, delivery_recommendations: e.target.value })} className="mt-1" rows={2} /></div>
                 <div><Label>Garantía</Label><Input value={form.warranty} onChange={(e) => setForm({ ...form, warranty: e.target.value })} className="mt-1" placeholder="Ej: 3 meses / 5000 km" /></div>
               </div>
-            </div>
-          </div>
-          <DialogFooter>
+              </div>
+
+              <div className="border-t border-slate-100 pt-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Firmas digitales</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <SignaturePad label="Firma del cliente" value={form.customer_signature} onChange={(v) => setForm({ ...form, customer_signature: v })} height={110} />
+              <SignaturePad label="Firma del técnico" value={form.technician_signature} onChange={(v) => setForm({ ...form, technician_signature: v })} height={110} />
+              </div>
+              </div>
+              </div>
+              <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button onClick={save} disabled={saving || !form.motorcycle_id || !form.customer_id} className="bg-amber-500 hover:bg-amber-600 text-slate-900">{saving ? "Guardando..." : "Guardar"}</Button>
           </DialogFooter>

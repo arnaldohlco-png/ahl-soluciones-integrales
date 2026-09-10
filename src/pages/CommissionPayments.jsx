@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Wallet, Loader2, CheckCircle2, Clock, Printer, Search } from "lucide-react";
 import moment from "moment";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import SignaturePad from "@/components/SignaturePad";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
@@ -29,20 +30,25 @@ export default function CommissionPayments() {
   const [customers, setCustomers] = useState([]);
   const [printPay, setPrintPay] = useState(null);
   const [search, setSearch] = useState("");
+  const [company, setCompany] = useState(null);
+  const [techSig, setTechSig] = useState("");
+  const [adminSig, setAdminSig] = useState("");
 
   useEffect(() => {
     (async () => {
       try {
-        const [t, p, m, c] = await Promise.all([
+        const [t, p, m, c, comp] = await Promise.all([
           fetchAll("Technician"),
           fetchAll("CommissionPayment"),
           fetchAll("Motorcycle"),
           fetchAllCustomers(),
+          base44.entities.Company.list("-created_date", 10),
         ]);
         setTechs(t.filter((x) => x.status === "Activo"));
         setPayments(p);
         setMotos(m);
         setCustomers(c);
+        if (comp.length > 0) setCompany(comp[0]);
       } catch (e) { console.error(e); }
       setLoading(false);
     })();
@@ -74,6 +80,7 @@ export default function CommissionPayments() {
   const calculate = async () => {
     if (!selectedTech) return;
     setPaying(true);
+    setTechSig(""); setAdminSig("");
     try {
       const [orders, loans] = await Promise.all([
         base44.entities.ServiceOrder.filter({ technician_id: selectedTech }, "-created_date", 500),
@@ -119,6 +126,7 @@ export default function CommissionPayments() {
         orders_count: calc.orders.length, total_commission: calc.totalCommission,
         loans_deducted: calc.loansDeducted, net_amount: calc.netAmount,
         status: "Pagado",
+        technician_signature: techSig, admin_signature: adminSig,
       });
 
       // Mark loans as deducted
@@ -242,6 +250,10 @@ export default function CommissionPayments() {
                 </div>
               </div>
             )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+              <SignaturePad label="Firma del técnico (recibido)" value={techSig} onChange={setTechSig} height={110} />
+              <SignaturePad label="Firma del administrador (autoriza)" value={adminSig} onChange={setAdminSig} height={110} />
+            </div>
             <div className="flex justify-between py-3 border-t-2 border-slate-200">
               <span className="text-lg font-bold text-slate-900">Neto a pagar</span>
               <span className="text-xl font-bold text-emerald-600">{fmt(calc.netAmount)}</span>
@@ -309,7 +321,7 @@ export default function CommissionPayments() {
         <PrintableDocument
           type="commission"
           doc={printPay.doc}
-          company={null}
+          company={company}
           extras={{ technician: techs.find((t) => t.id === printPay.doc.technician_id), motos, customers, orders: printPay.orders }}
           onClose={() => setPrintPay(null)}
         />
