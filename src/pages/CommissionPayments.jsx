@@ -50,12 +50,12 @@ export default function CommissionPayments() {
 
   const techPhone = (id) => techs.find((t) => t.id === id)?.phone || "";
 
-  // Base de comisión: solo servicios (type "service"), excluyendo los denominados "terceros"
+  // Base de comisión: solo servicios (type "Servicio"), excluyendo los denominados "terceros"
   const commissionBase = (o) => {
     let items = [];
     try { items = JSON.parse(o.service_items || "[]"); } catch { items = []; }
     return items
-      .filter((i) => i.type === "service")
+      .filter((i) => String(i.type || "").toLowerCase() === "servicio")
       .filter((i) => !/tercero/i.test((i.name || "").trim()))
       .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
   };
@@ -88,9 +88,7 @@ export default function CommissionPayments() {
       const pct = techs.find((t) => t.id === selectedTech)?.commission_percentage || 0;
       const totalCommission = inRange.reduce((s, o) => {
         const base = commissionBase(o);
-        if (base > 0) return s + (base * pct / 100);
-        if (o.technician_commission) return s + o.technician_commission;
-        return s;
+        return s + (base * pct / 100);
       }, 0);
 
       const pendingLoans = loans.filter((l) => (l.balance || 0) > 0);
