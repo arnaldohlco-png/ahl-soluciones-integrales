@@ -227,25 +227,27 @@ export default function ServiceOrders() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Órdenes de Servicio</h1>
-          <p className="text-slate-500 mt-1">{orders.length} órdenes registradas</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <ExportImport entityName="ServiceOrder" fields={["motorcycle_id", "customer_id", "service_type", "description", "status", "technician_id", "mechanic", "entry_date", "delivery_date", "cost", "previous_mileage", "current_mileage", "oil_change_interval", "next_oil_change", "parts_used"]} />
-          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-            <Plus className="w-4 h-4 mr-1" /> Nueva Orden
+      <div className="mb-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Órdenes de Servicio</h1>
+            <p className="text-slate-500 mt-1">{orders.length} órdenes registradas</p>
+          </div>
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900 shrink-0">
+            <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Nueva Orden</span><span className="sm:hidden">Nueva</span>
           </Button>
+        </div>
+        <div className="mt-3">
+          <ExportImport entityName="ServiceOrder" fields={["motorcycle_id", "customer_id", "service_type", "description", "status", "technician_id", "mechanic", "entry_date", "delivery_date", "cost", "previous_mileage", "current_mileage", "oil_change_interval", "next_oil_change", "parts_used"]} />
         </div>
       </div>
 
-      <div className="flex gap-3 mb-4 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="space-y-3 mb-4">
+        <div className="relative">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input placeholder="Buscar orden..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <div className="flex gap-1 bg-white border border-slate-200 rounded-lg p-1 overflow-x-auto">
+        <div className="flex gap-1 bg-white border border-slate-200 rounded-lg p-1 overflow-x-auto -mx-1 px-1">
           {["all", ...statuses].map((s) => (
             <button key={s} onClick={() => setFilterStatus(s)}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${filterStatus === s ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900"}`}>
