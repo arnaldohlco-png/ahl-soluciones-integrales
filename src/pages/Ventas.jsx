@@ -30,7 +30,7 @@ export default function Ventas() {
     (async () => {
       try {
         const [prods, custs, comps] = await Promise.all([
-          base44.entities.Product.list("-created_date", 200),
+          base44.entities.Product.list("-created_date", 1000),
           base44.entities.Customer.list("-created_date", 100),
           base44.entities.Company.list("-created_date", 1),
         ]);
@@ -41,12 +41,16 @@ export default function Ventas() {
     })();
   }, []);
 
-  const filtered = useMemo(() =>
-    products.filter(p =>
-      !search || p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(search.toLowerCase()) ||
-      p.barcode?.includes(search)
-    ), [products, search]);
+  const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const filtered = useMemo(() => {
+    const q = norm(search);
+    if (!q) return products;
+    return products.filter(p =>
+      norm(p.name).includes(q) ||
+      norm(p.sku).includes(q) ||
+      (p.barcode || "").includes(q)
+    );
+  }, [products, search]);
 
   const addToCart = (product) => {
     if ((product.stock || 0) <= 0) return;
@@ -155,7 +159,7 @@ export default function Ventas() {
         });
       }
 
-      const prods = await base44.entities.Product.list("-created_date", 200);
+      const prods = await base44.entities.Product.list("-created_date", 1000);
       setProducts(prods);
 
       setCart([]);
