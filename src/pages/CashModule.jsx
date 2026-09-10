@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Landmark, Plus, TrendingUp, TrendingDown, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { Landmark, Plus, TrendingUp, TrendingDown, ArrowDownCircle, ArrowUpCircle, Search } from "lucide-react";
 import moment from "moment";
 
 const REGISTERS = ["Caja principal", "Caja taller", "Caja almacén", "Bancos"];
@@ -19,6 +19,7 @@ export default function Cash() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterRegister, setFilterRegister] = useState("all");
+  const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -51,7 +52,14 @@ export default function Cash() {
 
   const totalBalance = Object.values(balances).reduce((s, v) => s + v, 0);
 
-  const filtered = filterRegister === "all" ? list : list.filter(m => m.register_type === filterRegister);
+  const filtered = list.filter(m => {
+    const matchReg = filterRegister === "all" || m.register_type === filterRegister;
+    const matchSearch = !search ||
+      m.description?.toLowerCase().includes(search.toLowerCase()) ||
+      m.category?.toLowerCase().includes(search.toLowerCase()) ||
+      (m.amount || 0).toString().includes(search);
+    return matchReg && matchSearch;
+  });
 
   const openNew = () => {
     setForm({ type: "Entrada", category: "Otro ingreso", amount: 0, description: "", payment_method: "Efectivo", register_type: "Caja principal", date: new Date().toISOString() });
@@ -133,7 +141,11 @@ export default function Cash() {
       </div>
 
       {/* Filter */}
-      <div className="mb-4">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input placeholder="Buscar por descripción, categoría o monto..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+        </div>
         <Select value={filterRegister} onValueChange={setFilterRegister}>
           <SelectTrigger className="w-full sm:w-56"><SelectValue /></SelectTrigger>
           <SelectContent>

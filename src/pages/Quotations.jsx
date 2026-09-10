@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil, Printer, MessageCircle } from "lucide-react";
+import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil, Printer, MessageCircle, Search } from "lucide-react";
 import moment from "moment";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -29,8 +29,15 @@ export default function Quotations() {
   const [form, setForm] = useState({ customer_id: "", date: moment().format("YYYY-MM-DD") });
   const [items, setItems] = useState([]);
   const [printQ, setPrintQ] = useState(null);
+  const [search, setSearch] = useState("");
 
   const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
+
+  const filtered = quotes.filter((q) =>
+    !search ||
+    (q.number || "").toLowerCase().includes(search.toLowerCase()) ||
+    (q.customer_name || custName(q.customer_id) || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   useEffect(() => { load(); }, []);
 
@@ -152,14 +159,19 @@ export default function Quotations() {
         </Button>
       </div>
 
-      {quotes.length === 0 ? (
+      <div className="relative mb-4 max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Input placeholder="Buscar por número o cliente..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+      </div>
+
+      {filtered.length === 0 ? (
         <div className="text-center py-20 text-slate-400">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p>No hay cotizaciones registradas</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quotes.map((q) => {
+          {filtered.map((q) => {
             const parsed = (() => { try { return JSON.parse(q.items || "[]"); } catch { return []; } })();
             return (
               <div key={q.id} className="bg-white rounded-2xl border border-slate-200 p-5">

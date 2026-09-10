@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { HandCoins, Plus, Pencil, Trash2, Loader2, Printer } from "lucide-react";
+import { HandCoins, Plus, Pencil, Trash2, Loader2, Printer, Search } from "lucide-react";
 import moment from "moment";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
@@ -22,6 +22,7 @@ export default function TechnicianLoans() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [filterTech, setFilterTech] = useState("all");
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState({ technician_id: "", date: moment().format("YYYY-MM-DD"), amount: "", description: "" });
   const [printL, setPrintL] = useState(null);
 
@@ -42,7 +43,13 @@ export default function TechnicianLoans() {
 
   const techName = (id) => techs.find((t) => t.id === id)?.name || "—";
 
-  const filtered = loans.filter((l) => filterTech === "all" || l.technician_id === filterTech);
+  const filtered = loans.filter((l) => {
+    const matchTech = filterTech === "all" || l.technician_id === filterTech;
+    const matchSearch = !search ||
+      (l.technician_name || techName(l.technician_id)).toLowerCase().includes(search.toLowerCase()) ||
+      l.description?.toLowerCase().includes(search.toLowerCase());
+    return matchTech && matchSearch;
+  });
   const totalPending = filtered.filter((l) => l.status === "Pendiente").reduce((s, l) => s + (l.balance || 0), 0);
 
   const openNew = () => {
@@ -94,9 +101,13 @@ export default function TechnicianLoans() {
         </Button>
       </div>
 
-      <div className="mb-4 max-w-xs">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input placeholder="Buscar por técnico o descripción..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+        </div>
         <Select value={filterTech} onValueChange={setFilterTech}>
-          <SelectTrigger><SelectValue placeholder="Filtrar por técnico..." /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-56"><SelectValue placeholder="Filtrar por técnico..." /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos los técnicos</SelectItem>
             {techs.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}

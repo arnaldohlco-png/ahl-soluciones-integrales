@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wallet, Loader2, CheckCircle2, Clock, Printer } from "lucide-react";
+import { Wallet, Loader2, CheckCircle2, Clock, Printer, Search } from "lucide-react";
 import moment from "moment";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
@@ -24,6 +24,7 @@ export default function CommissionPayments() {
   const [motos, setMotos] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [printPay, setPrintPay] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -128,6 +129,12 @@ export default function CommissionPayments() {
     setPaying(false);
   };
 
+  const filteredPayments = payments.filter((p) =>
+    !search ||
+    (p.technician_name || "").toLowerCase().includes(search.toLowerCase()) ||
+    moment(p.date).format("DD/MM/YYYY").includes(search)
+  );
+
   if (loading) {
     return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" /></div>;
   }
@@ -212,8 +219,14 @@ export default function CommissionPayments() {
 
       {/* Payment history */}
       <div>
-        <h3 className="font-semibold text-slate-900 mb-3">Historial de pagos</h3>
-        {payments.length === 0 ? (
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h3 className="font-semibold text-slate-900">Historial de pagos</h3>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input placeholder="Buscar por técnico o fecha..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          </div>
+        </div>
+        {filteredPayments.length === 0 ? (
           <div className="text-center py-12 text-slate-400">
             <Clock className="w-10 h-10 mx-auto mb-2 opacity-40" />
             <p>No hay pagos registrados</p>
@@ -234,7 +247,7 @@ export default function CommissionPayments() {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((p) => (
+                {filteredPayments.map((p) => (
                   <tr key={p.id} className="border-t border-slate-100">
                     <td className="px-4 py-3 text-slate-600">{moment(p.date).format("DD/MM/YYYY")}</td>
                     <td className="px-4 py-3 font-medium text-slate-900">{p.technician_name}</td>
