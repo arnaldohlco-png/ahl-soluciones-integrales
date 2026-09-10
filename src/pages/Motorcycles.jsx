@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Bike, Search } from "lucide-react";
 import { matchAny } from "@/lib/search";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const empty = {
   customer_id: "", brand: "", line: "", model: "", year: "", plate: "", vin: "",
@@ -177,11 +178,14 @@ export default function Motorcycles() {
           <DialogHeader><DialogTitle>{editing ? "Editar Motocicleta" : "Nueva Motocicleta"}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
             <div>
-              <Label>Propietario *</Label>
-              <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v })}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar cliente" /></SelectTrigger>
-                <SelectContent>{customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <SearchableSelect
+                label="Propietario"
+                required
+                placeholder="Buscar cliente..."
+                value={form.customer_id}
+                onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
