@@ -34,6 +34,7 @@ export default function Quotations() {
   const [search, setSearch] = useState("");
 
   const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
+  const custName = (id) => customers.find((c) => c.id === id)?.name || "—";
 
   const filtered = quotes.filter((q) =>
     matchAny(search, q.number, q.customer_name, custName(q.customer_id))
@@ -55,8 +56,6 @@ export default function Quotations() {
     } catch (e) { console.error(e); }
     setLoading(false);
   };
-
-  const custName = (id) => customers.find((c) => c.id === id)?.name || "—";
 
   const openNew = () => {
     setEditing(null);
