@@ -12,11 +12,12 @@ const fmt = (n) => `$${(n || 0).toLocaleString("es-CO", { minimumFractionDigits:
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [d, setD] = useState({});
+  const [company, setCompany] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians] = await Promise.all([
+        const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians, companies] = await Promise.all([
         base44.entities.Sale.list("-created_date", 200),
         base44.entities.ServiceOrder.list("-created_date", 200),
         base44.entities.Customer.list("-created_date", 100),
@@ -25,8 +26,10 @@ export default function Dashboard() {
         base44.entities.Expense.list("-created_date", 200),
         base44.entities.AccountReceivable.list("-created_date", 200),
         base44.entities.Invoice.list("-created_date", 200),
-        base44.entities.Technician.list("-created_date", 100)]
+        base44.entities.Technician.list("-created_date", 100),
+        base44.entities.Company.list("-created_date", 1)]
         );
+        setCompany(companies[0] || null);
 
         const today = moment().format("YYYY-MM-DD");
         const startWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
@@ -114,10 +117,39 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto bg-[#f91515]">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-[hsl(var(--background))]">Resumen</h1>
-        <p className="mt-1 text-[hsl(var(--background))]">Resumen financiero y operativo en tiempo real</p>
+    <div className="p-6 md:p-8 max-w-7xl mx-auto">
+      {/* Encabezado con datos de la empresa */}
+      <div className="mb-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 md:p-6 text-white shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          {company?.logo ? (
+            <img src={company.logo} alt="Logo" className="w-16 h-16 rounded-lg object-contain bg-white/95 p-1 shrink-0" />
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+              <Bike className="w-8 h-8 text-white" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold truncate">{company?.name || "Mi Taller"}</h1>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-slate-300">
+              {company?.document_number && <span>NIT/C.C.: {company.document_number}</span>}
+              {company?.phone && <span className="flex items-center gap-1">· {company.phone}</span>}
+              {company?.email && <span className="truncate">· {company.email}</span>}
+            </div>
+            {(company?.address || company?.city) && (
+              <p className="text-sm text-slate-400 mt-0.5 truncate">
+                {[company.address, company.city].filter(Boolean).join(" · ")}
+              </p>
+            )}
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-xs text-slate-400">{moment().format("dddd")}</p>
+            <p className="text-lg font-semibold">{moment().format("DD/MM/YYYY")}</p>
+          </div>
+        </div>
+      </div>
+      <div className="mb-6">
+        <h2 className="text-xl md:text-2xl font-bold text-slate-900">Resumen</h2>
+        <p className="mt-1 text-slate-500">Resumen financiero y operativo en tiempo real</p>
       </div>
 
       {/* Sales row */}
