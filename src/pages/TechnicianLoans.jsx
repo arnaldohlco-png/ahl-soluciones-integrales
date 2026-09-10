@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,8 +36,8 @@ export default function TechnicianLoans() {
   const load = async () => {
     try {
       const [l, t] = await Promise.all([
-        base44.entities.TechnicianLoan.list("-created_date", 500),
-        base44.entities.Technician.list("-created_date", 200),
+        fetchAll("TechnicianLoan"),
+        fetchAll("Technician"),
       ]);
       setLoans(l); setTechs(t);
     } catch (e) { console.error(e); }

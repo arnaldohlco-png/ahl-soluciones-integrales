@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +27,7 @@ export default function ServicesModule() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.Service.list("-created_date", 500);
+      const data = await fetchAll("Service");
       setServices(data);
     } catch (e) { console.error(e); }
     setLoading(false);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ export default function Customers() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.Customer.list("-created_date", 200);
+      const data = await fetchAll("Customer");
       setCustomers(data);
     } catch (e) { console.error(e); }
     setLoading(false);

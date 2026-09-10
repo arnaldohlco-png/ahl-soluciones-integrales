@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,10 +47,10 @@ export default function Quotations() {
   const load = async () => {
     try {
       const [q, c, p, s, comps] = await Promise.all([
-        base44.entities.Invoice.filter({ type: "Cotización" }, "-created_date", 200),
+        base44.entities.Invoice.filter({ type: "Cotización" }, "-created_date", 5000),
         fetchAllCustomers(),
         fetchAllProducts(),
-        base44.entities.Service.list("-created_date", 200),
+        fetchAll("Service"),
         base44.entities.Company.list("-created_date", 1),
       ]);
       setQuotes(q); setCustomers(c); setProducts(p); setServices(s.filter((x) => x.status === "Activo"));

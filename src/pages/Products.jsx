@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,8 +36,8 @@ export default function Products() {
     setLoading(true);
     try {
       const [p, s] = await Promise.all([
-        base44.entities.Product.list("-created_date", 5000),
-        base44.entities.Supplier.list("-created_date", 5000),
+        fetchAll("Product"),
+        fetchAll("Supplier"),
       ]);
       setProducts(p); setSuppliers(s);
     } catch (e) { console.error(e); }

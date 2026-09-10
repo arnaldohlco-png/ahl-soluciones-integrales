@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,9 +34,9 @@ export default function CommissionPayments() {
     (async () => {
       try {
         const [t, p, m, c] = await Promise.all([
-          base44.entities.Technician.list("-created_date", 200),
-          base44.entities.CommissionPayment.list("-created_date", 200),
-          base44.entities.Motorcycle.list("-created_date", 500),
+          fetchAll("Technician"),
+          fetchAll("CommissionPayment"),
+          fetchAll("Motorcycle"),
           fetchAllCustomers(),
         ]);
         setTechs(t.filter((x) => x.status === "Activo"));

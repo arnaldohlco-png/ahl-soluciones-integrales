@@ -1,6 +1,7 @@
 // Compras
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,9 +44,9 @@ export default function Purchases() {
     (async () => {
       try {
         const [purchs, supls, prods, comps] = await Promise.all([
-          base44.entities.Purchase.list("-date", 5000),
-          base44.entities.Supplier.list("-created_date", 5000),
-          base44.entities.Product.list("-created_date", 5000),
+          fetchAll("Purchase", "-date"),
+          fetchAll("Supplier"),
+          fetchAll("Product"),
           base44.entities.Company.list("-created_date", 1),
         ]);
         setList(purchs);

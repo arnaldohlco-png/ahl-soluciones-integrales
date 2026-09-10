@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
@@ -19,17 +20,17 @@ export default function Dashboard() {
     (async () => {
       try {
         const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians, companies, appointments] = await Promise.all([
-        base44.entities.Sale.list("-created_date", 200),
-        base44.entities.ServiceOrder.list("-created_date", 200),
-        base44.entities.Customer.list("-created_date", 100),
-        base44.entities.Motorcycle.list("-created_date", 100),
-        base44.entities.Product.list("-created_date", 200),
-        base44.entities.Expense.list("-created_date", 200),
-        base44.entities.AccountReceivable.list("-created_date", 200),
-        base44.entities.Invoice.list("-created_date", 200),
-        base44.entities.Technician.list("-created_date", 100),
+        fetchAll("Sale"),
+        fetchAll("ServiceOrder"),
+        fetchAll("Customer"),
+        fetchAll("Motorcycle"),
+        fetchAll("Product"),
+        fetchAll("Expense"),
+        fetchAll("AccountReceivable"),
+        fetchAll("Invoice"),
+        fetchAll("Technician"),
         base44.entities.Company.list("-created_date", 1),
-        base44.entities.Appointment.list("-date", 50)]
+        fetchAll("Appointment", "-date")]
         );
         setCompany(companies[0] || null);
 

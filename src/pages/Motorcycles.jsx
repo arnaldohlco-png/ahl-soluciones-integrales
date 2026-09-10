@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,9 +30,9 @@ export default function Motorcycles() {
     setLoading(true);
     try {
       const [m, c, b] = await Promise.all([
-        base44.entities.Motorcycle.list("-created_date", 200),
-        base44.entities.Customer.list("-created_date", 200),
-        base44.entities.Brand.list("-created_date", 200),
+        fetchAll("Motorcycle"),
+        fetchAll("Customer"),
+        fetchAll("Brand"),
       ]);
       setMotos(m); setCustomers(c); setBrands(b);
     } catch (e) { console.error(e); }

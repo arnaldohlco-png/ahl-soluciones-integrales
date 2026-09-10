@@ -1,6 +1,7 @@
 // Gastos
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +32,7 @@ export default function Expenses() {
 
   const load = async () => {
     try {
-      const data = await base44.entities.Expense.list("-date", 200);
+      const data = await fetchAll("Expense", "-date");
       setList(data);
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };

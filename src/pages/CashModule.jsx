@@ -1,6 +1,7 @@
 // Caja y Bancos
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +36,7 @@ export default function Cash() {
 
   const load = async () => {
     try {
-      const data = await base44.entities.CashMovement.list("-date", 200);
+      const data = await fetchAll("CashMovement", "-date");
       setList(data);
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
