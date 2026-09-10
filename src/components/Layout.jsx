@@ -49,7 +49,7 @@ const navGroups = [
   { to: "/empresa", label: "Mi Empresa", icon: Store },
   { to: "/prestamos-tecnicos", label: "Préstamos Técnicos", icon: HandCoins },
   { to: "/pago-comisiones", label: "Pago Comisiones", icon: Banknote }]
-  }];
+}];
 
 
 export default function Layout() {
@@ -113,7 +113,7 @@ export default function Layout() {
           <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
             <Bike className="w-5 h-5 text-slate-900" />
           </div>
-          <span className="font-bold">MotoTaller</span>
+          <span className="font-bold">AHL Soluciones </span>
         </div>
         <button onClick={() => setMobileOpen(true)} className="p-2 -mr-2">
           <Menu className="w-6 h-6" />
