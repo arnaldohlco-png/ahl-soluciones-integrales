@@ -49,22 +49,29 @@ export default function Invoices() {
   });
   const [printInv, setPrintInv] = useState(null);
   const [cobro, setCobro] = useState(null);
+  const [receivables, setReceivables] = useState([]);
 
   const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
+
+  // Facturas ya cobradas a crédito: tienen una cuenta por cobrar asociada
+  const receivableInvoiceIds = useMemo(() => new Set(receivables.map((r) => r.invoice_id).filter(Boolean)), [receivables]);
+  const isLocked = (inv) => inv.status === "Pagada" || receivableInvoiceIds.has(inv.id);
 
   useEffect(() => {
     (async () => {
       try {
-        const [inv, cust, prods, servs] = await Promise.all([
+        const [inv, cust, prods, servs, recs] = await Promise.all([
           fetchAll("Invoice", "-date"),
           fetchAllCustomers(),
           fetchAllProducts(),
           fetchAll("Service"),
+          fetchAll("AccountReceivable"),
         ]);
         setList(inv);
         setCustomers(cust);
         setProducts(prods);
         setServices(servs);
+        setReceivables(recs);
         const comp = await base44.entities.Company.list("-created_date", 1);
         if (comp.length > 0) setCompany(comp[0]);
       } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -152,6 +159,8 @@ export default function Invoices() {
       }
       const data = await base44.entities.Invoice.list("-date", 200);
       setList(data);
+      const recs = await fetchAll("AccountReceivable");
+      setReceivables(recs);
     } catch (e) { console.error(e); alert("Error al cobrar el documento"); }
   };
 
@@ -262,10 +271,10 @@ export default function Invoices() {
                         {inv.status === "Pagada" && COBRABLES.includes(inv.type) && (
                           <button onClick={() => navigate("/devoluciones", { state: { sourceType: "Factura", sourceId: inv.id } })} title="Devolución" className="p-1.5 text-blue-500 hover:bg-blue-50 rounded"><Undo2 className="w-4 h-4" /></button>
                         )}
-                        {inv.status !== "Pagada" && (
+                        {!isLocked(inv) && (
                           <button onClick={() => openEdit(inv)} className="p-1.5 text-slate-400 hover:text-amber-600"><Pencil className="w-4 h-4" /></button>
                         )}
-                        {inv.status !== "Pagada" && (
+                        {!isLocked(inv) && (
                           <button onClick={() => remove(inv.id)} className="p-1.5 text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
                         )}
                       </div>
