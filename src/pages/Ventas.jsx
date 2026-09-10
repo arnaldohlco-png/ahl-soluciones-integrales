@@ -12,6 +12,7 @@ export default function Ventas() {
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState([]);
   const [customerId, setCustomerId] = useState("");
@@ -90,7 +91,7 @@ export default function Ventas() {
 
   const checkout = async () => {
     if (cart.length === 0) return;
-    setLoading(true);
+    setProcessing(true);
     try {
       const cust = customers.find(c => c.id === customerId);
       const saleNumber = await getNextDocNumber("Sale", getPrefix(company, "sale"));
@@ -156,7 +157,7 @@ export default function Ventas() {
       console.error(e);
       alert("Error al procesar la venta: " + e.message);
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
@@ -318,8 +319,8 @@ export default function Ventas() {
                     </Select>
                   </div>
                 </div>
-                <Button onClick={checkout} disabled={loading} className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 h-10">
-                  {loading ? "Procesando..." : "Cobrar y registrar venta"}
+                <Button onClick={checkout} disabled={processing} className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 h-10">
+                  {processing ? "Procesando..." : "Cobrar y registrar venta"}
                 </Button>
               </div>
             </>
