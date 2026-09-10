@@ -53,8 +53,8 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
 
   const handleSelect = (item) => {
     onSelect(item);
-    setOpen(false);
     setQ("");
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   return (
