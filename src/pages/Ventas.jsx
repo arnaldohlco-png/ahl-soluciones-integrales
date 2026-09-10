@@ -29,8 +29,20 @@ export default function Ventas() {
   useEffect(() => {
     (async () => {
       try {
+        const fetchAllProducts = async () => {
+          const batch = 500;
+          let skip = 0;
+          const all = [];
+          while (true) {
+            const part = await base44.entities.Product.list("-created_date", batch, skip);
+            all.push(...part);
+            if (part.length < batch) break;
+            skip += batch;
+          }
+          return all;
+        };
         const [prods, custs, comps] = await Promise.all([
-          base44.entities.Product.list("-created_date", 1000),
+          fetchAllProducts(),
           base44.entities.Customer.list("-created_date", 100),
           base44.entities.Company.list("-created_date", 1),
         ]);
@@ -159,7 +171,14 @@ export default function Ventas() {
         });
       }
 
-      const prods = await base44.entities.Product.list("-created_date", 1000);
+      let skip = 0, prods = [];
+      const batch = 500;
+      while (true) {
+        const part = await base44.entities.Product.list("-created_date", batch, skip);
+        prods.push(...part);
+        if (part.length < batch) break;
+        skip += batch;
+      }
       setProducts(prods);
 
       setCart([]);
