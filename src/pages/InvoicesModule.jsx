@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Receipt, Plus, Search, Trash2, Pencil, Printer } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
+import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
@@ -20,6 +21,9 @@ const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito
 export default function Invoices() {
   const [list, setList] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -41,12 +45,16 @@ export default function Invoices() {
   useEffect(() => {
     (async () => {
       try {
-        const [inv, cust] = await Promise.all([
+        const [inv, cust, prods, servs] = await Promise.all([
           base44.entities.Invoice.list("-date", 200),
           base44.entities.Customer.list("-created_date", 100),
+          base44.entities.Product.list("-created_date", 500),
+          base44.entities.Service.list("-created_date", 200),
         ]);
         setList(inv);
         setCustomers(cust);
+        setProducts(prods);
+        setServices(servs);
         const comp = await base44.entities.Company.list("-created_date", 1);
         if (comp.length > 0) setCompany(comp[0]);
       } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -63,12 +71,16 @@ export default function Invoices() {
   const openNew = () => {
     setEditing(null);
     setForm({ customer_id: "", customer_name: "", type: "Factura de venta", number: "", date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente", payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "", amount_paid: 0, change: 0 });
+    setItems([]);
     setModalOpen(true);
   };
 
   const openEdit = (inv) => {
     setEditing(inv);
     setForm({ ...inv });
+    let parsed = [];
+    try { const p = JSON.parse(inv.items || "[]"); if (Array.isArray(p)) parsed = p; } catch (e) { /* ignore */ }
+    setItems(parsed);
     setModalOpen(true);
   };
 
@@ -118,6 +130,13 @@ export default function Invoices() {
     "Anulada": "bg-red-100 text-red-700",
   };
   const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
+
+  const updateItems = (newItems) => {
+    setItems(newItems);
+    const subtotal = newItems.reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
+    const iva = chargesIva ? Math.round(subtotal * 0.19) : 0;
+    setForm(f => ({ ...f, items: JSON.stringify(newItems), subtotal, iva, total: subtotal + iva - (Number(f.discount) || 0) }));
+  };
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
@@ -238,7 +257,7 @@ export default function Invoices() {
             </div>
             <div>
               <Label>Detalle / Items</Label>
-              <Textarea value={form.items} onChange={(e) => setForm({ ...form, items: e.target.value })} rows={3} placeholder="Descripción de los items..." />
+              <ServiceItemsEditor items={items} setItems={updateItems} products={products} services={services} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
