@@ -158,4 +158,11 @@
     padding-top: 6px !important;
     width: 100% !important;
   }
+  body.print-80mm .print-area .doc-header > div:first-child {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  body.print-80mm .print-area .doc-header > div:first-child > img {
+    margin: 0 auto !important;
+  }
 }
