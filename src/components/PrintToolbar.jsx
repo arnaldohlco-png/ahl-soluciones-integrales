@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
+import PdfWhatsAppButton from "@/components/PdfWhatsAppButton";
 
-export default function PrintToolbar({ onClose, defaultFormat = "a4" }) {
+export default function PrintToolbar({ onClose, defaultFormat = "a4", whatsappPhone, whatsappMessage }) {
   const [format, setFormat] = useState(defaultFormat);
 
   const handlePrint = () => {
@@ -44,6 +45,7 @@ export default function PrintToolbar({ onClose, defaultFormat = "a4" }) {
         </div>
       </div>
       <div className="flex gap-2">
+        <PdfWhatsAppButton phone={whatsappPhone} message={whatsappMessage} format={format} />
         <Button onClick={handlePrint} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
           <Printer className="w-4 h-4 mr-1" /> Imprimir
         </Button>

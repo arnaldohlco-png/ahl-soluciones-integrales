@@ -28,6 +28,12 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
 
   const items = parseItems(type === "order" ? doc.service_items : doc.items);
 
+  const whatsappPhone =
+    type === "purchase" ? supplier?.phone
+    : (type === "loan" || type === "commission") ? technician?.phone
+    : (customer?.whatsapp || customer?.phone);
+  const whatsappMessage = `Hola, adjunto su ${title} N° ${doc.number || ""}${company?.name ? " de " + company.name : ""}. Puede ver el documento en PDF aquí: {{link}}`;
+
   const resolutionLine = company && company.dian_resolution
     ? `Resolución DIAN N° ${company.dian_resolution}${company.dian_resolution_date ? " del " + moment(company.dian_resolution_date).format("DD/MM/YYYY") : ""}`
     : "";
@@ -65,7 +71,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto p-4 print:bg-white print:p-0 print:block">
       <div className="print-area bg-white text-slate-900 w-full max-w-3xl my-4 shadow-xl print:shadow-none print:my-0 print:max-w-none">
-        <PrintToolbar onClose={onClose} />
+        <PrintToolbar onClose={onClose} whatsappPhone={whatsappPhone} whatsappMessage={whatsappMessage} />
 
         <div className="p-8 text-[13px] leading-relaxed print:p-6 print-inner">
           {/* Header */}

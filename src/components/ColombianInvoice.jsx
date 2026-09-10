@@ -19,6 +19,9 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
   });
   const ivaRates = Object.keys(ivaGroups).map(Number).sort((a, b) => b - a);
 
+  const whatsappPhone = customer?.whatsapp || customer?.phone;
+  const whatsappMessage = `Hola, adjunto su Factura de Venta N° ${sale.number || ""}${company?.name ? " de " + company.name : ""}. Puede ver el documento en PDF aquí: {{link}}`;
+
   const dt = sale.created_date ? moment(sale.created_date) : moment();
   const resolutionLine = company && company.dian_resolution
     ? `Resolución DIAN N° ${company.dian_resolution}${company.dian_resolution_date ? " del " + moment(company.dian_resolution_date).format("DD/MM/YYYY") : ""}${(company.dian_range_from || company.dian_range_to) ? " · Rango " + (company.dian_range_from || 0) + " al " + (company.dian_range_to || 0) : ""}`
@@ -27,7 +30,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto p-4 print:bg-white print:p-0 print:block">
       <div className="print-area bg-white text-slate-900 w-full max-w-3xl my-4 shadow-xl print:shadow-none print:my-0 print:max-w-none">
-        <PrintToolbar onClose={onClose} />
+        <PrintToolbar onClose={onClose} whatsappPhone={whatsappPhone} whatsappMessage={whatsappMessage} />
 
         {/* Invoice */}
         <div className="p-8 text-[13px] leading-relaxed print:p-6 print-inner">
