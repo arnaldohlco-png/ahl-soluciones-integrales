@@ -187,7 +187,8 @@ export default function ServiceOrders() {
     try {
       const items = JSON.parse(o.service_items || "[]");
       const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
-      const iva = Math.round(subtotal * 0.19);
+      const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
+      const iva = chargesIva ? Math.round(subtotal * 0.19) : 0;
       await base44.entities.Invoice.create({
         customer_id: o.customer_id, customer_name: customerName(o.customer_id),
         type: "Cotización", number: await getNextDocNumber("Invoice", getPrefix(company, "quote")),
@@ -204,7 +205,8 @@ export default function ServiceOrders() {
     try {
       const items = JSON.parse(o.service_items || "[]");
       const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
-      const iva = Math.round(subtotal * 0.19);
+      const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
+      const iva = chargesIva ? Math.round(subtotal * 0.19) : 0;
       const saleNumber = await getNextDocNumber("Sale", getPrefix(company, "sale"));
       await base44.entities.Sale.create({
         number: saleNumber,
