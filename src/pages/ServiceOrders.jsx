@@ -54,11 +54,12 @@ export default function ServiceOrders() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [printOrder, setPrintOrder] = useState(null);
   const [invoices, setInvoices] = useState([]);
+  const [sales, setSales] = useState([]);
 
   const load = async () => {
     setLoading(true);
     try {
-      const [o, m, c, t, p, sv, comp, inv] = await Promise.all([
+      const [o, m, c, t, p, sv, comp, inv, sal] = await Promise.all([
         fetchAll("ServiceOrder"),
         fetchAll("Motorcycle"),
         fetchAllCustomers(),
@@ -67,10 +68,11 @@ export default function ServiceOrders() {
         fetchAll("Service"),
         base44.entities.Company.list("-created_date", 10),
         fetchAll("Invoice"),
+        fetchAll("Sale"),
       ]);
       setOrders(o); setMotos(m); setCustomers(c); setTechnicians(t);
       setProducts(p); setServices(sv); if (comp.length > 0) setCompany(comp[0]);
-      setInvoices(inv);
+      setInvoices(inv); setSales(sal);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -196,6 +198,7 @@ export default function ServiceOrders() {
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
         subtotal, iva, total: subtotal + iva, status: "Pendiente", related_order_id: o.id,
       });
+      await base44.entities.ServiceOrder.update(o.id, { status: "Cobrada" });
       await load();
       alert("Cotización creada correctamente");
     } catch (e) { console.error(e); alert("Error al crear cotización"); }
@@ -215,14 +218,19 @@ export default function ServiceOrders() {
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
         subtotal, iva_total: iva, discount: 0, total: subtotal + iva,
         payment_method: "Efectivo", payment_type: "Contado", status: "Pagada", balance: 0,
+        related_order_id: o.id,
       });
+      await base44.entities.ServiceOrder.update(o.id, { status: "Cobrada" });
       await load();
       alert("Venta creada correctamente");
     } catch (e) { console.error(e); alert("Error al crear venta"); }
   };
 
-  // Órdenes que ya se convirtieron en cotización/factura no deben seguir apareciendo
-  const convertedOrderIds = new Set(invoices.map((i) => i.related_order_id).filter(Boolean));
+  // Órdenes que ya se convirtieron en cotización/factura/venta no deben seguir apareciendo
+  const convertedOrderIds = new Set([
+    ...invoices.map((i) => i.related_order_id).filter(Boolean),
+    ...sales.map((s) => s.related_order_id).filter(Boolean),
+  ]);
   const filtered = orders.filter((o) => {
     if (convertedOrderIds.has(o.id)) return false;
     const matchSearch = matchAny(search, o.service_type, motoLabel(o.motorcycle_id), customerName(o.customer_id), o.number, o.description);

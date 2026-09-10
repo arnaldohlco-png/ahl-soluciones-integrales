@@ -32,12 +32,14 @@ export default function Ventas() {
   const location = useLocation();
   const [pendingQuote, setPendingQuote] = useState(null);
   const quoteIdRef = useRef(null);
+  const quoteOrderIdRef = useRef(null);
 
   useEffect(() => {
     const st = location.state;
     if (st && st.fromQuote) {
       setPendingQuote(st.fromQuote);
       quoteIdRef.current = st.fromQuote.id || null;
+      quoteOrderIdRef.current = st.fromQuote.related_order_id || null;
     }
   }, [location]);
 
@@ -118,6 +120,7 @@ export default function Ventas() {
     setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
     setSearch("");
     quoteIdRef.current = null;
+    quoteOrderIdRef.current = null;
     searchRef.current?.focus();
   };
 
@@ -236,6 +239,7 @@ export default function Ventas() {
         balance: paymentType === "Crédito" ? totals.total : 0,
         amount_paid: paymentMethod === "Efectivo" && paymentType === "Contado" ? amountPaid : 0,
         change: paymentMethod === "Efectivo" && paymentType === "Contado" ? Math.max(0, amountPaid - totals.total) : 0,
+        related_order_id: quoteOrderIdRef.current || undefined,
       });
 
       await Promise.all(cart.filter(item => item.product_id).map(item =>
@@ -286,6 +290,10 @@ export default function Ventas() {
       if (quoteIdRef.current) {
         try { await base44.entities.Invoice.update(quoteIdRef.current, { status: "Pagada", related_sale_id: sale.id }); } catch (e) { /* ignore */ }
         quoteIdRef.current = null;
+      }
+      if (quoteOrderIdRef.current) {
+        try { await base44.entities.ServiceOrder.update(quoteOrderIdRef.current, { status: "Cobrada" }); } catch (e) { /* ignore */ }
+        quoteOrderIdRef.current = null;
       }
       setInvoiceSale(sale);
       setTimeout(() => setCheckoutMsg(""), 3000);
