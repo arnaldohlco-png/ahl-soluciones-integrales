@@ -137,6 +137,7 @@ export default function ServiceOrders() {
     setSaving(true);
     const nextOil = (Number(form.current_mileage) || 0) + (Number(form.oil_change_interval) || 0);
     const payload = { ...form, service_items: JSON.stringify(serviceItems), next_oil_change: nextOil };
+    if (payload.status === "Entregado" && !payload.delivery_date) payload.delivery_date = new Date().toISOString().split("T")[0];
     numFields.forEach((f) => { payload[f] = Number(payload[f]) || 0; });
     try {
       if (editing) { await base44.entities.ServiceOrder.update(editing.id, payload); }
@@ -158,7 +159,9 @@ export default function ServiceOrders() {
   const cycleStatus = async (o) => {
     const idx = statuses.indexOf(o.status);
     const next = statuses[(idx + 1) % statuses.length];
-    await base44.entities.ServiceOrder.update(o.id, { status: next });
+    const payload = { status: next };
+    if (next === "Entregado") payload.delivery_date = new Date().toISOString().split("T")[0];
+    await base44.entities.ServiceOrder.update(o.id, payload);
     await load();
   };
 

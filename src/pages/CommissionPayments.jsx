@@ -45,6 +45,16 @@ export default function CommissionPayments() {
 
   const techPhone = (id) => techs.find((t) => t.id === id)?.phone || "";
 
+  // Base de comisión: solo servicios (type "service"), excluyendo los denominados "terceros"
+  const commissionBase = (o) => {
+    let items = [];
+    try { items = JSON.parse(o.service_items || "[]"); } catch { items = []; }
+    return items
+      .filter((i) => i.type === "service")
+      .filter((i) => !/tercero/i.test((i.name || "").trim()))
+      .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
+  };
+
   const printPayment = async (p) => {
     try {
       const orders = await base44.entities.ServiceOrder.filter({ technician_id: p.technician_id }, "-created_date", 500);
@@ -70,10 +80,12 @@ export default function CommissionPayments() {
         return d >= from && d <= to && (o.status === "Completado" || o.status === "Entregado");
       });
 
+      const pct = techs.find((t) => t.id === selectedTech)?.commission_percentage || 0;
       const totalCommission = inRange.reduce((s, o) => {
+        const base = commissionBase(o);
+        if (base > 0) return s + (base * pct / 100);
         if (o.technician_commission) return s + o.technician_commission;
-        const pct = techs.find((t) => t.id === selectedTech)?.commission_percentage || 0;
-        return s + ((o.cost || 0) * pct / 100);
+        return s;
       }, 0);
 
       const pendingLoans = loans.filter((l) => (l.balance || 0) > 0);
