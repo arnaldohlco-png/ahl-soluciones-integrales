@@ -148,8 +148,11 @@
     align-items: center !important;
     text-align: center !important;
   }
-  body.print-80mm .print-area .doc-header > div {
+  body.print-80mm .print-area .doc-header,
+  body.print-80mm .print-area .doc-header * {
     text-align: center !important;
+  }
+  body.print-80mm .print-area .doc-header > div {
     border: none !important;
     padding-left: 0 !important;
   }
