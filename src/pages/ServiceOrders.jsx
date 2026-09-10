@@ -53,11 +53,12 @@ export default function ServiceOrders() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [printOrder, setPrintOrder] = useState(null);
+  const [invoices, setInvoices] = useState([]);
 
   const load = async () => {
     setLoading(true);
     try {
-      const [o, m, c, t, p, sv, comp] = await Promise.all([
+      const [o, m, c, t, p, sv, comp, inv] = await Promise.all([
         fetchAll("ServiceOrder"),
         fetchAll("Motorcycle"),
         fetchAllCustomers(),
@@ -65,9 +66,11 @@ export default function ServiceOrders() {
         fetchAllProducts(),
         fetchAll("Service"),
         base44.entities.Company.list("-created_date", 10),
+        fetchAll("Invoice"),
       ]);
       setOrders(o); setMotos(m); setCustomers(c); setTechnicians(t);
       setProducts(p); setServices(sv); if (comp.length > 0) setCompany(comp[0]);
+      setInvoices(inv);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -192,6 +195,7 @@ export default function ServiceOrders() {
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
         subtotal, iva, total: subtotal + iva, status: "Pendiente", related_order_id: o.id,
       });
+      await load();
       alert("Cotización creada correctamente");
     } catch (e) { console.error(e); alert("Error al crear cotización"); }
   };
@@ -210,11 +214,15 @@ export default function ServiceOrders() {
         subtotal, iva_total: iva, discount: 0, total: subtotal + iva,
         payment_method: "Efectivo", payment_type: "Contado", status: "Pagada", balance: 0,
       });
+      await load();
       alert("Venta creada correctamente");
     } catch (e) { console.error(e); alert("Error al crear venta"); }
   };
 
+  // Órdenes que ya se convirtieron en cotización/factura no deben seguir apareciendo
+  const convertedOrderIds = new Set(invoices.map((i) => i.related_order_id).filter(Boolean));
   const filtered = orders.filter((o) => {
+    if (convertedOrderIds.has(o.id)) return false;
     const matchSearch = matchAny(search, o.service_type, motoLabel(o.motorcycle_id), customerName(o.customer_id), o.number, o.description);
     const matchStatus = filterStatus === "all" || o.status === filterStatus;
     return matchSearch && matchStatus;
@@ -234,7 +242,7 @@ export default function ServiceOrders() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Órdenes de Servicio</h1>
-            <p className="text-slate-500 mt-1">{orders.length} órdenes registradas</p>
+            <p className="text-slate-500 mt-1">{filtered.length} {filtered.length === 1 ? "orden" : "órdenes"} en lista</p>
           </div>
           <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900 shrink-0">
             <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Nueva Orden</span><span className="sm:hidden">Nueva</span>
