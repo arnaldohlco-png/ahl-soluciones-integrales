@@ -76,7 +76,8 @@ export function resolveAccessFromDefs(roleDefs, role) {
   const r = normalizeRole(role);
   const def = (roleDefs || []).find((d) => d.name === r);
   if (!def) return null;
-  return parseRoutes(def.routes);
+  const routes = parseRoutes(def.routes);
+  return routes === "*" ? null : routes;
 }
 
 // Devuelve null cuando el rol tiene acceso a todo (fallback a definiciones por defecto).
