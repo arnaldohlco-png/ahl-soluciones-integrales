@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Receipt, Plus, Search, Trash2, Pencil, Printer } from "lucide-react";
+import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -22,6 +22,7 @@ import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
+const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
 
 export default function Invoices() {
   const [list, setList] = useState([]);
@@ -114,6 +115,20 @@ export default function Invoices() {
     await base44.entities.Invoice.delete(id);
     const data = await base44.entities.Invoice.list("-date", 200);
     setList(data);
+  };
+
+  const collect = async (inv) => {
+    if (!confirm(`¿Marcar ${inv.number || "el documento"} como cobrado/pagado?`)) return;
+    try {
+      await base44.entities.Invoice.update(inv.id, { status: "Pagada", amount_paid: inv.total, change: 0 });
+      await base44.entities.CashMovement.create({
+        date: new Date().toISOString(), type: "Entrada", category: "Abono",
+        amount: inv.total || 0, description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
+        payment_method: "Efectivo", register_type: "Caja principal", reference_id: inv.id,
+      });
+      const data = await base44.entities.Invoice.list("-date", 200);
+      setList(data);
+    } catch (e) { console.error(e); alert("Error al cobrar el documento"); }
   };
 
   const onCustomerChange = (v) => {
@@ -212,6 +227,9 @@ export default function Invoices() {
                     <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[inv.status]}`}>{inv.status}</span></td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 justify-end">
+                        {inv.status === "Pendiente" && COBRABLES.includes(inv.type) && (
+                          <button onClick={() => collect(inv)} title="Cobrar" className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded"><CircleDollarSign className="w-4 h-4" /></button>
+                        )}
                         <WhatsAppButton phone={customerPhone(inv.customer_id)} message={buildDocMessage("invoice", inv, company, { customer: customers.find((c) => c.id === inv.customer_id) })} />
                         <button onClick={() => setPrintInv(inv)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
                         <button onClick={() => openEdit(inv)} className="p-1.5 text-slate-400 hover:text-amber-600"><Pencil className="w-4 h-4" /></button>
