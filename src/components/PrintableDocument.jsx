@@ -69,16 +69,18 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
 
         <div className="p-8 text-[13px] leading-relaxed print:p-6 print-inner">
           {/* Header */}
-          <div className="flex flex-col items-center text-center gap-3 border-b-2 border-slate-800 pb-4">
-            {company?.logo ? <img src={company.logo} alt="logo" className="w-20 h-20 object-contain" /> : null}
-            <div>
-              <h1 className="text-xl font-bold uppercase">{company?.name || "Taller"}</h1>
-              <p>NIT: {company?.document_number || "—"}</p>
-              <p>{company?.document_type === "Persona jurídica" ? "Persona jurídica" : "Persona natural"} · {chargesIva ? "Responsable de IVA" : "No responsable de IVA"}</p>
-              <p>{[company?.address, company?.city].filter(Boolean).join(", ")}</p>
-              <p>Tel: {company?.phone || "—"}</p>
+          <div className="doc-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b-2 border-slate-800 pb-4">
+            <div className="flex items-start gap-3">
+              {company?.logo ? <img src={company.logo} alt="logo" className="w-16 h-16 object-contain flex-shrink-0" /> : null}
+              <div className="text-left">
+                <h1 className="text-xl font-bold uppercase">{company?.name || "Taller"}</h1>
+                <p>NIT: {company?.document_number || "—"}</p>
+                <p>{company?.document_type === "Persona jurídica" ? "Persona jurídica" : "Persona natural"} · {chargesIva ? "Responsable de IVA" : "No responsable de IVA"}</p>
+                <p>{[company?.address, company?.city].filter(Boolean).join(", ")}</p>
+                <p>Tel: {company?.phone || "—"}</p>
+              </div>
             </div>
-            <div className="border-t border-slate-300 pt-3 w-full">
+            <div className="doc-type sm:text-right sm:border-l sm:border-slate-300 sm:pl-4">
               <h2 className="text-lg font-bold uppercase">{title}</h2>
               <p className="font-mono text-base font-bold">{doc.number || "—"}</p>
               <p>Fecha: {fmtDate(doc.date || doc.entry_date)}</p>
@@ -86,7 +88,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           </div>
 
           {resolutionLine && (type === "invoice" || type === "quotation") && (
-            <p className="text-center text-xs text-slate-600 py-2 border-b border-slate-200">{resolutionLine}</p>
+            <p className="text-left text-xs text-slate-600 py-2 border-b border-slate-200">{resolutionLine}</p>
           )}
 
           {/* Parties */}

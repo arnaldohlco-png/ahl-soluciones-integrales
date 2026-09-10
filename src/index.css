@@ -143,4 +143,19 @@
   body.print-80mm .print-area .print-totals {
     width: 100% !important;
   }
+  body.print-80mm .print-area .doc-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  body.print-80mm .print-area .doc-header > div {
+    text-align: center !important;
+    border: none !important;
+    padding-left: 0 !important;
+  }
+  body.print-80mm .print-area .doc-header .doc-type {
+    border-top: 1px solid #cbd5e1 !important;
+    padding-top: 6px !important;
+    width: 100% !important;
+  }
 }
