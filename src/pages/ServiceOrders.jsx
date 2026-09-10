@@ -21,7 +21,7 @@ import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
-const statuses = ["Ingresado", "En proceso", "Completado", "Entregado"];
+const statuses = ["Ingresado", "En proceso", "Completado", "Entregado", "Cobrada"];
 const fuelLevels = ["1/4", "1/2", "3/4", "Full"];
 
 const empty = {
@@ -225,6 +225,7 @@ export default function ServiceOrders() {
     "En proceso": "bg-amber-100 text-amber-700 border-amber-200",
     "Completado": "bg-emerald-100 text-emerald-700 border-emerald-200",
     "Entregado": "bg-slate-100 text-slate-600 border-slate-200",
+    "Cobrada": "bg-purple-100 text-purple-700 border-purple-200",
   };
 
   return (

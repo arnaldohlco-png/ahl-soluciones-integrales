@@ -42,7 +42,8 @@
         "Ingresado",
         "En proceso",
         "Completado",
-        "Entregado"
+        "Entregado",
+        "Cobrada"
       ],
       "default": "Ingresado"
     },

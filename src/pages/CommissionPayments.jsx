@@ -65,7 +65,7 @@ export default function CommissionPayments() {
       const orders = await base44.entities.ServiceOrder.filter({ technician_id: p.technician_id }, "-created_date", 500);
       const inRange = orders.filter((o) => {
         const d = o.entry_date || (o.created_date || "").slice(0, 10);
-        return d >= p.period_start && d <= p.period_end && (o.status === "Completado" || o.status === "Entregado");
+        return d >= p.period_start && d <= p.period_end && (o.status === "Entregado" || o.status === "Cobrada");
       });
       setPrintPay({ doc: p, orders: inRange });
     } catch (e) { console.error(e); alert("Error al cargar detalle"); }
@@ -82,14 +82,20 @@ export default function CommissionPayments() {
 
       const inRange = orders.filter((o) => {
         const d = o.entry_date || (o.created_date || "").slice(0, 10);
-        return d >= from && d <= to && (o.status === "Completado" || o.status === "Entregado");
+        return d >= from && d <= to && (o.status === "Entregado" || o.status === "Cobrada");
       });
 
       const pct = techs.find((t) => t.id === selectedTech)?.commission_percentage || 0;
-      const totalCommission = inRange.reduce((s, o) => {
+      const breakdown = inRange.map((o) => {
         const base = commissionBase(o);
-        return s + (base * pct / 100);
-      }, 0);
+        return {
+          id: o.id, number: o.number || "—",
+          date: o.entry_date || (o.created_date || "").slice(0, 10),
+          service_type: o.service_type, status: o.status,
+          base, commission: base * pct / 100,
+        };
+      });
+      const totalCommission = breakdown.reduce((s, b) => s + b.commission, 0);
 
       const pendingLoans = loans.filter((l) => (l.balance || 0) > 0);
       const loansDeducted = pendingLoans.reduce((s, l) => s + (l.balance || 0), 0);
@@ -97,7 +103,7 @@ export default function CommissionPayments() {
 
       setCalc({
         techId: selectedTech, techName: techs.find((t) => t.id === selectedTech)?.name || "",
-        orders: inRange, totalCommission, loans: pendingLoans, loansDeducted, netAmount,
+        orders: inRange, breakdown, totalCommission, loans: pendingLoans, loansDeducted, netAmount,
       });
     } catch (e) { console.error(e); alert("Error al calcular"); }
     setPaying(false);
@@ -189,9 +195,38 @@ export default function CommissionPayments() {
 
           <div className="space-y-3">
             <div className="flex justify-between py-2 border-b border-slate-100">
-              <span className="text-slate-600">Órdenes completadas: <strong className="text-slate-900">{calc.orders.length}</strong></span>
+              <span className="text-slate-600">Órdenes entregadas/cobradas: <strong className="text-slate-900">{calc.orders.length}</strong></span>
               <span className="font-semibold text-slate-900">{fmt(calc.totalCommission)}</span>
             </div>
+
+            {calc.breakdown && calc.breakdown.length > 0 && (
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 text-slate-500">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Orden</th>
+                      <th className="px-3 py-2 text-left font-medium">Fecha</th>
+                      <th className="px-3 py-2 text-left font-medium">Servicio</th>
+                      <th className="px-3 py-2 text-left font-medium">Estado</th>
+                      <th className="px-3 py-2 text-right font-medium">Base servicios</th>
+                      <th className="px-3 py-2 text-right font-medium">Comisión</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calc.breakdown.map((b) => (
+                      <tr key={b.id} className="border-t border-slate-100">
+                        <td className="px-3 py-2 text-slate-700">{b.number}</td>
+                        <td className="px-3 py-2 text-slate-600">{b.date ? moment(b.date).format("DD/MM/YYYY") : "—"}</td>
+                        <td className="px-3 py-2 text-slate-600">{b.service_type}</td>
+                        <td className="px-3 py-2"><span className="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600">{b.status}</span></td>
+                        <td className="px-3 py-2 text-right text-slate-600">{fmt(b.base)}</td>
+                        <td className="px-3 py-2 text-right font-medium text-slate-900">{fmt(b.commission)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             {calc.loans.length > 0 && (
               <div className="bg-amber-50 rounded-lg p-3">
                 <p className="text-xs font-semibold text-amber-700 mb-2">Préstamos a descontar ({calc.loans.length})</p>
