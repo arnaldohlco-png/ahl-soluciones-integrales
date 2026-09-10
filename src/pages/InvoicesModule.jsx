@@ -14,6 +14,7 @@ import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
+import CobroDialog from "@/components/CobroDialog";
 import { buildDocMessage } from "@/lib/docMessages";
 import moment from "moment";
 import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
@@ -45,6 +46,7 @@ export default function Invoices() {
     amount_paid: 0, change: 0,
   });
   const [printInv, setPrintInv] = useState(null);
+  const [cobro, setCobro] = useState(null);
 
   const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
 
@@ -117,15 +119,29 @@ export default function Invoices() {
     setList(data);
   };
 
-  const collect = async (inv) => {
-    if (!confirm(`¿Marcar ${inv.number || "el documento"} como cobrado/pagado?`)) return;
+  const collect = (inv) => setCobro(inv);
+
+  const onCobroConfirm = async (payload, meta) => {
+    const inv = cobro;
+    setCobro(null);
+    if (!inv) return;
     try {
-      await base44.entities.Invoice.update(inv.id, { status: "Pagada", amount_paid: inv.total, change: 0 });
-      await base44.entities.CashMovement.create({
-        date: new Date().toISOString(), type: "Entrada", category: "Abono",
-        amount: inv.total || 0, description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
-        payment_method: "Efectivo", register_type: "Caja principal", reference_id: inv.id,
-      });
+      await base44.entities.Invoice.update(inv.id, payload);
+      if (meta.paymentTerms === "Contado") {
+        await base44.entities.CashMovement.create({
+          date: new Date().toISOString(), type: "Entrada", category: "Abono",
+          amount: meta.amountPaid || meta.total,
+          description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
+          payment_method: meta.paymentMethod, register_type: "Caja principal", reference_id: inv.id,
+        });
+      } else {
+        await base44.entities.AccountReceivable.create({
+          customer_id: inv.customer_id, customer_name: inv.customer_name || "",
+          invoice_id: inv.id, invoice_number: inv.number || "",
+          initial_amount: meta.total, balance: meta.total,
+          due_date: payload.payment_due_date || "", status: "Al día",
+        });
+      }
       const data = await base44.entities.Invoice.list("-date", 200);
       setList(data);
     } catch (e) { console.error(e); alert("Error al cobrar el documento"); }
@@ -227,7 +243,7 @@ export default function Invoices() {
                     <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[inv.status]}`}>{inv.status}</span></td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 justify-end">
-                        {inv.status === "Pendiente" && COBRABLES.includes(inv.type) && (
+                        {inv.status === "Pendiente" && (inv.payment_terms || "Contado") === "Contado" && COBRABLES.includes(inv.type) && (
                           <button onClick={() => collect(inv)} title="Cobrar" className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded"><CircleDollarSign className="w-4 h-4" /></button>
                         )}
                         <WhatsAppButton phone={customerPhone(inv.customer_id)} message={buildDocMessage("invoice", inv, company, { customer: customers.find((c) => c.id === inv.customer_id) })} />
@@ -376,6 +392,8 @@ export default function Invoices() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CobroDialog open={!!cobro} onOpenChange={(o) => !o && setCobro(null)} doc={cobro} company={company} onConfirm={onCobroConfirm} />
 
       {printInv && (
         <PrintableDocument
