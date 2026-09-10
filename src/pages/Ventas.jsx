@@ -34,7 +34,7 @@ export default function Ventas() {
           base44.entities.Customer.list("-created_date", 100),
           base44.entities.Company.list("-created_date", 1),
         ]);
-        setProducts(prods.filter(p => (p.stock || 0) > 0));
+        setProducts(prods);
         setCustomers(custs);
         if (comps.length > 0) setCompany(comps[0]);
       } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -49,6 +49,7 @@ export default function Ventas() {
     ), [products, search]);
 
   const addToCart = (product) => {
+    if ((product.stock || 0) <= 0) return;
     const existing = cart.find(c => c.product_id === product.id);
     if (existing) {
       if (existing.quantity >= product.stock) return;
@@ -94,6 +95,15 @@ export default function Ventas() {
 
   const checkout = async () => {
     if (cart.length === 0) return;
+    const insufficient = cart.find(item => {
+      const prod = products.find(p => p.id === item.product_id);
+      return !prod || (prod.stock || 0) < item.quantity;
+    });
+    if (insufficient) {
+      const prod = products.find(p => p.id === insufficient.product_id);
+      alert(`Stock insuficiente para "${prod?.name || "un producto"}". No se puede completar la venta.`);
+      return;
+    }
     setProcessing(true);
     try {
       const cust = customers.find(c => c.id === customerId);
@@ -201,20 +211,26 @@ export default function Ventas() {
           {search ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {filtered.map(p => (
+                {filtered.map(p => {
+                  const out = (p.stock || 0) <= 0;
+                  return (
                   <button
                     key={p.id}
                     onClick={() => addToCart(p)}
-                    className="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-amber-400 hover:shadow-md transition-all"
+                    disabled={out}
+                    className={`rounded-xl border p-4 text-left transition-all ${out ? "bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed" : "bg-white border-slate-200 hover:border-amber-400 hover:shadow-md"}`}
                   >
                     <p className="font-medium text-slate-800 text-sm line-clamp-2">{p.name}</p>
                     <p className="text-xs text-slate-400 mt-0.5">{p.brand} · {p.sku || ""}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="font-bold text-slate-900">${(p.price || 0).toLocaleString("es-CO")}</span>
-                      <span className="text-xs text-slate-400">Stock: {p.stock}</span>
+                      {out
+                        ? <span className="text-xs font-semibold text-red-500">Sin stock</span>
+                        : <span className="text-xs text-slate-400">Stock: {p.stock}</span>}
                     </div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
               {filtered.length === 0 && (
                 <p className="text-center text-slate-400 py-12">No se encontraron productos</p>
@@ -327,7 +343,7 @@ export default function Ventas() {
                     </Select>
                   </div>
                 </div>
-                <Button onClick={checkout} disabled={processing} className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 h-10">
+                <Button onClick={checkout} disabled={processing || cart.some(i => (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity)} className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 h-10">
                   {processing ? "Procesando..." : "Cobrar y registrar venta"}
                 </Button>
               </div>
