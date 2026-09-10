@@ -3,12 +3,14 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
-  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote, CalendarClock } from
+  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote, CalendarClock, LogOut } from
 "lucide-react";
 import { cn } from "@/lib/utils";
+import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useRoles } from "@/hooks/useRoles";
 import { canAccess } from "@/lib/roles";
+import BackupReminder from "@/components/BackupReminder";
 
 const navGroups = [
 {
@@ -61,6 +63,16 @@ export default function Layout() {
   const { user } = useAuth();
   const { roles } = useRoles();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  async function handleLogout() {
+    setLeaving(true);
+    try {
+      await base44.auth.logout("/login");
+    } catch {
+      window.location.href = "/login";
+    }
+  }
 
   const role = user?.role;
   const visibleGroups = navGroups
@@ -119,8 +131,24 @@ export default function Layout() {
         <nav className="flex-1 px-3 py-4">
           <NavContent />
         </nav>
-        <div className="px-6 py-4 border-t border-slate-800 text-xs text-slate-500">
-          © 2026 MotoTaller
+        <div className="px-3 pb-3">
+          <BackupReminder />
+        </div>
+        <div className="px-3 py-3 border-t border-slate-800">
+          {user && (
+            <div className="mb-2 px-2 text-xs">
+              <p className="truncate font-medium text-slate-200">{user.full_name || user.email}</p>
+              <p className="capitalize text-slate-500">{user.role || "usuario"}</p>
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            disabled={leaving}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60"
+          >
+            <LogOut className="w-5 h-5" />
+            Salir de la app
+          </button>
         </div>
       </aside>
 
@@ -159,6 +187,25 @@ export default function Layout() {
             <nav className="flex-1 px-3 py-4">
               <NavContent />
             </nav>
+            <div className="px-3 pb-3">
+              <BackupReminder />
+            </div>
+            <div className="px-3 py-3 border-t border-slate-800">
+              {user && (
+                <div className="mb-2 px-2 text-xs">
+                  <p className="truncate font-medium text-slate-200">{user.full_name || user.email}</p>
+                  <p className="capitalize text-slate-500">{user.role || "usuario"}</p>
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                disabled={leaving}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60"
+              >
+                <LogOut className="w-5 h-5" />
+                Salir de la app
+              </button>
+            </div>
           </aside>
         </div>
       }
