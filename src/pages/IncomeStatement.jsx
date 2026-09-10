@@ -17,14 +17,16 @@ export default function IncomeStatement() {
     (async () => {
       setLoading(true);
       try {
-        const [sales, orders, expenses, purchases, invoices] = await Promise.all([
+        const [sales, orders, expenses, purchases, invoices, products, technicians] = await Promise.all([
           base44.entities.Sale.list("-created_date", 5000),
           base44.entities.ServiceOrder.list("-created_date", 5000),
           base44.entities.Expense.list("-created_date", 5000),
           base44.entities.Purchase.list("-created_date", 5000),
           base44.entities.Invoice.list("-created_date", 5000),
+          base44.entities.Product.list("-created_date", 5000),
+          base44.entities.Technician.list("-created_date", 5000),
         ]);
-        setData({ sales, orders, expenses, purchases, invoices });
+        setData({ sales, orders, expenses, purchases, invoices, products, technicians });
       } catch (e) { console.error(e); }
       setLoading(false);
     })();
@@ -42,11 +44,34 @@ export default function IncomeStatement() {
   const fPurchases = data.purchases.filter((p) => inRange(p.date));
   const fInvoices = (data.invoices || []).filter((i) => inRange(i.date));
 
-  // Órdenes que ya se contabilizan como ingreso de taller (evita doble conteo con facturas vinculadas)
-  const countedOrderIds = new Set(
-    fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status)).map((o) => o.id)
-  );
-  // Facturas cobradas que no provienen del POS (related_sale_id vacío) ni de una orden ya contada
+  const productsById = {};
+  (data.products || []).forEach((p) => { productsById[p.id] = p; });
+  const techniciansById = {};
+  (data.technicians || []).forEach((t) => { techniciansById[t.id] = t; });
+  const ordersById = {};
+  data.orders.forEach((o) => { ordersById[o.id] = o; });
+
+  const itemsOf = (str) => { try { const p = JSON.parse(str || "[]"); return Array.isArray(p) ? p : []; } catch { return []; } };
+  // Costo de productos: se toma del catálogo (los items no guardan el costo)
+  const productCogsOf = (items) => items
+    .filter((it) => it.product_id)
+    .reduce((s, it) => s + ((productsById[it.product_id]?.cost) || 0) * (it.quantity || 0), 0);
+  // Comisión de servicios: % del técnico responsable sobre el subtotal de ítems de servicio
+  const serviceCommissionOf = (items, technicianId) => {
+    if (!technicianId) return 0;
+    const tech = techniciansById[technicianId];
+    if (!tech || !tech.commission_percentage) return 0;
+    const serviceSub = items
+      .filter((it) => (it.type || "Servicio") === "Servicio")
+      .reduce((s, it) => s + (it.subtotal || 0), 0);
+    return Math.round(serviceSub * (tech.commission_percentage / 100));
+  };
+
+  // Órdenes contabilizadas como ingreso de taller (evita doble conteo con facturas vinculadas)
+  const countedOrders = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status));
+  const countedOrderIds = new Set(countedOrders.map((o) => o.id));
+
+  // Facturas cobradas que no provienen del POS ni de una orden ya contada
   const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
   const invoiceSales = fInvoices.filter(
     (i) => i.status === "Pagada" &&
@@ -55,28 +80,23 @@ export default function IncomeStatement() {
           !(i.related_order_id && countedOrderIds.has(i.related_order_id))
   );
   const invoiceRevenue = invoiceSales.reduce((s, i) => s + (i.total || 0), 0);
-  const invoiceSubtotal = invoiceSales.reduce((s, i) => s + (i.subtotal || 0), 0);
-  const invoiceCOGS = invoiceSales.reduce((sum, i) => {
-    try {
-      const items = JSON.parse(i.items || "[]");
-      return sum + items.reduce((acc, it) => acc + (it.cost || 0) * (it.quantity || 0), 0);
-    } catch { return sum; }
+  const invoiceCOGS = invoiceSales.reduce((s, i) => s + productCogsOf(itemsOf(i.items)), 0);
+  const invoiceCommissions = invoiceSales.reduce((s, i) => {
+    const techId = i.related_order_id ? (ordersById[i.related_order_id]?.technician_id) : null;
+    return s + serviceCommissionOf(itemsOf(i.items), techId);
   }, 0);
 
-  const salesRevenue = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.total || 0), 0) + invoiceRevenue;
-  const salesSubtotal = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.subtotal || 0), 0) + invoiceSubtotal;
-  const salesCOGS = fSales.filter((s) => s.status === "Pagada").reduce((sum, s) => {
-    try {
-      const items = JSON.parse(s.items || "[]");
-      return sum + items.reduce((acc, it) => acc + (it.cost || 0) * (it.quantity || 0), 0);
-    } catch { return sum; }
-  }, 0) + invoiceCOGS;
+  const posRevenue = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.total || 0), 0);
+  const posCOGS = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + productCogsOf(itemsOf(x.items)), 0);
 
-  const workshopRevenue = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status)).reduce((s, o) => s + (o.cost || 0), 0);
-  const workshopLabor = fOrders.reduce((s, o) => s + (o.labor_cost || 0), 0);
-  const workshopParts = fOrders.reduce((s, o) => s + (o.parts_cost || 0), 0);
-  const workshopLubricants = fOrders.reduce((s, o) => s + (o.lubricants_cost || 0), 0);
-  const workshopCommissions = fOrders.reduce((s, o) => s + (o.technician_commission || 0), 0);
+  const salesRevenue = posRevenue + invoiceRevenue;
+  const salesCOGS = posCOGS + invoiceCOGS;
+
+  const workshopRevenue = countedOrders.reduce((s, o) => s + (o.cost || 0), 0);
+  const workshopParts = countedOrders.reduce((s, o) => s + productCogsOf(itemsOf(o.service_items)), 0);
+  const workshopLabor = countedOrders.reduce((s, o) => s + (o.labor_cost || 0), 0);
+  const workshopLubricants = countedOrders.reduce((s, o) => s + (o.lubricants_cost || 0), 0);
+  const workshopCommissions = countedOrders.reduce((s, o) => s + serviceCommissionOf(itemsOf(o.service_items), o.technician_id), 0);
 
   const purchaseCosts = fPurchases.filter((p) => p.status === "Pagada").reduce((s, p) => s + (p.subtotal || 0), 0);
   const operatingExpenses = fExpenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -84,7 +104,7 @@ export default function IncomeStatement() {
   const totalRevenue = salesRevenue + workshopRevenue;
   const totalCOGS = salesCOGS + workshopParts + workshopLubricants + purchaseCosts;
   const grossProfit = totalRevenue - totalCOGS;
-  const operatingCosts = operatingExpenses + workshopLabor + workshopCommissions;
+  const operatingCosts = operatingExpenses + workshopLabor + workshopCommissions + invoiceCommissions;
   const netProfit = grossProfit - operatingCosts;
 
   const Row = ({ label, value, bold, indent, color }) => (
@@ -157,7 +177,7 @@ export default function IncomeStatement() {
         <div className="my-3" />
         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Gastos operacionales</p>
         <Row label="Mano de obra taller" value={workshopLabor} indent />
-        <Row label="Comisiones técnicos" value={workshopCommissions} indent />
+        <Row label="Comisiones de servicios" value={workshopCommissions + invoiceCommissions} indent />
         <Row label="Gastos generales" value={operatingExpenses} indent />
         <Row label="Total Gastos Operacionales" value={operatingCosts} bold color="text-red-600" />
 
