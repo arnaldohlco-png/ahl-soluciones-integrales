@@ -117,26 +117,26 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto bg-[#f91515]">
       {/* Encabezado con datos de la empresa */}
       <div className="mb-6 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl px-4 py-3 text-white shadow-sm">
         <div className="flex items-center gap-3">
-          {company?.logo ? (
-            <img src={company.logo} alt="Logo" className="w-11 h-11 rounded-md object-contain bg-white/95 p-0.5 shrink-0" />
-          ) : (
-            <div className="w-11 h-11 rounded-md bg-amber-500 flex items-center justify-center shrink-0">
+          {company?.logo ?
+          <img src={company.logo} alt="Logo" className="w-11 h-11 rounded-md object-contain bg-white/95 p-0.5 shrink-0" /> :
+
+          <div className="w-11 h-11 rounded-md bg-amber-500 flex items-center justify-center shrink-0">
               <Bike className="w-6 h-6 text-white" />
             </div>
-          )}
+          }
           <div className="flex-1 min-w-0">
             <h1 className="text-base md:text-lg font-bold leading-tight truncate">{company?.name || "Mi Taller"}</h1>
             <p className="text-xs text-slate-300 truncate mt-0.5">
               {[
-                company?.document_number && `NIT/C.C.: ${company.document_number}`,
-                company?.phone,
-                company?.email,
-                [company?.address, company?.city].filter(Boolean).join(" · "),
-              ].filter(Boolean).join("  ·  ")}
+              company?.document_number && `NIT/C.C.: ${company.document_number}`,
+              company?.phone,
+              company?.email,
+              [company?.address, company?.city].filter(Boolean).join(" · ")].
+              filter(Boolean).join("  ·  ")}
             </p>
           </div>
           <div className="text-right shrink-0 hidden sm:block">
