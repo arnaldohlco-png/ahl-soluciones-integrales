@@ -1,0 +1,167 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Cliente",
+      "description": "ID del cliente"
+    },
+    "customer_name": {
+      "type": "string",
+      "title": "Nombre del cliente"
+    },
+    "motorcycle_id": {
+      "type": "string",
+      "title": "Motocicleta",
+      "description": "ID de la motocicleta (opcional)"
+    },
+    "phone": {
+      "type": "string",
+      "title": "Tel\u00e9fono / WhatsApp"
+    },
+    "type": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "Cita",
+        "Recordatorio"
+      ],
+      "default": "Cita"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha"
+    },
+    "time": {
+      "type": "string",
+      "title": "Hora"
+    },
+    "service_requested": {
+      "type": "string",
+      "title": "Servicio solicitado",
+      "description": "Servicio que el cliente desea o que se le recuerda realizar"
+    },
+    "message": {
+      "type": "string",
+      "title": "Mensaje personalizado"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pendiente",
+        "Confirmada",
+        "Cancelada",
+        "Completada"
+      ],
+      "default": "Pendiente"
+    },
+    "whatsapp_sent": {
+      "type": "boolean",
+      "title": "Enviado por WhatsApp",
+      "default": false
+    },
+    "confirmed_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Fecha de confirmaci\u00f3n"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notas internas"
+    }
+  },
+  "required": [
+    "customer_id",
+    "type",
+    "date",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendedor"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendedor"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendedor"
+          }
+        }
+      ]
+    }
+  }
+}

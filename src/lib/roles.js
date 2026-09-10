@@ -22,24 +22,25 @@ export const MODULE_OPTIONS = [
   { path: "/empresa", label: "Mi Empresa" },
   { path: "/prestamos-tecnicos", label: "Préstamos Técnicos" },
   { path: "/pago-comisiones", label: "Pago Comisiones" },
+  { path: "/citas", label: "Citas y Recordatorios" },
 ];
 
 // Definiciones por defecto (se usan si no hay roles guardados en BD)
 export const DEFAULT_ROLE_DEFS = [
   { name: "administrador", label: "Administrador", routes: "*" },
   { name: "gerente", label: "Gerente", routes: [
-    "/", "/clientes", "/motocicletas", "/ordenes", "/servicios",
+    "/", "/clientes", "/motocicletas", "/ordenes", "/servicios", "/citas",
     "/inventario", "/compras", "/ventas", "/cotizaciones", "/facturacion",
     "/creditos", "/gastos", "/caja", "/estado-resultados",
     "/tecnicos", "/proveedores", "/marcas",
     "/prestamos-tecnicos", "/pago-comisiones",
   ] },
   { name: "vendedor", label: "Vendedor", routes: [
-    "/", "/clientes", "/motocicletas", "/ordenes",
+    "/", "/clientes", "/motocicletas", "/ordenes", "/citas",
     "/cotizaciones", "/ventas", "/facturacion", "/creditos",
   ] },
   { name: "tecnico", label: "Técnico", routes: [
-    "/", "/ordenes", "/motocicletas", "/clientes",
+    "/", "/ordenes", "/citas", "/motocicletas", "/clientes",
     "/prestamos-tecnicos", "/pago-comisiones",
   ] },
 ];

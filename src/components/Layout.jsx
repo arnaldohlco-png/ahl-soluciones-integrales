@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
-  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote } from
+  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote, CalendarClock } from
 "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -21,6 +21,7 @@ const navGroups = [
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/motocicletas", label: "Motocicletas", icon: Bike },
   { to: "/ordenes", label: "Órdenes de Servicio", icon: Wrench },
+  { to: "/citas", label: "Citas y Recordatorios", icon: CalendarClock },
   { to: "/servicios", label: "Catálogo de Servicios", icon: Wrench }]
 
 },
