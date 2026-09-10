@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wallet, Loader2, CheckCircle2, Clock } from "lucide-react";
+import { Wallet, Loader2, CheckCircle2, Clock, Printer } from "lucide-react";
 import moment from "moment";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import PrintableDocument from "@/components/PrintableDocument";
+import { buildDocMessage } from "@/lib/docMessages";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -18,20 +21,40 @@ export default function CommissionPayments() {
   const [to, setTo] = useState(moment().format("YYYY-MM-DD"));
   const [calc, setCalc] = useState(null);
   const [paying, setPaying] = useState(false);
+  const [motos, setMotos] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [printPay, setPrintPay] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const [t, p] = await Promise.all([
+        const [t, p, m, c] = await Promise.all([
           base44.entities.Technician.list("-created_date", 200),
           base44.entities.CommissionPayment.list("-created_date", 200),
+          base44.entities.Motorcycle.list("-created_date", 500),
+          base44.entities.Customer.list("-created_date", 500),
         ]);
         setTechs(t.filter((x) => x.status === "Activo"));
         setPayments(p);
+        setMotos(m);
+        setCustomers(c);
       } catch (e) { console.error(e); }
       setLoading(false);
     })();
   }, []);
+
+  const techPhone = (id) => techs.find((t) => t.id === id)?.phone || "";
+
+  const printPayment = async (p) => {
+    try {
+      const orders = await base44.entities.ServiceOrder.filter({ technician_id: p.technician_id }, "-created_date", 500);
+      const inRange = orders.filter((o) => {
+        const d = o.entry_date || (o.created_date || "").slice(0, 10);
+        return d >= p.period_start && d <= p.period_end && (o.status === "Completado" || o.status === "Entregado");
+      });
+      setPrintPay({ doc: p, orders: inRange });
+    } catch (e) { console.error(e); alert("Error al cargar detalle"); }
+  };
 
   const calculate = async () => {
     if (!selectedTech) return;
@@ -195,6 +218,7 @@ export default function CommissionPayments() {
                   <th className="px-4 py-3 text-right font-medium">Descuentos</th>
                   <th className="px-4 py-3 text-right font-medium">Neto</th>
                   <th className="px-4 py-3 text-center font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -209,6 +233,12 @@ export default function CommissionPayments() {
                     <td className="px-4 py-3 text-center">
                       <span className="px-2 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700">{p.status}</span>
                     </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <WhatsAppButton phone={techPhone(p.technician_id)} message={buildDocMessage("commission", p, null, { technician: techs.find((t) => t.id === p.technician_id), motos, customers, orders: [] })} />
+                        <button onClick={() => printPayment(p)} title="Imprimir detalle" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -216,6 +246,16 @@ export default function CommissionPayments() {
           </div>
         )}
       </div>
+
+      {printPay && (
+        <PrintableDocument
+          type="commission"
+          doc={printPay.doc}
+          company={null}
+          extras={{ technician: techs.find((t) => t.id === printPay.doc.technician_id), motos, customers, orders: printPay.orders }}
+          onClose={() => setPrintPay(null)}
+        />
+      )}
     </div>
   );
 }

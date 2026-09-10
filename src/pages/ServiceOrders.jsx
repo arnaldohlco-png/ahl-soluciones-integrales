@@ -6,10 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart } from "lucide-react";
+import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import PrintableDocument from "@/components/PrintableDocument";
+import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
@@ -44,6 +46,7 @@ export default function ServiceOrders() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [printOrder, setPrintOrder] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -275,7 +278,8 @@ export default function ServiceOrders() {
                     {o.delivery_date && <p className="text-xs text-slate-400">Entrega: {o.delivery_date}</p>}
                   </div>
                   <div className="flex gap-1">
-                    <WhatsAppButton phone={customerPhone(o.customer_id)} message={buildOrderMsg(o)} label="Enviar estado por WhatsApp" />
+                    <WhatsAppButton phone={customerPhone(o.customer_id)} message={buildDocMessage("order", o, company, { motorcycle: motos.find((m) => m.id === o.motorcycle_id), customer: customers.find((c) => c.id === o.customer_id) })} label="Enviar por WhatsApp" />
+                    <button onClick={() => setPrintOrder(o)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"><Printer className="w-4 h-4" /></button>
                     <button onClick={() => convertToQuotation(o)} title="Convertir a cotización" className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"><FileText className="w-4 h-4" /></button>
                     <button onClick={() => convertToSale(o)} title="Convertir a venta" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
@@ -425,6 +429,16 @@ export default function ServiceOrders() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {printOrder && (
+        <PrintableDocument
+          type="order"
+          doc={printOrder}
+          company={company}
+          extras={{ motorcycle: motos.find((m) => m.id === printOrder.motorcycle_id), customer: customers.find((c) => c.id === printOrder.customer_id), technician: technicians.find((t) => t.id === printOrder.technician_id) }}
+          onClose={() => setPrintOrder(null)}
+        />
+      )}
     </div>
   );
 }

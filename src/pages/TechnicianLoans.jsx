@@ -6,8 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { HandCoins, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { HandCoins, Plus, Pencil, Trash2, Loader2, Printer } from "lucide-react";
 import moment from "moment";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import PrintableDocument from "@/components/PrintableDocument";
+import { buildDocMessage } from "@/lib/docMessages";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -20,6 +23,9 @@ export default function TechnicianLoans() {
   const [saving, setSaving] = useState(false);
   const [filterTech, setFilterTech] = useState("all");
   const [form, setForm] = useState({ technician_id: "", date: moment().format("YYYY-MM-DD"), amount: "", description: "" });
+  const [printL, setPrintL] = useState(null);
+
+  const techPhone = (id) => techs.find((t) => t.id === id)?.phone || "";
 
   useEffect(() => { load(); }, []);
 
@@ -131,7 +137,11 @@ export default function TechnicianLoans() {
                     <span className={`px-2 py-1 rounded-md text-xs font-medium ${l.status === "Pendiente" ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}>{l.status}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => remove(l.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
+                    <div className="flex items-center justify-end gap-1">
+                      <WhatsAppButton phone={techPhone(l.technician_id)} message={buildDocMessage("loan", l, null, { technician: techs.find((t) => t.id === l.technician_id) })} />
+                      <button onClick={() => setPrintL(l)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
+                      <button onClick={() => remove(l.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -177,6 +187,16 @@ export default function TechnicianLoans() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {printL && (
+        <PrintableDocument
+          type="loan"
+          doc={printL}
+          company={null}
+          extras={{ technician: techs.find((t) => t.id === printL.technician_id) }}
+          onClose={() => setPrintL(null)}
+        />
+      )}
     </div>
   );
 }

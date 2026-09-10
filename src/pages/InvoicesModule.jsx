@@ -7,8 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Receipt, Plus, Search, Trash2, Pencil } from "lucide-react";
+import { Receipt, Plus, Search, Trash2, Pencil, Printer } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import PrintableDocument from "@/components/PrintableDocument";
+import { buildDocMessage } from "@/lib/docMessages";
 import moment from "moment";
 import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
 
@@ -31,6 +34,9 @@ export default function Invoices() {
     payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "",
     amount_paid: 0, change: 0,
   });
+  const [printInv, setPrintInv] = useState(null);
+
+  const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
 
   useEffect(() => {
     (async () => {
@@ -182,6 +188,8 @@ export default function Invoices() {
                     <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[inv.status]}`}>{inv.status}</span></td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 justify-end">
+                        <WhatsAppButton phone={customerPhone(inv.customer_id)} message={buildDocMessage("invoice", inv, company, { customer: customers.find((c) => c.id === inv.customer_id) })} />
+                        <button onClick={() => setPrintInv(inv)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
                         <button onClick={() => openEdit(inv)} className="p-1.5 text-slate-400 hover:text-amber-600"><Pencil className="w-4 h-4" /></button>
                         <button onClick={() => remove(inv.id)} className="p-1.5 text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
                       </div>
@@ -328,6 +336,16 @@ export default function Invoices() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {printInv && (
+        <PrintableDocument
+          type="invoice"
+          doc={printInv}
+          company={company}
+          extras={{ customer: customers.find((c) => c.id === printInv.customer_id) }}
+          onClose={() => setPrintInv(null)}
+        />
+      )}
     </div>
   );
 }

@@ -5,9 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil } from "lucide-react";
+import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil, Printer, MessageCircle } from "lucide-react";
 import moment from "moment";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import PrintableDocument from "@/components/PrintableDocument";
+import { buildDocMessage } from "@/lib/docMessages";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -22,6 +25,9 @@ export default function Quotations() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ customer_id: "", date: moment().format("YYYY-MM-DD") });
   const [items, setItems] = useState([]);
+  const [printQ, setPrintQ] = useState(null);
+
+  const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
 
   useEffect(() => { load(); }, []);
 
@@ -182,6 +188,8 @@ export default function Quotations() {
                   <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1">
                     <FileCheck className="w-3.5 h-3.5 mr-1" /> Facturar
                   </Button>
+                  <WhatsAppButton size="sm" phone={customerPhone(q.customer_id)} message={buildDocMessage("quotation", q, company, { customer: customers.find((c) => c.id === q.customer_id) })} variant="outline" label="WhatsApp" />
+                  <button onClick={() => setPrintQ(q)} title="Imprimir" className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md border border-slate-200"><Printer className="w-3.5 h-3.5" /></button>
                   <Button size="sm" variant="ghost" onClick={() => remove(q.id)} className="text-red-500">
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
@@ -270,6 +278,16 @@ export default function Quotations() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {printQ && (
+        <PrintableDocument
+          type="quotation"
+          doc={printQ}
+          company={company}
+          extras={{ customer: customers.find((c) => c.id === printQ.customer_id) }}
+          onClose={() => setPrintQ(null)}
+        />
+      )}
     </div>
   );
 }

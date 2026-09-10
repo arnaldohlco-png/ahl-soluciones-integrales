@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Truck, Plus, Search, Trash2, Pencil, CheckCircle } from "lucide-react";
+import { Truck, Plus, Search, Trash2, Pencil, CheckCircle, Printer } from "lucide-react";
 import moment from "moment";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import PrintableDocument from "@/components/PrintableDocument";
+import { buildDocMessage } from "@/lib/docMessages";
 
 export default function Purchases() {
   const [list, setList] = useState([]);
@@ -30,6 +33,9 @@ export default function Purchases() {
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
   const [paymentType, setPaymentType] = useState("Contado");
   const [productSearch, setProductSearch] = useState("");
+  const [printP, setPrintP] = useState(null);
+
+  const supplierPhone = (id) => suppliers.find((s) => s.id === id)?.phone || "";
 
   useEffect(() => {
     (async () => {
@@ -260,6 +266,8 @@ export default function Purchases() {
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button onClick={() => openEdit(p)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded" title="Editar"><Pencil className="w-4 h-4" /></button>
+                        <WhatsAppButton phone={supplierPhone(p.supplier_id)} message={buildDocMessage("purchase", p, company, { supplier: suppliers.find((s) => s.id === p.supplier_id) })} />
+                        <button onClick={() => setPrintP(p)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
                         <button onClick={() => deletePurchase(p)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded" title="Eliminar"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
@@ -392,6 +400,16 @@ export default function Purchases() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {printP && (
+        <PrintableDocument
+          type="purchase"
+          doc={printP}
+          company={company}
+          extras={{ supplier: suppliers.find((s) => s.id === printP.supplier_id) }}
+          onClose={() => setPrintP(null)}
+        />
+      )}
     </div>
   );
 }
