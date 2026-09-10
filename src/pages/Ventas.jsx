@@ -219,6 +219,25 @@ export default function Ventas() {
       alert(`Stock insuficiente para "${prod?.name || "un producto"}". No se puede completar la venta.`);
       return;
     }
+    // Guard anti-duplicidad: si la venta viene de una orden/cotización, verificar que no esté ya cobrada
+    const linkedOrderId = quoteOrderIdRef.current;
+    if (linkedOrderId) {
+      try {
+        const order = await base44.entities.ServiceOrder.get(linkedOrderId);
+        if (order && order.status === "Cobrada") {
+          alert("Esta orden de servicio ya fue cobrada. No se puede cobrar dos veces.");
+          return;
+        }
+        const existingSales = await base44.entities.Sale.filter({ related_order_id: linkedOrderId });
+        const yaVendida = existingSales.some((s) => s.status === "Pagada");
+        if (yaVendida) {
+          alert("Esta orden ya tiene una venta POS registrada. No se puede cobrar dos veces.");
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
     setProcessing(true);
     try {
       const cust = customers.find(c => c.id === customerId);
