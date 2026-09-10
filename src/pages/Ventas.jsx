@@ -237,29 +237,33 @@ export default function Ventas() {
             <>
               <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
                 {cart.map(item => (
-                  <div key={item.product_id} className="flex items-center gap-2 py-2 border-b border-slate-100 last:border-0">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-slate-800 text-sm truncate">{item.name}</p>
-                      <p className="text-xs text-slate-400">${item.unit_price.toLocaleString("es-CO")} c/u</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => updateQty(item.product_id, -1)} className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center">
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => setQtyDirect(item.product_id, parseInt(e.target.value) || 1)}
-                        className="w-10 text-center text-sm border-0 p-0 focus:ring-0"
-                      />
-                      <button onClick={() => updateQty(item.product_id, 1)} className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center">
-                        <Plus className="w-3 h-3" />
+                  <div key={item.product_id} className="py-2 border-b border-slate-100 last:border-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-800 text-sm leading-tight line-clamp-2">{item.name}</p>
+                        <p className="text-xs text-slate-400">${item.unit_price.toLocaleString("es-CO")} c/u</p>
+                      </div>
+                      <button onClick={() => removeFromCart(item.product_id)} className="text-slate-300 hover:text-red-500 shrink-0">
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    <span className="text-sm font-semibold text-slate-800 w-20 text-right">${item.subtotal.toLocaleString("es-CO")}</span>
-                    <button onClick={() => removeFromCart(item.product_id)} className="text-slate-300 hover:text-red-500">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-between gap-2 mt-1.5">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => updateQty(item.product_id, -1)} className="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center">
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => setQtyDirect(item.product_id, parseInt(e.target.value) || 1)}
+                          className="w-11 text-center text-sm border-0 p-0 focus:ring-0"
+                        />
+                        <button onClick={() => updateQty(item.product_id, 1)} className="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center">
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <span className="text-sm font-semibold text-slate-800 text-right">${item.subtotal.toLocaleString("es-CO")}</span>
+                    </div>
                   </div>
                 ))}
               </div>
