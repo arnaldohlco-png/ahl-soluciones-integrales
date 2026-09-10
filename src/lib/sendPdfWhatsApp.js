@@ -1,5 +1,38 @@
 import { base44 } from "@/api/base44Client";
 
+const CDN = {
+  html2canvas: "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+  jspdf: "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+};
+
+const loadScript = (src) =>
+  new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[data-src="${src}"]`);
+    if (existing) {
+      if (existing.dataset.loaded === "1") resolve();
+      else existing.addEventListener("load", () => resolve(), { once: true });
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.dataset.src = src;
+    s.onload = () => {
+      s.dataset.loaded = "1";
+      resolve();
+    };
+    s.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+    document.head.appendChild(s);
+  });
+
+const loadLibs = async () => {
+  await Promise.all([loadScript(CDN.html2canvas), loadScript(CDN.jspdf)]);
+  const jsPDF = window.jspdf?.jsPDF;
+  const html2canvas = window.html2canvas;
+  if (!jsPDF || !html2canvas) throw new Error("Librerías PDF no disponibles");
+  return { jsPDF, html2canvas };
+};
+
 /**
  * Genera un PDF del elemento .print-area visible y lo envía por WhatsApp.
  * @param {Object} opts
@@ -21,10 +54,7 @@ export async function generateAndSendPdf({ phone, message, format = "a4" }) {
   });
 
   try {
-    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-      import("html2canvas"),
-      import("jspdf"),
-    ]);
+    const { jsPDF, html2canvas } = await loadLibs();
     const canvas = await html2canvas(printArea, {
       scale: 2,
       useCORS: true,
