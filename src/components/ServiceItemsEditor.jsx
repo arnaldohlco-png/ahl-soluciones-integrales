@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
+import CatalogPicker from "@/components/CatalogPicker";
 
 export default function ServiceItemsEditor({ items, setItems, products, services }) {
   const [newItem, setNewItem] = useState({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
@@ -27,18 +28,12 @@ export default function ServiceItemsEditor({ items, setItems, products, services
     setItems(updated);
   };
 
-  const onProductSelect = (productId) => {
-    const p = products.find((x) => x.id === productId);
-    if (p) {
-      setNewItem({ type: "Producto", name: p.name, quantity: 1, unit_price: p.price || 0, product_id: productId });
-    }
+  const onProductSelect = (p) => {
+    setNewItem({ type: "Producto", name: p.name, quantity: 1, unit_price: p.price || 0, product_id: p.id });
   };
 
-  const onServiceSelect = (serviceId) => {
-    const s = services?.find((x) => x.id === serviceId);
-    if (s) {
-      setNewItem({ type: "Servicio", name: s.name, quantity: 1, unit_price: s.price || 0, service_id: serviceId });
-    }
+  const onServiceSelect = (s) => {
+    setNewItem({ type: "Servicio", name: s.name, quantity: 1, unit_price: s.price || 0, service_id: s.id });
   };
 
   const total = items.reduce((s, i) => s + (i.subtotal || 0), 0);
@@ -57,22 +52,12 @@ export default function ServiceItemsEditor({ items, setItems, products, services
           </Select>
         </div>
         {newItem.type === "Producto" && products?.length > 0 ? (
-          <div className="flex-1 min-w-[150px]">
-            <Select onValueChange={onProductSelect}>
-              <SelectTrigger><SelectValue placeholder="Seleccionar producto..." /></SelectTrigger>
-              <SelectContent>
-                {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} — ${p.price?.toLocaleString("es-CO")}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="flex-1 min-w-[150px] flex items-center">
+            <CatalogPicker options={products} onSelect={onProductSelect} label="Buscar producto" placeholder="Buscar producto..." buttonClass="w-full justify-start" />
           </div>
         ) : newItem.type === "Servicio" && services?.length > 0 ? (
-          <div className="flex-1 min-w-[150px]">
-            <Select onValueChange={onServiceSelect}>
-              <SelectTrigger><SelectValue placeholder="Seleccionar servicio..." /></SelectTrigger>
-              <SelectContent>
-                {services.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} — ${s.price?.toLocaleString("es-CO")}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="flex-1 min-w-[150px] flex items-center">
+            <CatalogPicker options={services} onSelect={onServiceSelect} label="Buscar servicio" placeholder="Buscar servicio..." buttonClass="w-full justify-start" />
           </div>
         ) : (
           <div className="flex-1 min-w-[150px]">

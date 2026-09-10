@@ -10,6 +10,7 @@ import moment from "moment";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
+import CatalogPicker from "@/components/CatalogPicker";
 import { buildDocMessage } from "@/lib/docMessages";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
@@ -18,6 +19,7 @@ export default function Quotations() {
   const [quotes, setQuotes] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,13 +35,14 @@ export default function Quotations() {
 
   const load = async () => {
     try {
-      const [q, c, p, comps] = await Promise.all([
+      const [q, c, p, s, comps] = await Promise.all([
         base44.entities.Invoice.filter({ type: "Cotización" }, "-created_date", 200),
         base44.entities.Customer.list("-created_date", 200),
         base44.entities.Product.list("-created_date", 200),
+        base44.entities.Service.list("-created_date", 200),
         base44.entities.Company.list("-created_date", 1),
       ]);
-      setQuotes(q); setCustomers(c); setProducts(p);
+      setQuotes(q); setCustomers(c); setProducts(p); setServices(s.filter((x) => x.status === "Activo"));
       if (comps.length > 0) setCompany(comps[0]);
     } catch (e) { console.error(e); }
     setLoading(false);
@@ -63,14 +66,12 @@ export default function Quotations() {
     setModalOpen(true);
   };
 
-  const addItem = (productId) => {
-    const p = products.find((x) => x.id === productId);
-    if (!p) return;
-    setItems([...items, { name: p.name, quantity: 1, unit_price: p.price || 0, subtotal: p.price || 0, product_id: productId }]);
+  const addItem = (product) => {
+    setItems([...items, { name: product.name, quantity: 1, unit_price: product.price || 0, subtotal: product.price || 0, product_id: product.id }]);
   };
 
-  const addService = () => {
-    setItems([...items, { name: "", quantity: 1, unit_price: 0, subtotal: 0 }]);
+  const addService = (service) => {
+    setItems([...items, { name: service.name, quantity: 1, unit_price: service.price || 0, subtotal: service.price || 0, service_id: service.id }]);
   };
 
   const updateItem = (idx, field, value) => {
@@ -224,13 +225,8 @@ export default function Quotations() {
               <div className="flex items-center justify-between mb-2">
                 <Label>Items</Label>
                 <div className="flex gap-2">
-                  <Select onValueChange={addItem}>
-                    <SelectTrigger className="h-7 text-xs w-auto"><SelectValue placeholder="+ Producto" /></SelectTrigger>
-                    <SelectContent>
-                      {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} — {fmt(p.price)}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <Button type="button" size="sm" variant="outline" onClick={addService} className="h-7 text-xs">+ Servicio</Button>
+                  <CatalogPicker options={products} onSelect={addItem} label="+ Producto" placeholder="Buscar producto..." />
+                  <CatalogPicker options={services} onSelect={addService} label="+ Servicio" placeholder="Buscar servicio..." />
                 </div>
               </div>
               {items.length === 0 ? (

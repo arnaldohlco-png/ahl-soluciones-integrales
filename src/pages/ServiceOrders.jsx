@@ -394,7 +394,8 @@ export default function ServiceOrders() {
 
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Productos y servicios</p>
-              <ServiceItemsEditor items={serviceItems} setItems={setServiceItems} products={products} services={services} />
+              <ServiceItemsEditor items={serviceItems} setItems={setServiceItems} products={products} services={services} /> 
+
             </div>
 
             <div className="border-t border-slate-100 pt-3">
