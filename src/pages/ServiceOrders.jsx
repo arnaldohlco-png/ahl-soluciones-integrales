@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer } from "lucide-react";
+import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, AlertTriangle } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import OrderPhotosUploader from "@/components/OrderPhotosUploader";
@@ -399,7 +399,7 @@ export default function ServiceOrders() {
                 <div><Label>Próx. cambio</Label><Input type="number" value={form.current_mileage && form.oil_change_interval ? Number(form.current_mileage) + Number(form.oil_change_interval) : ""} readOnly className="mt-1 bg-slate-50" placeholder="Auto" /></div>
               </div>
               {form.current_mileage && form.oil_change_interval && (
-                <p className="text-xs text-amber-600 mt-2">Próximo cambio de aceite: {(Number(form.current_mileage) + Number(form.oil_change_interval)).toLocaleString()} km</p>
+                <p className="text-xs text-amber-600 mt-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Próximo cambio de aceite: {(Number(form.current_mileage) + Number(form.oil_change_interval)).toLocaleString()} km</p>
               )}
             </div>
 
