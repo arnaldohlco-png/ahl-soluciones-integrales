@@ -113,7 +113,7 @@ export default function Layout() {
           <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
             <Bike className="w-5 h-5 text-slate-900" />
           </div>
-          <span className="font-bold">AHL Soluciones Inte </span>
+          <span className="font-bold">AHL Soluciones Integra </span>
         </div>
         <button onClick={() => setMobileOpen(true)} className="p-2 -mr-2">
           <Menu className="w-6 h-6" />
