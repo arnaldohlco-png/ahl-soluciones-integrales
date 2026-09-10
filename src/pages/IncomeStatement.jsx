@@ -17,13 +17,14 @@ export default function IncomeStatement() {
     (async () => {
       setLoading(true);
       try {
-        const [sales, orders, expenses, purchases] = await Promise.all([
+        const [sales, orders, expenses, purchases, invoices] = await Promise.all([
           base44.entities.Sale.list("-created_date", 5000),
           base44.entities.ServiceOrder.list("-created_date", 5000),
           base44.entities.Expense.list("-created_date", 5000),
           base44.entities.Purchase.list("-created_date", 5000),
+          base44.entities.Invoice.list("-created_date", 5000),
         ]);
-        setData({ sales, orders, expenses, purchases });
+        setData({ sales, orders, expenses, purchases, invoices });
       } catch (e) { console.error(e); }
       setLoading(false);
     })();
@@ -39,17 +40,39 @@ export default function IncomeStatement() {
   const fOrders = data.orders.filter((o) => inRange(o.entry_date || o.created_date?.slice(0, 10)));
   const fExpenses = data.expenses.filter((e) => inRange(e.date));
   const fPurchases = data.purchases.filter((p) => inRange(p.date));
+  const fInvoices = (data.invoices || []).filter((i) => inRange(i.date));
 
-  const salesRevenue = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.total || 0), 0);
-  const salesSubtotal = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.subtotal || 0), 0);
+  // Órdenes que ya se contabilizan como ingreso de taller (evita doble conteo con facturas vinculadas)
+  const countedOrderIds = new Set(
+    fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status)).map((o) => o.id)
+  );
+  // Facturas cobradas que no provienen del POS (related_sale_id vacío) ni de una orden ya contada
+  const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
+  const invoiceSales = fInvoices.filter(
+    (i) => i.status === "Pagada" &&
+          COBRABLES.includes(i.type) &&
+          !i.related_sale_id &&
+          !(i.related_order_id && countedOrderIds.has(i.related_order_id))
+  );
+  const invoiceRevenue = invoiceSales.reduce((s, i) => s + (i.total || 0), 0);
+  const invoiceSubtotal = invoiceSales.reduce((s, i) => s + (i.subtotal || 0), 0);
+  const invoiceCOGS = invoiceSales.reduce((sum, i) => {
+    try {
+      const items = JSON.parse(i.items || "[]");
+      return sum + items.reduce((acc, it) => acc + (it.cost || 0) * (it.quantity || 0), 0);
+    } catch { return sum; }
+  }, 0);
+
+  const salesRevenue = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.total || 0), 0) + invoiceRevenue;
+  const salesSubtotal = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.subtotal || 0), 0) + invoiceSubtotal;
   const salesCOGS = fSales.filter((s) => s.status === "Pagada").reduce((sum, s) => {
     try {
       const items = JSON.parse(s.items || "[]");
       return sum + items.reduce((acc, it) => acc + (it.cost || 0) * (it.quantity || 0), 0);
     } catch { return sum; }
-  }, 0);
+  }, 0) + invoiceCOGS;
 
-  const workshopRevenue = fOrders.filter((o) => o.status === "Completado" || o.status === "Entregado").reduce((s, o) => s + (o.cost || 0), 0);
+  const workshopRevenue = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status)).reduce((s, o) => s + (o.cost || 0), 0);
   const workshopLabor = fOrders.reduce((s, o) => s + (o.labor_cost || 0), 0);
   const workshopParts = fOrders.reduce((s, o) => s + (o.parts_cost || 0), 0);
   const workshopLubricants = fOrders.reduce((s, o) => s + (o.lubricants_cost || 0), 0);
@@ -116,7 +139,8 @@ export default function IncomeStatement() {
         <h3 className="font-semibold text-slate-900 mb-3">Detalle del período</h3>
 
         <Row label="Ventas de almacén (Pagadas)" value={salesRevenue} bold />
-        <Row label="Ingresos de taller (Completadas/Entregadas)" value={workshopRevenue} indent />
+        <Row label="Facturas cobradas (Facturación)" value={invoiceRevenue} indent />
+        <Row label="Ingresos de taller (Completadas/Entregadas/Cobradas)" value={workshopRevenue} indent />
         <Row label="Total Ingresos" value={totalRevenue} bold color="text-emerald-600" />
 
         <div className="my-3" />
