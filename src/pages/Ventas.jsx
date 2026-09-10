@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle, Pause, Play, FilePlus2 } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 import SearchableSelect from "@/components/SearchableSelect";
@@ -28,6 +29,41 @@ export default function Ventas() {
   const [invoiceSale, setInvoiceSale] = useState(null);
   const [parkedSales, setParkedSales] = useState([]);
   const searchRef = useRef(null);
+  const location = useLocation();
+  const [pendingQuote, setPendingQuote] = useState(null);
+  const quoteIdRef = useRef(null);
+
+  useEffect(() => {
+    const st = location.state;
+    if (st && st.fromQuote) {
+      setPendingQuote(st.fromQuote);
+      quoteIdRef.current = st.fromQuote.id || null;
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (!pendingQuote || products.length === 0) return;
+    const qItems = pendingQuote.items || [];
+    const newCart = qItems.map((it) => {
+      const prod = products.find((p) => p.id === it.product_id);
+      return {
+        product_id: it.product_id || null,
+        name: it.name || "—",
+        quantity: Number(it.quantity) || 1,
+        unit_price: Number(it.unit_price) || 0,
+        iva_rate: it.iva_rate ?? prod?.iva_rate ?? 19,
+        subtotal: (Number(it.quantity) || 1) * (Number(it.unit_price) || 0),
+      };
+    }).filter((it) => it.quantity > 0);
+    setCart(newCart);
+    if (pendingQuote.customer_id) {
+      const c = customers.find((x) => x.id === pendingQuote.customer_id);
+      setCustomerId(pendingQuote.customer_id);
+      setCustomerName(c?.name || pendingQuote.customer_name || "Cliente mostrador");
+    }
+    setPendingQuote(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingQuote, products, customers]);
 
   useEffect(() => {
     try {
@@ -81,6 +117,7 @@ export default function Ventas() {
     setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
     setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
     setSearch("");
+    quoteIdRef.current = null;
     searchRef.current?.focus();
   };
 
@@ -170,6 +207,7 @@ export default function Ventas() {
   const checkout = async () => {
     if (cart.length === 0) return;
     const insufficient = cart.find(item => {
+      if (!item.product_id) return false;
       const prod = products.find(p => p.id === item.product_id);
       return !prod || (prod.stock || 0) < item.quantity;
     });
@@ -200,7 +238,7 @@ export default function Ventas() {
         change: paymentMethod === "Efectivo" && paymentType === "Contado" ? Math.max(0, amountPaid - totals.total) : 0,
       });
 
-      await Promise.all(cart.map(item =>
+      await Promise.all(cart.filter(item => item.product_id).map(item =>
         base44.entities.Product.update(item.product_id, {
           stock: (products.find(p => p.id === item.product_id)?.stock || 0) - item.quantity
         })
@@ -245,6 +283,10 @@ export default function Ventas() {
       setDiscount(0);
       setAmountPaid(0);
       setCheckoutMsg("¡Venta registrada! Stock actualizado.");
+      if (quoteIdRef.current) {
+        try { await base44.entities.Invoice.update(quoteIdRef.current, { status: "Pagada", related_sale_id: sale.id }); } catch (e) { /* ignore */ }
+        quoteIdRef.current = null;
+      }
       setInvoiceSale(sale);
       setTimeout(() => setCheckoutMsg(""), 3000);
     } catch (e) {

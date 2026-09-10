@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign, Undo2 } from "lucide-react";
+import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign, Undo2, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
@@ -24,7 +24,7 @@ import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
-const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono", "Cotización"];
+const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
 
 export default function Invoices() {
   const navigate = useNavigate();
@@ -122,6 +122,12 @@ export default function Invoices() {
   };
 
   const collect = (inv) => setCobro(inv);
+
+  const sellInPOS = (inv) => {
+    let qi = [];
+    try { qi = JSON.parse(inv.items || "[]"); } catch (e) { qi = []; }
+    navigate("/ventas", { state: { fromQuote: { id: inv.id, number: inv.number, customer_id: inv.customer_id, customer_name: inv.customer_name, items: qi } } });
+  };
 
   const onCobroConfirm = async (payload, meta) => {
     const inv = cobro;
@@ -247,6 +253,9 @@ export default function Invoices() {
                       <div className="flex gap-1 justify-end">
                         {inv.status === "Pendiente" && (inv.payment_terms || "Contado") === "Contado" && COBRABLES.includes(inv.type) && (
                           <button onClick={() => collect(inv)} title="Cobrar" className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded"><CircleDollarSign className="w-4 h-4" /></button>
+                        )}
+                        {inv.type === "Cotización" && inv.status === "Pendiente" && (
+                          <button onClick={() => sellInPOS(inv)} title="Vender en POS" className="p-1.5 text-amber-600 hover:bg-amber-50 rounded"><ShoppingCart className="w-4 h-4" /></button>
                         )}
                         <WhatsAppButton phone={customerPhone(inv.customer_id)} message={buildDocMessage("invoice", inv, company, { customer: customers.find((c) => c.id === inv.customer_id) })} />
                         <button onClick={() => setPrintInv(inv)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
