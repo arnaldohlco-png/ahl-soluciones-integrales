@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle } from "lucide-react";
+import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle, Pause, Play, FilePlus2 } from "lucide-react";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 
@@ -24,7 +24,63 @@ export default function Ventas() {
   const [company, setCompany] = useState(null);
   const [checkoutMsg, setCheckoutMsg] = useState("");
   const [invoiceSale, setInvoiceSale] = useState(null);
+  const [parkedSales, setParkedSales] = useState([]);
   const searchRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("pos_parked_sales");
+      if (saved) setParkedSales(JSON.parse(saved));
+    } catch (e) { /* ignore */ }
+  }, []);
+
+  const persistParked = (list) => {
+    setParkedSales(list);
+    try { localStorage.setItem("pos_parked_sales", JSON.stringify(list)); } catch (e) { /* ignore */ }
+  };
+
+  const parkSale = () => {
+    if (cart.length === 0) return;
+    const label = `${customerName} · ${cart.length} ítem(s)`;
+    const entry = {
+      id: Date.now().toString(),
+      label,
+      cart,
+      customerId,
+      customerName,
+      paymentMethod,
+      paymentType,
+      discount,
+      amountPaid,
+      savedAt: new Date().toISOString(),
+    };
+    persistParked([entry, ...parkedSales]);
+    setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
+    setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
+    searchRef.current?.focus();
+  };
+
+  const resumeSale = (id) => {
+    const entry = parkedSales.find(p => p.id === id);
+    if (!entry) return;
+    setCart(entry.cart);
+    setCustomerId(entry.customerId || "");
+    setCustomerName(entry.customerName || "Cliente mostrador");
+    setPaymentMethod(entry.paymentMethod || "Efectivo");
+    setPaymentType(entry.paymentType || "Contado");
+    setDiscount(entry.discount || 0);
+    setAmountPaid(entry.amountPaid || 0);
+    persistParked(parkedSales.filter(p => p.id !== id));
+  };
+
+  const deleteParkedSale = (id) => persistParked(parkedSales.filter(p => p.id !== id));
+
+  const startNewSale = () => {
+    setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
+    setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
+    setSearch("");
+    searchRef.current?.focus();
+  };
 
   useEffect(() => {
     (async () => {
@@ -218,6 +274,30 @@ export default function Ventas() {
         </div>
       )}
 
+      {parkedSales.length > 0 && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <p className="text-xs font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
+            <Pause className="w-3.5 h-3.5" /> Ventas guardadas ({parkedSales.length})
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {parkedSales.map(p => (
+              <div key={p.id} className="bg-white border border-amber-200 rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-800 truncate max-w-[160px]">{p.label}</p>
+                  <p className="text-xs text-slate-400">{new Date(p.savedAt).toLocaleString("es-CO", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
+                </div>
+                <button onClick={() => resumeSale(p.id)} className="text-emerald-600 hover:text-emerald-700" title="Retomar">
+                  <Play className="w-4 h-4" />
+                </button>
+                <button onClick={() => deleteParkedSale(p.id)} className="text-slate-300 hover:text-red-500" title="Descartar">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Products */}
         <div className="lg:col-span-2">
@@ -366,9 +446,17 @@ export default function Ventas() {
                     </Select>
                   </div>
                 </div>
-                <Button onClick={checkout} disabled={processing || cart.some(i => (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity)} className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 h-10">
-                  {processing ? "Procesando..." : "Cobrar y registrar venta"}
-                </Button>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button onClick={parkSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10 border-amber-300 text-amber-700 hover:bg-amber-50">
+                    <Pause className="w-4 h-4" /> Guardar
+                  </Button>
+                  <Button onClick={startNewSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10">
+                    <FilePlus2 className="w-4 h-4" /> Nueva
+                  </Button>
+                  <Button onClick={checkout} disabled={processing || cart.some(i => (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity)} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
+                    {processing ? "..." : "Cobrar"}
+                  </Button>
+                </div>
               </div>
             </>
           )}
