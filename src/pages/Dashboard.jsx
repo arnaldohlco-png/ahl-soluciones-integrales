@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
-  Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard } from
+  Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard,
+  CalendarClock, FileText } from
 "lucide-react";
 import moment from "moment";
 
@@ -17,7 +18,7 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians, companies] = await Promise.all([
+        const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians, companies, appointments] = await Promise.all([
         base44.entities.Sale.list("-created_date", 200),
         base44.entities.ServiceOrder.list("-created_date", 200),
         base44.entities.Customer.list("-created_date", 100),
@@ -27,7 +28,8 @@ export default function Dashboard() {
         base44.entities.AccountReceivable.list("-created_date", 200),
         base44.entities.Invoice.list("-created_date", 200),
         base44.entities.Technician.list("-created_date", 100),
-        base44.entities.Company.list("-created_date", 1)]
+        base44.entities.Company.list("-created_date", 1),
+        base44.entities.Appointment.list("-date", 50)]
         );
         setCompany(companies[0] || null);
 
@@ -82,6 +84,13 @@ export default function Dashboard() {
         const pendingOrders = orders.filter((o) => o.status !== "Entregado");
         const pendingInvoices = invoices.filter((i) => i.status === "Pendiente");
 
+        const activeAppointments = appointments.filter((a) => a.status === "Pendiente" || a.status === "Confirmada");
+        const appointmentsToday = activeAppointments.filter((a) => (a.date || "") === today);
+        const upcomingAppointments = activeAppointments
+          .filter((a) => (a.date || "") >= today)
+          .sort((a, b) => (`${a.date} ${a.time || ""}`).localeCompare(`${b.date} ${b.time || ""}`))
+          .slice(0, 5);
+
         setD({
           salesToday, salesWeek, salesMonth,
           workshopIncome, storeIncome, totalExpenses, monthExpenses, estimatedProfit,
@@ -91,7 +100,9 @@ export default function Dashboard() {
           pendingOrders: pendingOrders.length, pendingInvoices: pendingInvoices.length,
           customers: customers.length, motorcycles: motorcycles.length, products: products.length,
           lowStockProducts: lowStock.slice(0, 5),
-          completedOrders: orders.filter((o) => o.status === "Completado" || o.status === "Entregado").length
+          completedOrders: orders.filter((o) => o.status === "Completado" || o.status === "Entregado").length,
+          appointmentsTodayCount: appointmentsToday.length,
+          upcomingAppointments
         });
       } catch (e) {
         console.error(e);
@@ -148,6 +159,76 @@ export default function Dashboard() {
       <div className="mb-6">
         <h2 className="text-xl md:text-2xl font-bold text-slate-900">Resumen</h2>
         <p className="mt-1 text-[hsl(var(--background))]">Resumen financiero y operativo en tiempo real</p>
+      </div>
+
+      {/* Accesos directos */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <Link to="/ordenes" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-2 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <Wrench className="w-5 h-5" />
+          </div>
+          <p className="text-sm font-semibold text-slate-800">Orden de servicio</p>
+        </Link>
+        <Link to="/ventas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <ShoppingCart className="w-5 h-5" />
+          </div>
+          <p className="text-sm font-semibold text-slate-800">POS</p>
+        </Link>
+        <Link to="/cotizaciones" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-2 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+            <FileText className="w-5 h-5" />
+          </div>
+          <p className="text-sm font-semibold text-slate-800">Cotización</p>
+        </Link>
+        <Link to="/citas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+            <CalendarClock className="w-5 h-5" />
+          </div>
+          <p className="text-sm font-semibold text-slate-800">Citas</p>
+        </Link>
+        <Link to="/motocicletas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-2 group-hover:bg-slate-700 group-hover:text-white transition-colors">
+            <Bike className="w-5 h-5" />
+          </div>
+          <p className="text-sm font-semibold text-slate-800">Motocicletas</p>
+        </Link>
+      </div>
+
+      {/* Citas asignadas */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+            <CalendarClock className="w-5 h-5 text-amber-600" /> Citas asignadas
+            {d.appointmentsTodayCount > 0 && (
+              <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">{d.appointmentsTodayCount} hoy</span>
+            )}
+          </h3>
+          <Link to="/citas" className="text-sm text-amber-600 hover:underline font-medium">Ver todas</Link>
+        </div>
+        {d.upcomingAppointments?.length === 0 ?
+          <p className="text-slate-400 text-sm py-4 text-center">No hay citas programadas</p> :
+          <div className="space-y-2">
+            {d.upcomingAppointments?.map((a) => {
+              const isToday = (a.date || "") === moment().format("YYYY-MM-DD");
+              return (
+                <div key={a.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center shrink-0 ${isToday ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      <span className="text-[10px] leading-none uppercase">{a.date ? moment(a.date).format("MMM") : "—"}</span>
+                      <span className="text-sm font-bold leading-none">{a.date ? moment(a.date).format("DD") : ""}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-slate-800 text-sm truncate">{a.customer_name || "Cliente"}</p>
+                      <p className="text-xs text-slate-400 truncate">{[a.time, a.service_requested].filter(Boolean).join(" · ") || "Sin servicio"}</p>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${a.status === "Confirmada" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{a.status}</span>
+                </div>
+              );
+            })}
+          </div>
+        }
       </div>
 
       {/* Sales row */}
