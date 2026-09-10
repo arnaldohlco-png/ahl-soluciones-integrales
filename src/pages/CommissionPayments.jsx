@@ -9,6 +9,7 @@ import moment from "moment";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
+import { matchAny } from "@/lib/search";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -130,9 +131,7 @@ export default function CommissionPayments() {
   };
 
   const filteredPayments = payments.filter((p) =>
-    !search ||
-    (p.technician_name || "").toLowerCase().includes(search.toLowerCase()) ||
-    moment(p.date).format("DD/MM/YYYY").includes(search)
+    matchAny(search, p.technician_name, moment(p.date).format("DD/MM/YYYY"))
   );
 
   if (loading) {

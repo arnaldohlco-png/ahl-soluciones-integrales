@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Wallet, Plus, Pencil, Trash2, Search, TrendingDown } from "lucide-react";
 import moment from "moment";
+import { matchAny } from "@/lib/search";
 
 const CATEGORIES = ["Arriendo", "Servicios públicos", "Nómina", "Transporte", "Herramientas", "Papelería", "Publicidad", "Mantenimiento", "Compras menores", "Otros"];
 const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
@@ -36,7 +37,7 @@ export default function Expenses() {
   };
 
   const filtered = list.filter(e => {
-    const matchSearch = !search || e.description?.toLowerCase().includes(search.toLowerCase()) || e.responsible?.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = matchAny(search, e.description, e.responsible);
     const matchCat = filterCat === "all" || e.category === filterCat;
     return matchSearch && matchCat;
   });

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { HardHat, Plus, Pencil, Trash2, Search, Phone } from "lucide-react";
+import { matchAny } from "@/lib/search";
 
 export default function Technicians() {
   const [list, setList] = useState([]);
@@ -30,8 +31,7 @@ export default function Technicians() {
   };
 
   const filtered = list.filter(t =>
-    !search || t.name?.toLowerCase().includes(search.toLowerCase()) ||
-    t.specialty?.toLowerCase().includes(search.toLowerCase())
+    matchAny(search, t.name, t.specialty, t.phone, t.document_number)
   );
 
   const openNew = () => {

@@ -16,6 +16,7 @@ import { buildDocMessage } from "@/lib/docMessages";
 import moment from "moment";
 import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
+import { matchAny } from "@/lib/search";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
 
@@ -63,7 +64,7 @@ export default function Invoices() {
   }, []);
 
   const filtered = useMemo(() => list.filter(i => {
-    const matchSearch = !search || i.number?.toLowerCase().includes(search.toLowerCase()) || i.customer_name?.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = matchAny(search, i.number, i.customer_name);
     const matchType = filterType === "all" || i.type === filterType;
     const matchStatus = filterStatus === "all" || i.status === filterStatus;
     return matchSearch && matchType && matchStatus;

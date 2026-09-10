@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Bike, Search } from "lucide-react";
+import { matchAny } from "@/lib/search";
 
 const empty = {
   customer_id: "", brand: "", line: "", model: "", year: "", plate: "", vin: "",
@@ -96,10 +97,7 @@ export default function Motorcycles() {
   };
 
   const filtered = motos.filter((m) =>
-    m.brand?.toLowerCase().includes(search.toLowerCase()) ||
-    m.model?.toLowerCase().includes(search.toLowerCase()) ||
-    m.plate?.toLowerCase().includes(search.toLowerCase()) ||
-    m.line?.toLowerCase().includes(search.toLowerCase())
+    matchAny(search, m.brand, m.model, m.plate, m.line, customerName(m.customer_id))
   );
 
   return (
@@ -116,7 +114,7 @@ export default function Motorcycles() {
 
       <div className="relative mb-4 max-w-sm">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <Input placeholder="Buscar por marca, modelo, placa o línea..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <Input placeholder="Buscar por marca, modelo, placa, línea o propietario..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       {loading ? (

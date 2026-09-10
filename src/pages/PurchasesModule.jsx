@@ -12,6 +12,7 @@ import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
+import { matchAny } from "@/lib/search";
 
 export default function Purchases() {
   const [list, setList] = useState([]);
@@ -55,8 +56,7 @@ export default function Purchases() {
   }, []);
 
   const filtered = list.filter(p =>
-    !search || p.supplier_name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.invoice_number?.includes(search)
+    matchAny(search, p.supplier_name, p.invoice_number, p.number)
   );
 
   const filteredProducts = useMemo(() =>

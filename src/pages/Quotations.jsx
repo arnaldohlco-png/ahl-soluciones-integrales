@@ -14,6 +14,7 @@ import CatalogPicker from "@/components/CatalogPicker";
 import { buildDocMessage } from "@/lib/docMessages";
 import { chargesIva, calcIvaFlat } from "@/lib/iva";
 import { fetchAllProducts } from "@/lib/productsLoader";
+import { matchAny } from "@/lib/search";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -35,9 +36,7 @@ export default function Quotations() {
   const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
 
   const filtered = quotes.filter((q) =>
-    !search ||
-    (q.number || "").toLowerCase().includes(search.toLowerCase()) ||
-    (q.customer_name || custName(q.customer_id) || "").toLowerCase().includes(search.toLowerCase())
+    matchAny(search, q.number, q.customer_name, custName(q.customer_id))
   );
 
   useEffect(() => { load(); }, []);

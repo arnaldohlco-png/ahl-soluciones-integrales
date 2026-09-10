@@ -11,6 +11,7 @@ import moment from "moment";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
+import { matchAny } from "@/lib/search";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -45,9 +46,7 @@ export default function TechnicianLoans() {
 
   const filtered = loans.filter((l) => {
     const matchTech = filterTech === "all" || l.technician_id === filterTech;
-    const matchSearch = !search ||
-      (l.technician_name || techName(l.technician_id)).toLowerCase().includes(search.toLowerCase()) ||
-      l.description?.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = matchAny(search, l.technician_name || techName(l.technician_id), l.description);
     return matchTech && matchSearch;
   });
   const totalPending = filtered.filter((l) => l.status === "Pendiente").reduce((s, l) => s + (l.balance || 0), 0);

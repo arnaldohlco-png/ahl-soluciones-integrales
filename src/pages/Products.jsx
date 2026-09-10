@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Package, Search, AlertTriangle, MapPin, Barcode, TrendingUp } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
+import { matchAny } from "@/lib/search";
 
 const categories = ["Repuestos", "Accesorios", "Lubricantes", "Llantas", "Baterías", "Consumibles", "Herramientas", "Indumentaria", "Otros"];
 
@@ -84,11 +85,7 @@ export default function Products() {
   };
 
   const filtered = products.filter((p) => {
-    const matchSearch =
-      p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.brand?.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(search.toLowerCase()) ||
-      p.barcode?.includes(search);
+    const matchSearch = matchAny(search, p.name, p.brand, p.sku, p.barcode, p.reference, p.category);
     const matchCat = filterCat === "all" || p.category === filterCat;
     return matchSearch && matchCat;
   });

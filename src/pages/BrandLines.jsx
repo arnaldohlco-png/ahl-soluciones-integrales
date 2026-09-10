@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Search, Bike, X, Globe, ChevronDown } from "lucide-react";
 import BrandExportImport from "@/components/BrandExportImport";
+import { matchAny } from "@/lib/search";
 
 const empty = { name: "", country: "", lines: [] };
 
@@ -76,8 +77,7 @@ export default function BrandLines() {
   };
 
   const filtered = brands.filter((b) =>
-    b.name?.toLowerCase().includes(search.toLowerCase()) ||
-    (b.lines || "").toLowerCase().includes(search.toLowerCase())
+    matchAny(search, b.name, b.lines, b.country)
   );
 
   return (

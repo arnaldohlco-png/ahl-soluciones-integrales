@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Landmark, Plus, TrendingUp, TrendingDown, ArrowDownCircle, ArrowUpCircle, Search } from "lucide-react";
 import moment from "moment";
+import { matchAny } from "@/lib/search";
 
 const REGISTERS = ["Caja principal", "Caja taller", "Caja almacén", "Bancos"];
 const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
@@ -54,10 +55,7 @@ export default function Cash() {
 
   const filtered = list.filter(m => {
     const matchReg = filterRegister === "all" || m.register_type === filterRegister;
-    const matchSearch = !search ||
-      m.description?.toLowerCase().includes(search.toLowerCase()) ||
-      m.category?.toLowerCase().includes(search.toLowerCase()) ||
-      (m.amount || 0).toString().includes(search);
+    const matchSearch = matchAny(search, m.description, m.category, m.amount);
     return matchReg && matchSearch;
   });
 

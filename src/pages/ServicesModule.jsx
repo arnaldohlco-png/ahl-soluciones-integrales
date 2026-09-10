@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Wrench, Search } from "lucide-react";
+import { matchAny } from "@/lib/search";
 
 const defaultCategories = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Lubricación", "Afinación", "Otros"];
 
@@ -60,7 +61,7 @@ export default function ServicesModule() {
   const categories = [...new Set([...defaultCategories, ...services.map((s) => s.category).filter(Boolean)])];
 
   const filtered = services.filter((s) => {
-    const matchSearch = s.name?.toLowerCase().includes(search.toLowerCase()) || s.description?.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = matchAny(search, s.name, s.description, s.category);
     const matchCat = filterCategory === "all" || s.category === filterCategory;
     return matchSearch && matchCat;
   });

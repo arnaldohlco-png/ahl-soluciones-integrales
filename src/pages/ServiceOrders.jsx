@@ -16,6 +16,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
+import { matchAny } from "@/lib/search";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
 const statuses = ["Ingresado", "En proceso", "Completado", "Entregado"];
@@ -212,10 +213,7 @@ export default function ServiceOrders() {
   };
 
   const filtered = orders.filter((o) => {
-    const matchSearch =
-      o.service_type?.toLowerCase().includes(search.toLowerCase()) ||
-      motoLabel(o.motorcycle_id).toLowerCase().includes(search.toLowerCase()) ||
-      customerName(o.customer_id).toLowerCase().includes(search.toLowerCase());
+    const matchSearch = matchAny(search, o.service_type, motoLabel(o.motorcycle_id), customerName(o.customer_id), o.number, o.description);
     const matchStatus = filterStatus === "all" || o.status === filterStatus;
     return matchSearch && matchStatus;
   });

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Building2, Plus, Pencil, Trash2, Search, Phone, Mail, MapPin } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
+import { matchAny } from "@/lib/search";
 
 export default function Suppliers() {
   const [list, setList] = useState([]);
@@ -28,8 +29,7 @@ export default function Suppliers() {
   };
 
   const filtered = list.filter(s =>
-    !search || s.name?.toLowerCase().includes(search.toLowerCase()) ||
-    s.document_number?.includes(search)
+    matchAny(search, s.name, s.document_number, s.phone, s.email)
   );
 
   const openNew = () => {

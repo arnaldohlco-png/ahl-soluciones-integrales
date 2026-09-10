@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Phone, Mail, Search, Users, MessageCircle, CreditCard, FileText } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
+import { matchAny } from "@/lib/search";
 
 const docTypes = ["Cédula", "NIT", "Cédula de extranjería", "Pasaporte"];
 
@@ -71,10 +72,7 @@ export default function Customers() {
   };
 
   const filtered = customers.filter((c) =>
-    c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone?.includes(search) ||
-    c.email?.toLowerCase().includes(search.toLowerCase()) ||
-    c.document_number?.includes(search)
+    matchAny(search, c.name, c.phone, c.email, c.document_number)
   );
 
   return (

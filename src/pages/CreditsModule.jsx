@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { CreditCard, Search, DollarSign, CheckCircle } from "lucide-react";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import moment from "moment";
+import { matchAny } from "@/lib/search";
 
 export default function Credits() {
   const [list, setList] = useState([]);
@@ -47,7 +48,7 @@ export default function Credits() {
   };
 
   const filtered = useMemo(() => list.filter(r => {
-    const matchSearch = !search || r.customer_name?.toLowerCase().includes(search.toLowerCase()) || r.invoice_number?.includes(search);
+    const matchSearch = matchAny(search, r.customer_name, r.invoice_number);
     const st = computeStatus(r);
     const matchStatus = filterStatus === "all" || st === filterStatus;
     return matchSearch && matchStatus;

@@ -15,6 +15,7 @@ import {
   Calendar, Clock, User, Bike, Loader2
 } from "lucide-react";
 import moment from "moment";
+import { matchAny } from "@/lib/search";
 
 const STATUS = {
   Pendiente: { label: "Pendiente", cls: "bg-amber-100 text-amber-700 border-amber-300" },
@@ -95,10 +96,9 @@ export default function Citas() {
     return appointments.filter((a) => {
       if (filter !== "Todas" && a.status !== filter) return false;
       if (search) {
-        const q = search.toLowerCase();
-        const name = (a.customer_name || customerById[a.customer_id]?.name || "").toLowerCase();
-        const svc = (a.service_requested || "").toLowerCase();
-        if (!name.includes(q) && !svc.includes(q)) return false;
+        const moto = motoById[a.motorcycle_id];
+        const motoStr = moto ? `${moto.brand} ${moto.model} ${moto.plate || ""}` : "";
+        if (!matchAny(search, a.customer_name, customerById[a.customer_id]?.name, a.service_requested, motoStr)) return false;
       }
       return true;
     });
