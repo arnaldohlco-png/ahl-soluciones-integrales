@@ -177,7 +177,7 @@ export default function Layout() {
                   <Bike className="w-6 h-6 text-slate-900" />
                 </div>
                 <div>
-                  <h1 className="text-white font-bold text-lg leading-tight">HR MOTOCICLETAS</h1>
+                  <h1 className="text-white font-bold text-lg leading-tight text-center">HR MOTOCICLETAS</h1>
                   <p className="text-xs text-slate-400">Taller & Almacén</p>
                 </div>
               </div>
