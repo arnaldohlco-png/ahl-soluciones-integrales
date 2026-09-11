@@ -332,7 +332,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           )}
 
           {/* Footer */}
-          <div className="mt-6 pt-3 border-t border-slate-200 text-[11px] text-slate-600 text-center space-y-1">
+          <div className="mt-3 pt-1.5 border-t border-slate-200 text-[11px] leading-tight text-slate-600 text-center space-y-0.5">
             {company?.footer_text && <p className="whitespace-pre-wrap">{company.footer_text}</p>}
             <p>Documento generado el {moment().format("DD/MM/YYYY")}.</p>
           </div>
