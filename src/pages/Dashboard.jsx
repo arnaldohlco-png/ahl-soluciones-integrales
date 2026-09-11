@@ -40,9 +40,9 @@ export default function Dashboard() {
 
         // Órdenes ya convertidas en cotización/factura/venta no cuentan en el dashboard (igual que en el módulo Órdenes)
         const convertedOrderIds = new Set([
-          ...invoices.map((i) => i.related_order_id).filter(Boolean),
-          ...sales.map((s) => s.related_order_id).filter(Boolean),
-        ]);
+        ...invoices.map((i) => i.related_order_id).filter(Boolean),
+        ...sales.map((s) => s.related_order_id).filter(Boolean)]
+        );
         const visibleOrders = orders.filter((o) => !convertedOrderIds.has(o.id));
 
         const salesToday = sales.filter((s) => (s.date || "") >= today).reduce((s, x) => s + (x.total || 0), 0);
@@ -51,19 +51,19 @@ export default function Dashboard() {
 
         // Mapa de costos de productos para calcular el COGS del almacén
         const productCostMap = {};
-        products.forEach((p) => { productCostMap[p.id] = p.cost || 0; });
+        products.forEach((p) => {productCostMap[p.id] = p.cost || 0;});
 
         // Ingresos taller: solo servicios (items tipo Servicio) de órdenes finalizadas
         const techPctMap = {};
-        technicians.forEach((t) => { techPctMap[t.id] = t.commission_percentage || 0; });
+        technicians.forEach((t) => {techPctMap[t.id] = t.commission_percentage || 0;});
         // Base de comisión: solo servicios, excluyendo los denominados "terceros" (igual que Pago de Comisiones)
         const commissionBaseOf = (o) => {
           let items = [];
-          try { items = JSON.parse(o.service_items || "[]"); } catch (_) {}
-          return items
-            .filter((it) => String(it.type || "").toLowerCase() === "servicio")
-            .filter((it) => !/tercero/i.test((it.name || "").trim()))
-            .reduce((s, it) => s + (it.subtotal || 0), 0);
+          try {items = JSON.parse(o.service_items || "[]");} catch (_) {}
+          return items.
+          filter((it) => String(it.type || "").toLowerCase() === "servicio").
+          filter((it) => !/tercero/i.test((it.name || "").trim())).
+          reduce((s, it) => s + (it.subtotal || 0), 0);
         };
         const finalizedOrders = orders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status));
         const visibleCompleted = visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado");
@@ -71,7 +71,7 @@ export default function Dashboard() {
         let workshopCost = 0;
         finalizedOrders.forEach((o) => {
           let items = [];
-          try { items = JSON.parse(o.service_items || "[]"); } catch (_) {}
+          try {items = JSON.parse(o.service_items || "[]");} catch (_) {}
           const svcItems = items.filter((it) => it.type === "Servicio");
           if (items.length > 0) {
             workshopIncome += svcItems.reduce((s, it) => s + (it.subtotal || 0), 0);
@@ -92,12 +92,12 @@ export default function Dashboard() {
         const addProductItem = (it) => {
           if (it.product_id || it.type === "Producto") {
             storeIncome += it.subtotal || 0;
-            const unitCost = it.product_id ? (productCostMap[it.product_id] || 0) : 0;
+            const unitCost = it.product_id ? productCostMap[it.product_id] || 0 : 0;
             storeCost += unitCost * (it.quantity || 0);
           }
         };
-        sales.forEach((s) => { let items = []; try { items = JSON.parse(s.items || "[]"); } catch (_) {} items.forEach(addProductItem); });
-        visibleCompleted.forEach((o) => { let items = []; try { items = JSON.parse(o.service_items || "[]"); } catch (_) {} items.forEach(addProductItem); });
+        sales.forEach((s) => {let items = [];try {items = JSON.parse(s.items || "[]");} catch (_) {}items.forEach(addProductItem);});
+        visibleCompleted.forEach((o) => {let items = [];try {items = JSON.parse(o.service_items || "[]");} catch (_) {}items.forEach(addProductItem);});
         const storeProfit = storeIncome - storeCost;
 
         const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -143,10 +143,10 @@ export default function Dashboard() {
 
         const activeAppointments = appointments.filter((a) => a.status === "Pendiente" || a.status === "Confirmada");
         const appointmentsToday = activeAppointments.filter((a) => (a.date || "") === today);
-        const upcomingAppointments = activeAppointments
-          .filter((a) => (a.date || "") >= today)
-          .sort((a, b) => (`${a.date} ${a.time || ""}`).localeCompare(`${b.date} ${b.time || ""}`))
-          .slice(0, 5);
+        const upcomingAppointments = activeAppointments.
+        filter((a) => (a.date || "") >= today).
+        sort((a, b) => `${a.date} ${a.time || ""}`.localeCompare(`${b.date} ${b.time || ""}`)).
+        slice(0, 5);
 
         setD({
           salesToday, salesWeek, salesMonth,
@@ -226,7 +226,7 @@ export default function Dashboard() {
           </div>
           <p className="text-sm font-semibold text-slate-800">Orden de servicio</p>
         </Link>
-        <Link to="/ventas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
+        <Link to="/ventas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center my-2">
           <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
             <ShoppingCart className="w-5 h-5" />
           </div>
@@ -257,19 +257,19 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-slate-900 flex items-center gap-2">
             <CalendarClock className="w-5 h-5 text-amber-600" /> Citas asignadas
-            {d.appointmentsTodayCount > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">{d.appointmentsTodayCount} hoy</span>
-            )}
+            {d.appointmentsTodayCount > 0 &&
+            <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">{d.appointmentsTodayCount} hoy</span>
+            }
           </h3>
           <Link to="/citas" className="text-sm text-amber-600 hover:underline font-medium">Ver todas</Link>
         </div>
         {d.upcomingAppointments?.length === 0 ?
-          <p className="text-slate-400 text-sm py-4 text-center">No hay citas programadas</p> :
-          <div className="space-y-2">
+        <p className="text-slate-400 text-sm py-4 text-center">No hay citas programadas</p> :
+        <div className="space-y-2">
             {d.upcomingAppointments?.map((a) => {
-              const isToday = (a.date || "") === moment().format("YYYY-MM-DD");
-              return (
-                <div key={a.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+            const isToday = (a.date || "") === moment().format("YYYY-MM-DD");
+            return (
+              <div key={a.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center shrink-0 ${isToday ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600"}`}>
                       <span className="text-[10px] leading-none uppercase">{a.date ? moment(a.date).format("MMM") : "—"}</span>
@@ -281,9 +281,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${a.status === "Confirmada" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{a.status}</span>
-                </div>
-              );
-            })}
+                </div>);
+
+          })}
           </div>
         }
       </div>
