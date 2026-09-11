@@ -14,6 +14,7 @@ import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import DateField from "@/components/DateField";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -231,12 +232,10 @@ export default function CommissionPayments() {
       <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div>
-            <Label>Período desde</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />
+            <DateField label="Período desde" value={from} onChange={setFrom} />
           </div>
           <div>
-            <Label>Período hasta</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1" />
+            <DateField label="Período hasta" value={to} onChange={setTo} />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => { setFrom(moment().startOf("month").format("YYYY-MM-DD")); setTo(moment().format("YYYY-MM-DD")); }} className="flex-1">Mes actual</Button>
