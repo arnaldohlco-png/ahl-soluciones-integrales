@@ -15,8 +15,10 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Purchases() {
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -119,7 +121,7 @@ export default function Purchases() {
   };
 
   const deletePurchase = async (p) => {
-    if (!confirm("¿Eliminar esta compra? El stock de los productos será ajustado.")) return;
+    if (!(await confirm({ title: "¿Eliminar esta compra?", description: "El stock de los productos será ajustado.", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     try {
       const parsedItems = p.items ? (typeof p.items === "string" ? JSON.parse(p.items) : p.items) : [];
       await Promise.all(parsedItems.map(item =>

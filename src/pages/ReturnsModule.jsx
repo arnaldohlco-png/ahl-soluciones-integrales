@@ -17,6 +17,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { getNextDocNumber } from "@/lib/docNumbering";
 import { matchAny } from "@/lib/search";
 import moment from "moment";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const PAY_METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
 
@@ -26,6 +27,7 @@ const parseItems = (str) => {
 
 export default function ReturnsModule() {
   const location = useLocation();
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -178,14 +180,14 @@ export default function ReturnsModule() {
   };
 
   const remove = async (id) => {
-    if (!confirm("¿Anular esta devolución? El stock NO se revertirá automáticamente.")) return;
+    if (!(await confirm({ title: "¿Anular esta devolución?", description: "El stock NO se revertirá automáticamente.", confirmText: "Sí, anular", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Return.update(id, { status: "Anulada" });
     const data = await fetchAll("Return");
     setList(data);
   };
 
   const del = async (id) => {
-    if (!confirm("¿Eliminar definitivamente esta devolución? El stock NO se revertirá.")) return;
+    if (!(await confirm({ title: "¿Eliminar definitivamente esta devolución?", description: "El stock NO se revertirá.", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Return.delete(id);
     const data = await fetchAll("Return");
     setList(data);

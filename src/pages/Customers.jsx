@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Phone, Mail, Search, Users, MessageCircle, CreditCard, FileText } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const docTypes = ["Cédula", "NIT", "Cédula de extranjería", "Pasaporte"];
 
@@ -18,6 +19,7 @@ const empty = {
 };
 
 export default function Customers() {
+  const confirm = useConfirm();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -67,7 +69,7 @@ export default function Customers() {
   };
 
   const remove = async (c) => {
-    if (!confirm(`¿Eliminar al cliente "${c.name}"?`)) return;
+    if (!(await confirm({ title: `¿Eliminar al cliente "${c.name}"?`, confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Customer.delete(c.id);
     await load();
   };

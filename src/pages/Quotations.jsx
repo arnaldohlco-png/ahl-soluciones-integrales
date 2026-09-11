@@ -17,10 +17,12 @@ import { buildDocMessage } from "@/lib/docMessages";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
 export default function Quotations() {
+  const confirm = useConfirm();
   const [quotes, setQuotes] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -121,7 +123,7 @@ export default function Quotations() {
   };
 
   const convertToInvoice = async (q) => {
-    if (!confirm("¿Convertir esta cotización en factura de venta?")) return;
+    if (!(await confirm({ title: "¿Convertir esta cotización en factura de venta?", confirmText: "Sí, convertir", cancelText: "No" }))) return;
     try {
       await base44.entities.Invoice.update(q.id, {
         type: "Factura de venta", status: "Pendiente",
@@ -133,7 +135,7 @@ export default function Quotations() {
   };
 
   const remove = async (id) => {
-    if (!confirm("¿Eliminar esta cotización?")) return;
+    if (!(await confirm({ title: "¿Eliminar esta cotización?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Invoice.delete(id);
     await load();
   };

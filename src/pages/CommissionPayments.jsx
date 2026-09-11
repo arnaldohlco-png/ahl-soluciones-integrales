@@ -13,10 +13,12 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
 export default function CommissionPayments() {
+  const confirm = useConfirm();
   const [techs, setTechs] = useState([]);
   const [payments, setPayments] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -150,6 +152,7 @@ export default function CommissionPayments() {
 
   const payCommission = async () => {
     if (!calc) return;
+    if (!(await confirm({ title: "¿Confirmar el pago de comisiones?", description: `Neto a pagar: ${fmt(calc.netAmount)}`, confirmText: "Sí, pagar", cancelText: "No" }))) return;
     setPaying(true);
     try {
       const payment = await base44.entities.CommissionPayment.create({

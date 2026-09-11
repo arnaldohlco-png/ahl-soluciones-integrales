@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { HardHat, Plus, Pencil, Trash2, Search, Phone } from "lucide-react";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Technicians() {
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -58,7 +60,7 @@ export default function Technicians() {
   };
 
   const remove = async (id) => {
-    if (!confirm("¿Eliminar este técnico?")) return;
+    if (!(await confirm({ title: "¿Eliminar este técnico?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Technician.delete(id);
     await load();
   };

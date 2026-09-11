@@ -22,12 +22,14 @@ import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
 const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
 
 export default function Invoices() {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -122,15 +124,19 @@ export default function Invoices() {
   };
 
   const remove = async (id) => {
-    if (!confirm("¿Anular este documento?")) return;
+    if (!(await confirm({ title: "¿Anular este documento?", confirmText: "Sí, anular", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Invoice.delete(id);
     const data = await base44.entities.Invoice.list("-date", 200);
     setList(data);
   };
 
-  const collect = (inv) => setCobro(inv);
+  const collect = async (inv) => {
+    if (!(await confirm({ title: "¿Cobrar este documento?", description: `${inv.type} ${inv.number || ""} · $${(inv.total || 0).toLocaleString("es-CO")}`, confirmText: "Sí, cobrar", cancelText: "No" }))) return;
+    setCobro(inv);
+  };
 
-  const sellInPOS = (inv) => {
+  const sellInPOS = async (inv) => {
+    if (!(await confirm({ title: "¿Enviar esta cotización al POS?", description: "Se cargará en el punto de venta para registrar el cobro.", confirmText: "Sí", cancelText: "No" }))) return;
     let qi = [];
     try { qi = JSON.parse(inv.items || "[]"); } catch (e) { qi = []; }
     navigate("/ventas", { state: { fromQuote: { id: inv.id, number: inv.number, customer_id: inv.customer_id, customer_name: inv.customer_name, items: qi } } });

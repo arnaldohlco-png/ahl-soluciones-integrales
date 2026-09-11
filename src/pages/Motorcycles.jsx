@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Bike, Search } from "lucide-react";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const empty = {
   customer_id: "", brand: "", line: "", model: "", year: "", plate: "", vin: "",
@@ -16,6 +17,7 @@ const empty = {
 };
 
 export default function Motorcycles() {
+  const confirm = useConfirm();
   const [motos, setMotos] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -93,7 +95,7 @@ export default function Motorcycles() {
   };
 
   const remove = async (m) => {
-    if (!confirm(`¿Eliminar la motocicleta ${m.brand} ${m.model}?`)) return;
+    if (!(await confirm({ title: `¿Eliminar la motocicleta ${m.brand} ${m.model}?`, confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Motorcycle.delete(m.id);
     await load();
   };

@@ -10,8 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Building2, Plus, Pencil, Trash2, Search, Phone, Mail, MapPin } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Suppliers() {
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -57,7 +59,7 @@ export default function Suppliers() {
   };
 
   const remove = async (id) => {
-    if (!confirm("¿Eliminar este proveedor?")) return;
+    if (!(await confirm({ title: "¿Eliminar este proveedor?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Supplier.delete(id);
     await load();
   };

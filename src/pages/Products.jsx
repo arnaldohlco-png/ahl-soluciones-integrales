@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Package, Search, AlertTriangle, MapPin, Barcode, TrendingUp } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const categories = ["Repuestos", "Accesorios", "Lubricantes", "Llantas", "Baterías", "Consumibles", "Herramientas", "Indumentaria", "Otros"];
 
@@ -20,6 +21,7 @@ const empty = {
 };
 
 export default function Products() {
+  const confirm = useConfirm();
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +82,7 @@ export default function Products() {
   };
 
   const remove = async (p) => {
-    if (!confirm(`¿Eliminar "${p.name}"?`)) return;
+    if (!(await confirm({ title: `¿Eliminar "${p.name}"?`, confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Product.delete(p.id);
     await load();
   };

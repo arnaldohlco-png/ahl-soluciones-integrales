@@ -11,11 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Wallet, Plus, Pencil, Trash2, Search, TrendingDown } from "lucide-react";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const CATEGORIES = ["Arriendo", "Servicios públicos", "Nómina", "Transporte", "Herramientas", "Papelería", "Publicidad", "Mantenimiento", "Compras menores", "Otros"];
 const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
 
 export default function Expenses() {
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -95,7 +97,7 @@ export default function Expenses() {
   };
 
   const remove = async (id) => {
-    if (!confirm("¿Eliminar este gasto?")) return;
+    if (!(await confirm({ title: "¿Eliminar este gasto?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     try {
       const linked = await base44.entities.CashMovement.filter({ reference_id: id });
       await Promise.all(linked.map((m) => base44.entities.CashMovement.delete(m.id)));

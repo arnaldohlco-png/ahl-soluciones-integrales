@@ -21,6 +21,7 @@ import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
 const statuses = ["Ingresado", "En proceso", "Completado", "Entregado", "Cobrada"];
@@ -59,6 +60,7 @@ export default function ServiceOrders() {
   const [invoices, setInvoices] = useState([]);
   const [sales, setSales] = useState([]);
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
   const load = async () => {
     setLoading(true);
@@ -176,7 +178,7 @@ export default function ServiceOrders() {
   };
 
   const remove = async (o) => {
-    if (!confirm("¿Eliminar esta orden de servicio?")) return;
+    if (!(await confirm({ title: "¿Eliminar esta orden de servicio?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.ServiceOrder.delete(o.id);
     await load();
   };
@@ -184,6 +186,7 @@ export default function ServiceOrders() {
   const cycleStatus = async (o) => {
     const idx = statuses.indexOf(o.status);
     const next = statuses[(idx + 1) % statuses.length];
+    if (!(await confirm({ title: "¿Cambiar el estado de la orden?", description: `De "${o.status}" a "${next}"`, confirmText: "Sí", cancelText: "No" }))) return;
     const payload = { status: next };
     if (next === "Entregado") payload.delivery_date = new Date().toISOString().split("T")[0];
     await base44.entities.ServiceOrder.update(o.id, payload);
@@ -191,6 +194,7 @@ export default function ServiceOrders() {
   };
 
   const convertToQuotation = async (o) => {
+    if (!(await confirm({ title: "¿Convertir esta orden en cotización?", confirmText: "Sí", cancelText: "No" }))) return;
     try {
       const items = JSON.parse(o.service_items || "[]");
       const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
@@ -209,7 +213,8 @@ export default function ServiceOrders() {
     } catch (e) { console.error(e); alert("Error al crear cotización"); }
   };
 
-  const cobrar = (o) => {
+  const cobrar = async (o) => {
+    if (!(await confirm({ title: "¿Cobrar esta orden de servicio?", description: "Se enviará al POS para registrar el cobro.", confirmText: "Sí, cobrar", cancelText: "No" }))) return;
     let items = [];
     try { items = JSON.parse(o.service_items || "[]"); } catch { items = []; }
     navigate("/ventas", {

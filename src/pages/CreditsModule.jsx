@@ -12,8 +12,10 @@ import { CreditCard, Search, DollarSign, CheckCircle } from "lucide-react";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Credits() {
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +72,7 @@ export default function Credits() {
 
   const registerPayment = async () => {
     if (!payAmount || payAmount <= 0) return;
+    if (!(await confirm({ title: "¿Registrar este abono?", description: `Monto: $${payAmount.toLocaleString("es-CO")} · ${payMethod}`, confirmText: "Sí, registrar", cancelText: "No" }))) return;
     setSaving(true);
     try {
       const payments = JSON.parse(payModal.payments || "[]");

@@ -14,10 +14,12 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
 export default function TechnicianLoans() {
+  const confirm = useConfirm();
   const [loans, setLoans] = useState([]);
   const [techs, setTechs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +99,7 @@ export default function TechnicianLoans() {
   };
 
   const remove = async (id) => {
-    if (!confirm("¿Eliminar este préstamo?")) return;
+    if (!(await confirm({ title: "¿Eliminar este préstamo?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     // Revertir el movimiento de caja solo si el préstamo aún no fue descontado vía comisión
     const loan = loans.find((l) => l.id === id);
     if (loan && loan.status === "Pendiente") {

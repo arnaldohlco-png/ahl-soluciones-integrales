@@ -7,10 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Plus, Pencil, Trash2, Search, Bike, X, Globe, ChevronDown } from "lucide-react";
 import BrandExportImport from "@/components/BrandExportImport";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const empty = { name: "", country: "", lines: [] };
 
 export default function BrandLines() {
+  const confirm = useConfirm();
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -71,7 +73,7 @@ export default function BrandLines() {
   };
 
   const remove = async (b) => {
-    if (!confirm(`¿Eliminar la marca "${b.name}"?`)) return;
+    if (!(await confirm({ title: `¿Eliminar la marca "${b.name}"?`, confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Brand.delete(b.id);
     await load();
   };

@@ -9,12 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Wrench, Search } from "lucide-react";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const defaultCategories = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Lubricación", "Afinación", "Otros"];
 
 const empty = { name: "", category: "Mantenimiento", price: "", cost: 0, estimated_hours: 0, iva_rate: 0, description: "", status: "Activo" };
 
 export default function ServicesModule() {
+  const confirm = useConfirm();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -54,7 +56,7 @@ export default function ServicesModule() {
   };
 
   const remove = async (s) => {
-    if (!confirm("¿Eliminar este servicio?")) return;
+    if (!(await confirm({ title: "¿Eliminar este servicio?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Service.delete(s.id);
     await load();
   };

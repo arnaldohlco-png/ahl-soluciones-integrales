@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, Save, Loader2, Cloud, Upload, RotateCcw, FileDown, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import RolesManager from "@/components/RolesManager";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
@@ -18,6 +19,7 @@ const empty = {
 };
 
 export default function Company() {
+  const confirm = useConfirm();
   const [company, setCompany] = useState(null);
   const [form, setForm] = useState(empty);
   const [loading, setLoading] = useState(true);
@@ -109,7 +111,7 @@ export default function Company() {
 
   const doRestore = async () => {
     if (!selectedFile) return;
-    if (!confirm("⚠️ ADVERTENCIA: Esta acción reemplazará TODOS los datos actuales con los del respaldo seleccionado. ¿Está seguro?")) return;
+    if (!(await confirm({ title: "⚠️ Restaurar respaldo", description: "Esta acción reemplazará TODOS los datos actuales con los del respaldo seleccionado. ¿Está seguro?", confirmText: "Sí, restaurar", cancelText: "No", variant: "destructive" }))) return;
     setRestoring(true);
     setRestoreResult(null);
     try {

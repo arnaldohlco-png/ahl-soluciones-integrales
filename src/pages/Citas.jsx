@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const STATUS = {
   Pendiente: { label: "Pendiente", cls: "bg-amber-100 text-amber-700 border-amber-300" },
@@ -46,6 +47,7 @@ const emptyForm = {
 };
 
 export default function Citas() {
+  const confirm = useConfirm();
   const [appointments, setAppointments] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [motorcycles, setMotorcycles] = useState([]);
@@ -171,6 +173,7 @@ export default function Citas() {
   };
 
   const setStatus = async (a, status, extra = {}) => {
+    if (!(await confirm({ title: "¿Cambiar el estado de la cita?", description: `De "${a.status}" a "${status}"`, confirmText: "Sí", cancelText: "No" }))) return;
     await base44.entities.Appointment.update(a.id, { status, ...extra });
     setAppointments((arr) => arr.map((x) => (x.id === a.id ? { ...x, status, ...extra } : x)));
   };
@@ -185,7 +188,7 @@ export default function Citas() {
   };
 
   const cancelAppointment = async (a) => {
-    if (!confirm("¿Cancelar la cita y preguntar al cliente si desea reagendar?")) return;
+    if (!(await confirm({ title: "¿Cancelar la cita?", description: "Se preguntará al cliente si desea reagendar.", confirmText: "Sí, cancelar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Appointment.update(a.id, { status: "Cancelada" });
     setAppointments((arr) => arr.map((x) => (x.id === a.id ? { ...x, status: "Cancelada" } : x)));
     const c = customerById[a.customer_id];
@@ -196,7 +199,7 @@ export default function Citas() {
   };
 
   const completeAppointment = async (a) => {
-    if (!confirm("¿Marcar como completada y eliminar del sistema?")) return;
+    if (!(await confirm({ title: "¿Marcar como completada y eliminar?", confirmText: "Sí", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Appointment.delete(a.id);
     setAppointments((arr) => arr.filter((x) => x.id !== a.id));
   };
@@ -238,7 +241,7 @@ export default function Citas() {
   };
 
   const remove = async (a) => {
-    if (!confirm("¿Eliminar esta cita/recordatorio?")) return;
+    if (!(await confirm({ title: "¿Eliminar esta cita/recordatorio?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Appointment.delete(a.id);
     setAppointments((arr) => arr.filter((x) => x.id !== a.id));
   };

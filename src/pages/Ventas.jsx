@@ -10,8 +10,10 @@ import { useLocation } from "react-router-dom";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Ventas() {
+  const confirm = useConfirm();
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +120,10 @@ export default function Ventas() {
     persistParked(parkedSales.filter(p => p.id !== id));
   };
 
-  const deleteParkedSale = (id) => persistParked(parkedSales.filter(p => p.id !== id));
+  const deleteParkedSale = async (id) => {
+    if (!(await confirm({ title: "¿Descartar esta venta guardada?", confirmText: "Sí", cancelText: "No", variant: "destructive" }))) return;
+    persistParked(parkedSales.filter(p => p.id !== id));
+  };
 
   const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const loadHistory = async () => {
@@ -241,6 +246,7 @@ export default function Ventas() {
 
   const checkout = async () => {
     if (cart.length === 0) return;
+    if (!(await confirm({ title: "¿Cobrar esta venta?", description: `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`, confirmText: "Sí, cobrar", cancelText: "No" }))) return;
     const insufficient = cart.find(item => {
       if (!item.product_id) return false;
       const prod = products.find(p => p.id === item.product_id);
