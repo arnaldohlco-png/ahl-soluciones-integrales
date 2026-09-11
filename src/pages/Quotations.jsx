@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil, Printer, MessageCircle, Search } from "lucide-react";
+import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil, Printer, MessageCircle, Search, Phone } from "lucide-react";
 import moment from "moment";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -203,6 +203,9 @@ export default function Quotations() {
                   <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1 min-w-[80px]">
                     <FileCheck className="w-3.5 h-3.5 mr-1" /> Facturar
                   </Button>
+                  {customerPhone(q.customer_id) && (
+                    <a href={`tel:${customerPhone(q.customer_id).replace(/\s+/g, "")}`} title="Llamar al cliente" className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-md border border-slate-200"><Phone className="w-3.5 h-3.5" /></a>
+                  )}
                   <WhatsAppButton size="sm" phone={customerPhone(q.customer_id)} message={buildDocMessage("quotation", q, company, { customer: customers.find((c) => c.id === q.customer_id) })} variant="outline" label="WhatsApp" />
                   <button onClick={() => setPrintQ(q)} title="Imprimir" className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md border border-slate-200"><Printer className="w-3.5 h-3.5" /></button>
                   <Button size="sm" variant="ghost" onClick={() => remove(q.id)} className="text-red-500">

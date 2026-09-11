@@ -115,6 +115,9 @@ export default function Suppliers() {
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  {s.phone && (
+                    <a href={`tel:${s.phone.replace(/\s+/g, "")}`} title="Llamar" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Phone className="w-4 h-4" /></a>
+                  )}
                   <button onClick={() => openEdit(s)} className="p-1.5 text-slate-400 hover:text-amber-600">
                     <Pencil className="w-4 h-4" />
                   </button>

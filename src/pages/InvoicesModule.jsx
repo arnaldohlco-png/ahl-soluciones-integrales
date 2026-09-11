@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign, Undo2, ShoppingCart } from "lucide-react";
+import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign, Undo2, ShoppingCart, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
@@ -284,6 +284,9 @@ export default function Invoices() {
                         )}
                         {inv.type === "Cotización" && inv.status === "Pendiente" && (
                           <button onClick={() => sellInPOS(inv)} title="Vender en POS" className="p-1.5 text-amber-600 hover:bg-amber-50 rounded"><ShoppingCart className="w-4 h-4" /></button>
+                        )}
+                        {customerPhone(inv.customer_id) && (
+                          <a href={`tel:${customerPhone(inv.customer_id).replace(/\s+/g, "")}`} title="Llamar al cliente" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded"><Phone className="w-4 h-4" /></a>
                         )}
                         <WhatsAppButton phone={customerPhone(inv.customer_id)} message={buildDocMessage("invoice", inv, company, { customer: customers.find((c) => c.id === inv.customer_id) })} />
                         <button onClick={() => setPrintInv(inv)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>

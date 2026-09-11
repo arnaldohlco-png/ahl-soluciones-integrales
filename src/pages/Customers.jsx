@@ -119,6 +119,9 @@ export default function Customers() {
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  {c.phone && (
+                    <a href={`tel:${c.phone.replace(/\s+/g, "")}`} title="Llamar" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Phone className="w-4 h-4" /></a>
+                  )}
                   <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => remove(c)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
