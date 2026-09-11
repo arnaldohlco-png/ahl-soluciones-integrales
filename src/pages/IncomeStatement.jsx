@@ -17,7 +17,7 @@ export default function IncomeStatement() {
     (async () => {
       setLoading(true);
       try {
-        const [sales, orders, expenses, purchases, invoices, products, technicians] = await Promise.all([
+        const [sales, orders, expenses, purchases, invoices, products, technicians, commissionPayments] = await Promise.all([
           base44.entities.Sale.list("-created_date", 5000),
           base44.entities.ServiceOrder.list("-created_date", 5000),
           base44.entities.Expense.list("-created_date", 5000),
@@ -25,8 +25,9 @@ export default function IncomeStatement() {
           base44.entities.Invoice.list("-created_date", 5000),
           base44.entities.Product.list("-created_date", 5000),
           base44.entities.Technician.list("-created_date", 5000),
+          base44.entities.CommissionPayment.list("-created_date", 5000),
         ]);
-        setData({ sales, orders, expenses, purchases, invoices, products, technicians });
+        setData({ sales, orders, expenses, purchases, invoices, products, technicians, commissionPayments });
       } catch (e) { console.error(e); }
       setLoading(false);
     })();
@@ -46,8 +47,6 @@ export default function IncomeStatement() {
 
   const productsById = {};
   (data.products || []).forEach((p) => { productsById[p.id] = p; });
-  const techniciansById = {};
-  (data.technicians || []).forEach((t) => { techniciansById[t.id] = t; });
   const ordersById = {};
   data.orders.forEach((o) => { ordersById[o.id] = o; });
 
@@ -56,16 +55,7 @@ export default function IncomeStatement() {
   const productCogsOf = (items) => items
     .filter((it) => it.product_id)
     .reduce((s, it) => s + ((productsById[it.product_id]?.cost) || 0) * (it.quantity || 0), 0);
-  // Comisión de servicios: % del técnico responsable sobre el subtotal de ítems de servicio
-  const serviceCommissionOf = (items, technicianId) => {
-    if (!technicianId) return 0;
-    const tech = techniciansById[technicianId];
-    if (!tech || !tech.commission_percentage) return 0;
-    const serviceSub = items
-      .filter((it) => (it.type || "Servicio") === "Servicio")
-      .reduce((s, it) => s + (it.subtotal || 0), 0);
-    return Math.round(serviceSub * (tech.commission_percentage / 100));
-  };
+
 
   // Facturas cobradas en Facturación (no provenientes del POS)
   const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
@@ -77,10 +67,9 @@ export default function IncomeStatement() {
   const orderIdsWithSale = new Set(fSales.filter((s) => s.status === "Pagada" && s.related_order_id).map((s) => s.related_order_id));
   const invoiceRevenue = invoiceSales.reduce((s, i) => s + (i.total || 0), 0);
   const invoiceCOGS = invoiceSales.reduce((s, i) => s + productCogsOf(itemsOf(i.items)), 0);
-  const invoiceCommissions = invoiceSales.reduce((s, i) => {
-    const techId = i.related_order_id ? (ordersById[i.related_order_id]?.technician_id) : null;
-    return s + serviceCommissionOf(itemsOf(i.items), techId);
-  }, 0);
+  // Comisiones pagadas a técnicos: valor real desembolsado en el período (no estimado)
+  const fCommissionPayments = (data.commissionPayments || []).filter((p) => inRange(p.date));
+  const paidCommissions = fCommissionPayments.reduce((s, p) => s + (p.total_commission || 0), 0);
 
   const posRevenue = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.total || 0), 0);
   const posCOGS = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + productCogsOf(itemsOf(x.items)), 0);
@@ -92,7 +81,6 @@ export default function IncomeStatement() {
   const workshopParts = countedOrders.reduce((s, o) => s + productCogsOf(itemsOf(o.service_items)), 0);
   const workshopLabor = countedOrders.reduce((s, o) => s + (o.labor_cost || 0), 0);
   const workshopLubricants = countedOrders.reduce((s, o) => s + (o.lubricants_cost || 0), 0);
-  const workshopCommissions = countedOrders.reduce((s, o) => s + serviceCommissionOf(itemsOf(o.service_items), o.technician_id), 0);
 
   const purchaseCosts = fPurchases.filter((p) => p.status === "Pagada").reduce((s, p) => s + (p.subtotal || 0), 0);
   const operatingExpenses = fExpenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -101,7 +89,7 @@ export default function IncomeStatement() {
   const totalRevenue = posRevenue + invoiceRevenue + workshopRevenue;
   const totalCOGS = salesCOGS + workshopParts + workshopLubricants + purchaseCosts;
   const grossProfit = totalRevenue - totalCOGS;
-  const operatingCosts = operatingExpenses + workshopLabor + workshopCommissions + invoiceCommissions;
+  const operatingCosts = operatingExpenses + workshopLabor + paidCommissions;
   const netProfit = grossProfit - operatingCosts;
 
   const Row = ({ label, value, bold, indent, color }) => (
@@ -174,7 +162,7 @@ export default function IncomeStatement() {
         <div className="my-3" />
         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Gastos operacionales</p>
         <Row label="Mano de obra taller" value={workshopLabor} indent />
-        <Row label="Comisiones de servicios" value={workshopCommissions + invoiceCommissions} indent />
+        <Row label="Comisiones pagadas a técnicos" value={paidCommissions} indent />
         <Row label="Gastos generales" value={operatingExpenses} indent />
         <Row label="Total Gastos Operacionales" value={operatingCosts} bold color="text-red-600" />
 
