@@ -99,11 +99,20 @@ export default function CommissionPayments() {
 
   const printPayment = async (p) => {
     try {
-      const ords = await base44.entities.ServiceOrder.filter({ technician_id: p.technician_id }, "-created_date", 500);
-      const inRange = ords.filter((o) => {
-        const d = o.entry_date || (o.created_date || "").slice(0, 10);
-        return d >= p.period_start && d <= p.period_end && (o.status === "Entregado" || o.status === "Cobrada");
-      });
+      let inRange = [];
+      let paidIds = [];
+      try { paidIds = JSON.parse(p.order_ids || "[]"); } catch { paidIds = []; }
+      if (paidIds.length > 0) {
+        // Usar las órdenes exactas registradas en el pago
+        inRange = (await Promise.all(paidIds.map((id) => base44.entities.ServiceOrder.get(id)))).filter(Boolean);
+      } else {
+        // Compatibilidad: filtrar por período si no hay order_ids
+        const ords = await base44.entities.ServiceOrder.filter({ technician_id: p.technician_id }, "-created_date", 500);
+        inRange = ords.filter((o) => {
+          const d = o.entry_date || (o.created_date || "").slice(0, 10);
+          return d >= p.period_start && d <= p.period_end && (o.status === "Entregado" || o.status === "Cobrada");
+        });
+      }
       setPrintPay({ doc: p, orders: inRange });
     } catch (e) { console.error(e); alert("Error al cargar detalle"); }
   };
@@ -162,6 +171,7 @@ export default function CommissionPayments() {
         loans_deducted: calc.loansDeducted, net_amount: calc.netAmount,
         status: "Pagado",
         technician_signature: techSig, admin_signature: adminSig,
+        order_ids: JSON.stringify(calc.orders.map((o) => o.id)),
       });
 
       // Registrar salida de caja por el pago de comisiones al técnico

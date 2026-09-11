@@ -30,6 +30,11 @@
       "title": "\u00d3rdenes completadas",
       "default": 0
     },
+    "order_ids": {
+      "type": "string",
+      "title": "\u00d3rdenes pagadas (JSON)",
+      "description": "Array JSON de IDs de \u00f3rdenes incluidas en este pago"
+    },
     "total_commission": {
       "type": "number",
       "title": "Total comisiones",
