@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
 import { fetchAllCustomers } from "@/lib/customersLoader";
@@ -57,6 +58,7 @@ export default function ServiceOrders() {
   const [printOrder, setPrintOrder] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [sales, setSales] = useState([]);
+  const navigate = useNavigate();
 
   const load = async () => {
     setLoading(true);
@@ -207,26 +209,20 @@ export default function ServiceOrders() {
     } catch (e) { console.error(e); alert("Error al crear cotización"); }
   };
 
-  const convertToSale = async (o) => {
-    try {
-      const items = JSON.parse(o.service_items || "[]");
-      const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
-      const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
-      const iva = chargesIva ? Math.round(subtotal * 0.19) : 0;
-      const saleNumber = await getNextDocNumber("Sale", getPrefix(company, "sale"));
-      await base44.entities.Sale.create({
-        number: saleNumber,
-        customer_id: o.customer_id, customer_name: customerName(o.customer_id),
-        date: new Date().toISOString().slice(0, 10),
-        items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
-        subtotal, iva_total: iva, discount: 0, total: subtotal + iva,
-        payment_method: "Efectivo", payment_type: "Contado", status: "Pagada", balance: 0,
-        related_order_id: o.id,
-      });
-      await base44.entities.ServiceOrder.update(o.id, { status: "Cobrada" });
-      await load();
-      alert("Venta creada correctamente");
-    } catch (e) { console.error(e); alert("Error al crear venta"); }
+  const cobrar = (o) => {
+    let items = [];
+    try { items = JSON.parse(o.service_items || "[]"); } catch { items = []; }
+    navigate("/ventas", {
+      state: {
+        fromQuote: {
+          id: null,
+          related_order_id: o.id,
+          items,
+          customer_id: o.customer_id,
+          customer_name: customerName(o.customer_id),
+        },
+      },
+    });
   };
 
   // Órdenes que ya se convirtieron en cotización/factura/venta no deben seguir apareciendo
@@ -326,7 +322,7 @@ export default function ServiceOrders() {
                     {o.status !== "Cobrada" && (
                       <>
                         <button onClick={() => convertToQuotation(o)} title="Convertir a cotización" className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"><FileText className="w-4 h-4" /></button>
-                        <button onClick={() => convertToSale(o)} title="Convertir a venta" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
+                        <button onClick={() => cobrar(o)} title="Cobrar en POS" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
                       </>
                     )}
                     {o.status !== "Cobrada" && (
