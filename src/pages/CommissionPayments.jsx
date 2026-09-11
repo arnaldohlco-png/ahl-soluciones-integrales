@@ -168,7 +168,7 @@ export default function CommissionPayments() {
           type: "Salida",
           category: "Pago",
           amount: calc.netAmount,
-          description: `Pago de comisiones - ${calc.techName}`,
+          description: `Pago de comisiones - ${calc.techName} (${calc.orders.map((o) => o.number || "—").join(", ")})`,
           payment_method: "Efectivo",
           register_type: "Caja principal",
           reference_id: payment.id,
