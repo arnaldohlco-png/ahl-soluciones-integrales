@@ -62,8 +62,33 @@ export default function Expenses() {
     setSaving(true);
     try {
       const payload = { ...form, amount: Number(form.amount) };
-      if (editing) await base44.entities.Expense.update(editing.id, payload);
-      else await base44.entities.Expense.create(payload);
+      if (editing) {
+        await base44.entities.Expense.update(editing.id, payload);
+        // Sincronizar el movimiento de caja vinculado
+        try {
+          const linked = await base44.entities.CashMovement.filter({ reference_id: editing.id });
+          if (linked.length > 0) {
+            await base44.entities.CashMovement.update(linked[0].id, {
+              amount: payload.amount,
+              description: payload.description || payload.category,
+              payment_method: payload.payment_method || "Efectivo",
+            });
+          }
+        } catch (e) { console.error(e); }
+      } else {
+        const saved = await base44.entities.Expense.create(payload);
+        // Registrar salida de caja por el gasto
+        await base44.entities.CashMovement.create({
+          date: new Date().toISOString(),
+          type: "Salida",
+          category: "Gasto",
+          amount: payload.amount,
+          description: payload.description || payload.category,
+          payment_method: payload.payment_method || "Efectivo",
+          register_type: "Caja principal",
+          reference_id: saved.id,
+        });
+      }
       setModalOpen(false);
       await load();
     } catch (e) { console.error(e); } finally { setSaving(false); }
@@ -71,6 +96,10 @@ export default function Expenses() {
 
   const remove = async (id) => {
     if (!confirm("¿Eliminar este gasto?")) return;
+    try {
+      const linked = await base44.entities.CashMovement.filter({ reference_id: id });
+      await Promise.all(linked.map((m) => base44.entities.CashMovement.delete(m.id)));
+    } catch (e) { console.error(e); }
     await base44.entities.Expense.delete(id);
     await load();
   };

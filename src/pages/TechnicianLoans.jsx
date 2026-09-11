@@ -63,13 +63,34 @@ export default function TechnicianLoans() {
     if (!form.technician_id || !form.amount) return;
     setSaving(true);
     try {
+      const amt = Number(form.amount) || 0;
       const payload = {
-        ...form, amount: Number(form.amount) || 0,
+        ...form, amount: amt,
         technician_name: techName(form.technician_id),
-        balance: Number(form.amount) || 0, deducted_amount: 0, status: "Pendiente",
+        balance: amt, deducted_amount: 0, status: "Pendiente",
       };
-      if (editing) await base44.entities.TechnicianLoan.update(editing.id, payload);
-      else await base44.entities.TechnicianLoan.create(payload);
+      if (editing) {
+        await base44.entities.TechnicianLoan.update(editing.id, payload);
+        try {
+          const linked = await base44.entities.CashMovement.filter({ reference_id: editing.id });
+          if (linked.length > 0) {
+            await base44.entities.CashMovement.update(linked[0].id, { amount: amt, description: `Préstamo - ${payload.technician_name}` });
+          }
+        } catch (e) { console.error(e); }
+      } else {
+        const saved = await base44.entities.TechnicianLoan.create(payload);
+        // Registrar salida de caja por el préstamo entregado al técnico
+        await base44.entities.CashMovement.create({
+          date: new Date().toISOString(),
+          type: "Salida",
+          category: "Pago",
+          amount: amt,
+          description: `Préstamo - ${payload.technician_name}`,
+          payment_method: "Efectivo",
+          register_type: "Caja principal",
+          reference_id: saved.id,
+        });
+      }
       setModalOpen(false); await load();
     } catch (e) { console.error(e); alert("Error al guardar"); }
     setSaving(false);
@@ -77,6 +98,14 @@ export default function TechnicianLoans() {
 
   const remove = async (id) => {
     if (!confirm("¿Eliminar este préstamo?")) return;
+    // Revertir el movimiento de caja solo si el préstamo aún no fue descontado vía comisión
+    const loan = loans.find((l) => l.id === id);
+    if (loan && loan.status === "Pendiente") {
+      try {
+        const linked = await base44.entities.CashMovement.filter({ reference_id: id });
+        await Promise.all(linked.map((m) => base44.entities.CashMovement.delete(m.id)));
+      } catch (e) { console.error(e); }
+    }
     await base44.entities.TechnicianLoan.delete(id);
     await load();
   };

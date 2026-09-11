@@ -152,7 +152,7 @@ export default function CommissionPayments() {
     if (!calc) return;
     setPaying(true);
     try {
-      await base44.entities.CommissionPayment.create({
+      const payment = await base44.entities.CommissionPayment.create({
         technician_id: calc.techId, technician_name: calc.techName,
         date: moment().format("YYYY-MM-DD"), period_start: from, period_end: to,
         orders_count: calc.orders.length, total_commission: calc.totalCommission,
@@ -160,6 +160,20 @@ export default function CommissionPayments() {
         status: "Pagado",
         technician_signature: techSig, admin_signature: adminSig,
       });
+
+      // Registrar salida de caja por el pago de comisiones al técnico
+      if ((calc.netAmount || 0) > 0) {
+        await base44.entities.CashMovement.create({
+          date: new Date().toISOString(),
+          type: "Salida",
+          category: "Pago",
+          amount: calc.netAmount,
+          description: `Pago de comisiones - ${calc.techName}`,
+          payment_method: "Efectivo",
+          register_type: "Caja principal",
+          reference_id: payment.id,
+        });
+      }
 
       // Mark orders as commission paid
       for (const o of calc.orders) {
