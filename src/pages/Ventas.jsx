@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle, Pause, Play, FilePlus2 } from "lucide-react";
+import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle, Pause, Play, FilePlus2, History, Printer } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
@@ -28,6 +28,10 @@ export default function Ventas() {
   const [checkoutMsg, setCheckoutMsg] = useState("");
   const [invoiceSale, setInvoiceSale] = useState(null);
   const [parkedSales, setParkedSales] = useState([]);
+  const [view, setView] = useState("pos");
+  const [sales, setSales] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
   const searchRef = useRef(null);
   const location = useLocation();
   const [pendingQuote, setPendingQuote] = useState(null);
@@ -115,6 +119,33 @@ export default function Ventas() {
 
   const deleteParkedSale = (id) => persistParked(parkedSales.filter(p => p.id !== id));
 
+  const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      let skip = 0, all = [];
+      while (true) {
+        const part = await base44.entities.Sale.list("-date", 500, skip);
+        all.push(...part);
+        if (part.length < 500) break;
+        skip += 500;
+      }
+      setSales(all);
+    } catch (e) { console.error(e); }
+    setHistoryLoading(false);
+  };
+
+  const openHistory = async () => {
+    setView("history");
+    await loadHistory();
+  };
+
+  const filteredHistory = useMemo(() => {
+    const q = norm(historySearch);
+    if (!q) return sales;
+    return sales.filter(s => norm(s.number).includes(q) || norm(s.customer_name).includes(q));
+  }, [sales, historySearch]);
+
   const startNewSale = () => {
     setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
     setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
@@ -151,7 +182,6 @@ export default function Ventas() {
     })();
   }, []);
 
-  const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const filtered = useMemo(() => {
     const q = norm(search);
     if (!q) return products;
@@ -334,18 +364,28 @@ export default function Ventas() {
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
-      <div className="mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Ventas / POS</h1>
-        <p className="text-slate-500 mt-1">Punto de venta del almacén</p>
+      <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Ventas / POS</h1>
+          <p className="text-slate-500 mt-1">{view === "pos" ? "Punto de venta del almacén" : "Historial de ventas registradas"}</p>
+        </div>
+        <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+          <button onClick={() => setView("pos")} className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${view === "pos" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>
+            <ShoppingCart className="w-4 h-4 inline mr-1" /> Punto de Venta
+          </button>
+          <button onClick={openHistory} className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${view === "history" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>
+            <History className="w-4 h-4 inline mr-1" /> Historial
+          </button>
+        </div>
       </div>
 
-      {checkoutMsg && (
+      {view === "pos" && checkoutMsg && (
         <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 flex items-center gap-2">
           <CheckCircle className="w-5 h-5" /> {checkoutMsg}
         </div>
       )}
 
-      {parkedSales.length > 0 && (
+      {view === "pos" && parkedSales.length > 0 && (
         <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
           <p className="text-xs font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
             <Pause className="w-3.5 h-3.5" /> Ventas guardadas ({parkedSales.length})
@@ -369,7 +409,7 @@ export default function Ventas() {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className={"grid lg:grid-cols-3 gap-6" + (view === "pos" ? "" : " hidden")}>
         {/* Products */}
         <div className="lg:col-span-2">
           <div className="relative mb-4">
@@ -533,7 +573,70 @@ export default function Ventas() {
         </div>
       </div>
 
-      {invoiceSale && (
+      {view === "pos" && invoiceSale && (
+        <ColombianInvoice
+          sale={invoiceSale}
+          company={company}
+          customer={customers.find((c) => c.id === invoiceSale.customer_id)}
+          onClose={() => setInvoiceSale(null)}
+        />
+      )}
+
+      {view === "history" && (
+        <div>
+          <div className="relative mb-4 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input placeholder="Buscar por número o cliente..." value={historySearch} onChange={(e) => setHistorySearch(e.target.value)} className="pl-10" />
+          </div>
+          {historyLoading ? (
+            <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" /></div>
+          ) : filteredHistory.length === 0 ? (
+            <div className="text-center py-20 text-slate-400">
+              <History className="w-12 h-12 mx-auto mb-3 opacity-40" />
+              <p>No hay ventas registradas</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-slate-400 border-b border-slate-100 bg-slate-50">
+                      <th className="px-4 py-3 font-medium">Factura</th>
+                      <th className="px-4 py-3 font-medium">Cliente</th>
+                      <th className="px-4 py-3 font-medium">Fecha</th>
+                      <th className="px-4 py-3 font-medium">Pago</th>
+                      <th className="px-4 py-3 font-medium text-right">Total</th>
+                      <th className="px-4 py-3 font-medium">Estado</th>
+                      <th className="px-4 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredHistory.map(s => {
+                      let itemCount = 0;
+                      try { itemCount = JSON.parse(s.items || "[]").length; } catch (e) { /* ignore */ }
+                      return (
+                        <tr key={s.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+                          <td className="px-4 py-3 font-medium text-slate-800">{s.number || "—"}</td>
+                          <td className="px-4 py-3 text-slate-700">{s.customer_name || "Cliente mostrador"}</td>
+                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{s.date ? new Date(s.date).toLocaleDateString("es-CO") : "—"}</td>
+                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{s.payment_type} · {s.payment_method}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-slate-800">${(s.total || 0).toLocaleString("es-CO")}</td>
+                          <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${s.status === "Pagada" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{s.status}</span></td>
+                          <td className="px-4 py-3 text-right">
+                            <button onClick={() => setInvoiceSale(s)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {view === "history" && invoiceSale && (
         <ColombianInvoice
           sale={invoiceSale}
           company={company}
