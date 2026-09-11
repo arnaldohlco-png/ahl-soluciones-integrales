@@ -226,7 +226,7 @@ export default function Dashboard() {
           </div>
           <p className="text-sm font-semibold text-slate-800">Orden de servicio</p>
         </Link>
-        <Link to="/ventas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center my-1">
+        <Link to="/ventas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
           <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
             <ShoppingCart className="w-5 h-5" />
           </div>
