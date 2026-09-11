@@ -338,7 +338,7 @@ export default function Dashboard() {
 
       {/* Sales row */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-3 text-white">
+        <div className="from-amber-500 to-amber-600 rounded-xl p-3 text-white bg-[#19f00a]">
           <div className="flex items-center gap-2 mb-1">
             <ShoppingCart className="w-4 h-4 opacity-80" />
             <p className="text-xs text-amber-100">Ventas del día</p>
