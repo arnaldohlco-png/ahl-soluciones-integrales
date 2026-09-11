@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
   Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard,
-  CalendarClock, FileText } from
+  CalendarClock, FileText, Users, HandCoins } from
 "lucide-react";
 import moment from "moment";
 
@@ -219,36 +219,84 @@ export default function Dashboard() {
       </div>
 
       {/* Accesos directos */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-        <Link to="/ordenes" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-2 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-            <Wrench className="w-5 h-5" />
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-6">
+        <Link to="/ordenes" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-1 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <Wrench className="w-4 h-4" />
           </div>
-          <p className="text-sm font-semibold text-slate-800">Orden de servicio</p>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Orden de servicio</p>
         </Link>
-        <Link to="/ventas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-            <ShoppingCart className="w-5 h-5" />
+        <Link to="/ventas" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-1 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <ShoppingCart className="w-4 h-4" />
           </div>
-          <p className="text-sm font-semibold text-slate-800">POS</p>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">POS / Ventas</p>
         </Link>
-        <Link to="/cotizaciones" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-          <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-2 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-            <FileText className="w-5 h-5" />
+        <Link to="/cotizaciones" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-1 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+            <FileText className="w-4 h-4" />
           </div>
-          <p className="text-sm font-semibold text-slate-800">Cotización</p>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Cotización</p>
         </Link>
-        <Link to="/citas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-          <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-            <CalendarClock className="w-5 h-5" />
+        <Link to="/citas" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-1 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+            <CalendarClock className="w-4 h-4" />
           </div>
-          <p className="text-sm font-semibold text-slate-800">Citas</p>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Citas</p>
         </Link>
-        <Link to="/motocicletas" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-          <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-2 group-hover:bg-slate-700 group-hover:text-white transition-colors">
-            <Bike className="w-5 h-5" />
+        <Link to="/motocicletas" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-1 group-hover:bg-slate-700 group-hover:text-white transition-colors">
+            <Bike className="w-4 h-4" />
           </div>
-          <p className="text-sm font-semibold text-slate-800">Motocicletas</p>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Motocicletas</p>
+        </Link>
+        <Link to="/clientes" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-1 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <Users className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Clientes</p>
+        </Link>
+        <Link to="/servicios" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center mb-1 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+            <HardHat className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Catálogo servicios</p>
+        </Link>
+        <Link to="/inventario" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mb-1 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+            <Package className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Inventario</p>
+        </Link>
+        <Link to="/compras" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-1 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+            <ShoppingCart className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Compras</p>
+        </Link>
+        <Link to="/gastos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-1 group-hover:bg-red-600 group-hover:text-white transition-colors">
+            <TrendingDown className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Gastos</p>
+        </Link>
+        <Link to="/creditos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center mb-1 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
+            <CreditCard className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Créditos</p>
+        </Link>
+        <Link to="/prestamos-tecnicos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mb-1 group-hover:bg-yellow-600 group-hover:text-white transition-colors">
+            <HandCoins className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Préstamos técnicos</p>
+        </Link>
+        <Link to="/pago-comisiones" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-1 group-hover:bg-green-600 group-hover:text-white transition-colors">
+            <DollarSign className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Pago comisiones</p>
         </Link>
       </div>
 
