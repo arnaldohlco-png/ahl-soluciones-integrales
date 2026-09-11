@@ -196,11 +196,11 @@ export default function Quotations() {
                   <span className="text-sm text-slate-500">Total</span>
                   <span className="font-bold text-slate-900">{fmt(q.total)}</span>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(q)} className="flex-1">
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(q)} className="flex-1 min-w-[80px]">
                     <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1">
+                  <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1 min-w-[80px]">
                     <FileCheck className="w-3.5 h-3.5 mr-1" /> Facturar
                   </Button>
                   <WhatsAppButton size="sm" phone={customerPhone(q.customer_id)} message={buildDocMessage("quotation", q, company, { customer: customers.find((c) => c.id === q.customer_id) })} variant="outline" label="WhatsApp" />
