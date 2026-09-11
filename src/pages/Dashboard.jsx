@@ -214,7 +214,7 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-slate-900">Resumen</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-slate-900 text-center">Resumen</h2>
         <p className="mt-1 text-[hsl(var(--background))] text-center">Resumen financiero y operativo en tiempo real</p>
       </div>
 
