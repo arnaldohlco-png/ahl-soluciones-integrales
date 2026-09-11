@@ -54,6 +54,17 @@ export default function Dashboard() {
         products.forEach((p) => { productCostMap[p.id] = p.cost || 0; });
 
         // Ingresos taller: solo servicios (items tipo Servicio) de órdenes finalizadas
+        const techPctMap = {};
+        technicians.forEach((t) => { techPctMap[t.id] = t.commission_percentage || 0; });
+        // Base de comisión: solo servicios, excluyendo los denominados "terceros" (igual que Pago de Comisiones)
+        const commissionBaseOf = (o) => {
+          let items = [];
+          try { items = JSON.parse(o.service_items || "[]"); } catch (_) {}
+          return items
+            .filter((it) => String(it.type || "").toLowerCase() === "servicio")
+            .filter((it) => !/tercero/i.test((it.name || "").trim()))
+            .reduce((s, it) => s + (it.subtotal || 0), 0);
+        };
         const finalizedOrders = orders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status));
         const visibleCompleted = visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado");
         let workshopIncome = 0;
@@ -68,7 +79,10 @@ export default function Dashboard() {
             // Órdenes sin items detallados: aproximar porción de servicios = total - repuestos - lubricantes
             workshopIncome += Math.max(0, (o.cost || 0) - (o.parts_cost || 0) - (o.lubricants_cost || 0));
           }
-          workshopCost += o.technician_commission || 0;
+          // Restar comisiones efectivamente pagadas (base × % del técnico) para órdenes marcadas como pagadas
+          if (o.commission_paid) {
+            workshopCost += commissionBaseOf(o) * (techPctMap[o.technician_id] || 0) / 100;
+          }
         });
         const workshopProfit = workshopIncome - workshopCost;
 
