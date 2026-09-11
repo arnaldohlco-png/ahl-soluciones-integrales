@@ -230,7 +230,7 @@ export default function Company() {
         </div>
         <div>
           <Label>Pie de página para órdenes de servicio</Label>
-          <Textarea value={form.footer_text} onChange={(e) => setForm({ ...form, footer_text: e.target.value })} className="mt-1" rows={3}
+          <Textarea value={form.footer_text} onChange={(e) => setForm({ ...form, footer_text: e.target.value })} className="mt-1 py-1 resize-y" rows={1}
             placeholder="Ej: Garantía de 3 meses en repuestos. No nos hacemos responsables por objetos dejados en la motocicleta..." />
           <p className="text-xs text-slate-400 mt-1">Este texto aparecerá al final de cada orden de servicio impresa</p>
         </div>
