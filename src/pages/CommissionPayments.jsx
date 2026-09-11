@@ -14,7 +14,6 @@ import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
-import DateField from "@/components/DateField";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -230,12 +229,17 @@ export default function CommissionPayments() {
 
       {/* Selector de período */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <p className="text-xs text-slate-500">Período seleccionado: <strong className="text-slate-700">{moment(from).format("DD/MM/YYYY")} — {moment(to).format("DD/MM/YYYY")}</strong></p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div>
-            <DateField label="Período desde" value={from} onChange={setFrom} />
+            <Label>Período desde</Label>
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />
           </div>
           <div>
-            <DateField label="Período hasta" value={to} onChange={setTo} />
+            <Label>Período hasta</Label>
+            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1" />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => { setFrom(moment().startOf("month").format("YYYY-MM-DD")); setTo(moment().format("YYYY-MM-DD")); }} className="flex-1">Mes actual</Button>
@@ -398,7 +402,7 @@ export default function CommissionPayments() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setCalc(null)}>
           <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-900">{calc.techName} — {from} a {to}</h3>
+              <h3 className="font-semibold text-slate-900">{calc.techName} — {moment(from).format("DD/MM/YYYY")} a {moment(to).format("DD/MM/YYYY")}</h3>
               <button onClick={() => setCalc(null)} className="text-slate-400 hover:text-slate-900 text-xl leading-none">×</button>
             </div>
 
