@@ -22,6 +22,7 @@ export default function Ventas() {
   const [customerName, setCustomerName] = useState("Cliente mostrador");
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
   const [paymentType, setPaymentType] = useState("Contado");
+  const [creditDays, setCreditDays] = useState(30);
   const [discount, setDiscount] = useState(0);
   const [amountPaid, setAmountPaid] = useState(0);
   const [company, setCompany] = useState(null);
@@ -149,6 +150,7 @@ export default function Ventas() {
   const startNewSale = () => {
     setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
     setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
+    setCreditDays(company?.credit_default_days ?? 30);
     setSearch("");
     quoteIdRef.current = null;
     quoteOrderIdRef.current = null;
@@ -177,7 +179,7 @@ export default function Ventas() {
         ]);
         setProducts(prods);
         setCustomers(custs);
-        if (comps.length > 0) setCompany(comps[0]);
+        if (comps.length > 0) { setCompany(comps[0]); setCreditDays(comps[0].credit_default_days ?? 30); }
       } catch (e) { console.error(e); } finally { setLoading(false); }
     })();
   }, []);
@@ -315,7 +317,7 @@ export default function Ventas() {
           initial_amount: totals.total,
           payments: "[]",
           balance: totals.total,
-          due_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+          due_date: new Date(Date.now() + (creditDays || 30) * 86400000).toISOString().split("T")[0],
           status: "Al día",
         });
         if (customerId) {
@@ -562,6 +564,18 @@ export default function Ventas() {
                     </Select>
                   </div>
                 </div>
+                {paymentType === "Crédito" && (
+                  <div>
+                    <Label className="text-xs">Días de plazo</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={creditDays}
+                      onChange={(e) => setCreditDays(parseInt(e.target.value) || 0)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                )}
                 <div className="grid grid-cols-3 gap-2">
                   <Button onClick={parkSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10 border-amber-300 text-amber-700 hover:bg-amber-50">
                     <Pause className="w-4 h-4" /> Guardar
