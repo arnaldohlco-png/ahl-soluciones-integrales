@@ -49,11 +49,46 @@ export default function Dashboard() {
         const salesWeek = sales.filter((s) => (s.date || "") >= startWeek).reduce((s, x) => s + (x.total || 0), 0);
         const salesMonth = sales.filter((s) => (s.date || "") >= startMonth).reduce((s, x) => s + (x.total || 0), 0);
 
-        const workshopIncome = visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado").reduce((s, o) => s + (o.cost || 0), 0);
-        const storeIncome = sales.reduce((s, x) => s + (x.total || 0), 0);
+        // Mapa de costos de productos para calcular el COGS del almacén
+        const productCostMap = {};
+        products.forEach((p) => { productCostMap[p.id] = p.cost || 0; });
+
+        // Ingresos taller: solo servicios (items tipo Servicio) de órdenes finalizadas
+        const finalizedOrders = orders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status));
+        const visibleCompleted = visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado");
+        let workshopIncome = 0;
+        let workshopCost = 0;
+        finalizedOrders.forEach((o) => {
+          let items = [];
+          try { items = JSON.parse(o.service_items || "[]"); } catch (_) {}
+          const svcItems = items.filter((it) => it.type === "Servicio");
+          if (items.length > 0) {
+            workshopIncome += svcItems.reduce((s, it) => s + (it.subtotal || 0), 0);
+          } else {
+            // Órdenes sin items detallados: aproximar porción de servicios = total - repuestos - lubricantes
+            workshopIncome += Math.max(0, (o.cost || 0) - (o.parts_cost || 0) - (o.lubricants_cost || 0));
+          }
+          workshopCost += o.technician_commission || 0;
+        });
+        const workshopProfit = workshopIncome - workshopCost;
+
+        // Ingresos almacén: solo productos (items con product_id o tipo Producto) de ventas y de órdenes no convertidas
+        let storeIncome = 0;
+        let storeCost = 0;
+        const addProductItem = (it) => {
+          if (it.product_id || it.type === "Producto") {
+            storeIncome += it.subtotal || 0;
+            const unitCost = it.product_id ? (productCostMap[it.product_id] || 0) : 0;
+            storeCost += unitCost * (it.quantity || 0);
+          }
+        };
+        sales.forEach((s) => { let items = []; try { items = JSON.parse(s.items || "[]"); } catch (_) {} items.forEach(addProductItem); });
+        visibleCompleted.forEach((o) => { let items = []; try { items = JSON.parse(o.service_items || "[]"); } catch (_) {} items.forEach(addProductItem); });
+        const storeProfit = storeIncome - storeCost;
+
         const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
         const monthExpenses = expenses.filter((e) => (e.date || "") >= startMonth).reduce((s, e) => s + (e.amount || 0), 0);
-        const estimatedProfit = workshopIncome + storeIncome - totalExpenses;
+        const estimatedProfit = workshopProfit + storeProfit - totalExpenses;
         const totalReceivables = receivables.reduce((s, r) => s + (r.balance || 0), 0);
 
         const lowStock = products.filter((p) => (p.stock || 0) <= (p.min_stock || 5));
@@ -101,7 +136,7 @@ export default function Dashboard() {
 
         setD({
           salesToday, salesWeek, salesMonth,
-          workshopIncome, storeIncome, totalExpenses, monthExpenses, estimatedProfit,
+          workshopIncome, workshopProfit, storeIncome, storeProfit, totalExpenses, monthExpenses, estimatedProfit,
           totalReceivables,
           lowStock, topProducts, topServices, topTechnicians,
           motosInWorkshop: motosInWorkshop.slice(0, 5), motosInWorkshopCount: motosInWorkshop.length,
@@ -269,12 +304,14 @@ export default function Dashboard() {
         <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
           <Wrench className="w-5 h-5 text-blue-600 mb-2" />
           <p className="text-xl font-bold text-slate-900">{fmt(d.workshopIncome)}</p>
-          <p className="text-xs text-slate-500">Ingresos taller</p>
+          <p className="text-xs text-slate-500">Ingresos taller (servicios)</p>
+          <p className={`text-xs font-semibold mt-1 ${(d.workshopProfit || 0) >= 0 ? "text-emerald-600" : "text-red-600"}`}>Utilidad: {fmt(d.workshopProfit)}</p>
         </Link>
         <Link to="/ventas" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
           <ShoppingCart className="w-5 h-5 text-emerald-600 mb-2" />
           <p className="text-xl font-bold text-slate-900">{fmt(d.storeIncome)}</p>
-          <p className="text-xs text-slate-500">Ingresos almacén</p>
+          <p className="text-xs text-slate-500">Ingresos almacén (productos)</p>
+          <p className={`text-xs font-semibold mt-1 ${(d.storeProfit || 0) >= 0 ? "text-emerald-600" : "text-red-600"}`}>Utilidad: {fmt(d.storeProfit)}</p>
         </Link>
         <Link to="/creditos" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
           <CreditCard className="w-5 h-5 text-purple-600 mb-2" />
