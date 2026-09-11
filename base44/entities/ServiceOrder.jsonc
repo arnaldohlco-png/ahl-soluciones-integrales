@@ -201,6 +201,11 @@
     "admin_footer": {
       "type": "string",
       "title": "Pie de p\u00e1gina admin"
+    },
+    "commission_paid": {
+      "type": "boolean",
+      "title": "Comisi\u00f3n pagada",
+      "default": false
     }
   },
   "required": [
