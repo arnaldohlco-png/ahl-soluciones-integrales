@@ -318,6 +318,12 @@ export default function Ventas() {
           due_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
           status: "Al día",
         });
+        if (customerId) {
+          try {
+            const c = await base44.entities.Customer.get(customerId);
+            if (c) await base44.entities.Customer.update(customerId, { balance: (c.balance || 0) + totals.total });
+          } catch (e) { console.error(e); }
+        }
       }
 
       let skip = 0, prods = [];

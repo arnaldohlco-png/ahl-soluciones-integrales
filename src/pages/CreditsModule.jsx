@@ -74,12 +74,34 @@ export default function Credits() {
     try {
       const payments = JSON.parse(payModal.payments || "[]");
       payments.push({ date: new Date().toISOString(), amount: payAmount, method: payMethod });
-      const newBalance = (payModal.balance || 0) - payAmount;
+      const newBalance = Math.max(0, (payModal.balance || 0) - payAmount);
+      const fullyPaid = newBalance <= 0;
       await base44.entities.AccountReceivable.update(payModal.id, {
         payments: JSON.stringify(payments),
         balance: newBalance,
-        status: newBalance <= 0 ? "Al día" : "Al día",
+        status: fullyPaid ? "Pagada" : "Al día",
       });
+
+      // Al pagar totalmente, marcar la factura relacionada como Pagada
+      if (fullyPaid && payModal.invoice_id) {
+        try {
+          const inv = await base44.entities.Invoice.get(payModal.invoice_id);
+          if (inv && inv.status !== "Pagada") {
+            await base44.entities.Invoice.update(payModal.invoice_id, {
+              status: "Pagada",
+              amount_paid: inv.total || 0,
+            });
+          }
+        } catch (e) { console.error(e); }
+      }
+
+      // Actualizar saldo del cliente
+      if (payModal.customer_id) {
+        try {
+          const c = await base44.entities.Customer.get(payModal.customer_id);
+          if (c) await base44.entities.Customer.update(payModal.customer_id, { balance: Math.max(0, (c.balance || 0) - payAmount) });
+        } catch (e) { console.error(e); }
+      }
 
       await base44.entities.CashMovement.create({
         date: new Date().toISOString(),

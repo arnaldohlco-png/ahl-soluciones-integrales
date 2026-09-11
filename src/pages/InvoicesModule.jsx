@@ -150,12 +150,31 @@ export default function Invoices() {
           payment_method: meta.paymentMethod, register_type: "Caja principal", reference_id: inv.id,
         });
       } else {
+        const initialAbono = Number(meta.amountPaid) || 0;
+        const arBalance = Math.max(0, meta.total - initialAbono);
+        const payments = initialAbono > 0 ? JSON.stringify([{ date: new Date().toISOString(), amount: initialAbono, method: meta.paymentMethod }]) : "[]";
         await base44.entities.AccountReceivable.create({
           customer_id: inv.customer_id, customer_name: inv.customer_name || "",
           invoice_id: inv.id, invoice_number: inv.number || "",
-          initial_amount: meta.total, balance: meta.total,
+          initial_amount: meta.total, payments, balance: arBalance,
           due_date: payload.payment_due_date || "", status: "Al día",
         });
+        if (initialAbono > 0) {
+          await base44.entities.CashMovement.create({
+            date: new Date().toISOString(), type: "Entrada", category: "Abono",
+            amount: initialAbono, description: `Abono inicial ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
+            payment_method: meta.paymentMethod, register_type: "Caja principal", reference_id: inv.id,
+          });
+        }
+        if (arBalance <= 0) {
+          await base44.entities.Invoice.update(inv.id, { status: "Pagada", amount_paid: meta.total });
+        }
+        if (inv.customer_id) {
+          try {
+            const c = await base44.entities.Customer.get(inv.customer_id);
+            if (c) await base44.entities.Customer.update(inv.customer_id, { balance: (c.balance || 0) + arBalance });
+          } catch (e) { console.error(e); }
+        }
       }
       const data = await base44.entities.Invoice.list("-date", 200);
       setList(data);
