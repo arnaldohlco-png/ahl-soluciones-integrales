@@ -64,8 +64,9 @@ export default function IncomeStatement() {
     (i) => i.status === "Pagada" && COBRABLES.includes(i.type) && !i.related_sale_id
   );
   const orderIdsWithPaidInvoice = new Set(invoiceSales.map((i) => i.related_order_id).filter(Boolean));
-  // Órdenes ya convertidas en venta POS: se contabilizan como ingreso POS, no como taller (evita duplicidad)
-  const orderIdsWithSale = new Set(fSales.filter((s) => s.status === "Pagada" && s.related_order_id).map((s) => s.related_order_id));
+  // Órdenes ya convertidas en venta POS (contado o crédito): se contabilizan como ingreso POS al cobrarse,
+  // no como ingreso de taller (evita duplicidad y no reconoce ingresos no cobrados)
+  const orderIdsWithSale = new Set(fSales.filter((s) => s.related_order_id).map((s) => s.related_order_id));
   const invoiceRevenue = invoiceSales.reduce((s, i) => s + (i.total || 0), 0);
   const invoiceCOGS = invoiceSales.reduce((s, i) => s + productCogsOf(itemsOf(i.items)), 0);
   // Comisiones pagadas a técnicos: órdenes con comisión efectivamente pagada (commission_paid),
