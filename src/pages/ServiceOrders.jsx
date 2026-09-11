@@ -293,7 +293,7 @@ export default function ServiceOrders() {
           {filtered.map((o) => (
             <div key={o.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className="flex items-start gap-3 flex-1 min-w-[240px]">
                   <div className="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
                     <Wrench className="w-5 h-5 text-amber-400" />
                   </div>
@@ -310,7 +310,7 @@ export default function ServiceOrders() {
                     {o.description && <p className="text-sm text-slate-500 mt-1 line-clamp-2">{o.description}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 ml-auto">
                   <div className="text-right">
                     <p className="text-lg font-bold text-slate-900">${itemsTotal(o).toLocaleString("es-CO")}</p>
                     {o.mechanic && <p className="text-xs text-slate-400">{o.mechanic}</p>}
