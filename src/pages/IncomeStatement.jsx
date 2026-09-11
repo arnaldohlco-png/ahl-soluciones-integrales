@@ -17,7 +17,7 @@ export default function IncomeStatement() {
     (async () => {
       setLoading(true);
       try {
-        const [sales, orders, expenses, purchases, invoices, products, technicians, commissionPayments] = await Promise.all([
+        const [sales, orders, expenses, purchases, invoices, products, technicians] = await Promise.all([
           base44.entities.Sale.list("-created_date", 5000),
           base44.entities.ServiceOrder.list("-created_date", 5000),
           base44.entities.Expense.list("-created_date", 5000),
@@ -25,9 +25,8 @@ export default function IncomeStatement() {
           base44.entities.Invoice.list("-created_date", 5000),
           base44.entities.Product.list("-created_date", 5000),
           base44.entities.Technician.list("-created_date", 5000),
-          base44.entities.CommissionPayment.list("-created_date", 5000),
         ]);
-        setData({ sales, orders, expenses, purchases, invoices, products, technicians, commissionPayments });
+        setData({ sales, orders, expenses, purchases, invoices, products, technicians });
       } catch (e) { console.error(e); }
       setLoading(false);
     })();
@@ -49,6 +48,8 @@ export default function IncomeStatement() {
   (data.products || []).forEach((p) => { productsById[p.id] = p; });
   const ordersById = {};
   data.orders.forEach((o) => { ordersById[o.id] = o; });
+  const techniciansById = {};
+  (data.technicians || []).forEach((t) => { techniciansById[t.id] = t; });
 
   const itemsOf = (str) => { try { const p = JSON.parse(str || "[]"); return Array.isArray(p) ? p : []; } catch { return []; } };
   // Costo de productos: se toma del catálogo (los items no guardan el costo)
@@ -67,9 +68,17 @@ export default function IncomeStatement() {
   const orderIdsWithSale = new Set(fSales.filter((s) => s.status === "Pagada" && s.related_order_id).map((s) => s.related_order_id));
   const invoiceRevenue = invoiceSales.reduce((s, i) => s + (i.total || 0), 0);
   const invoiceCOGS = invoiceSales.reduce((s, i) => s + productCogsOf(itemsOf(i.items)), 0);
-  // Comisiones pagadas a técnicos: valor real desembolsado en el período (no estimado)
-  const fCommissionPayments = (data.commissionPayments || []).filter((p) => inRange(p.date));
-  const paidCommissions = fCommissionPayments.reduce((s, p) => s + (p.total_commission || 0), 0);
+  // Comisiones pagadas a técnicos: órdenes con comisión efectivamente pagada (commission_paid),
+  // calculadas sobre los servicios al % del técnico y reconocidas en el período de la orden
+  const commissionOf = (o) => {
+    const tech = techniciansById[o.technician_id];
+    if (!tech || !tech.commission_percentage) return 0;
+    const serviceSub = itemsOf(o.service_items)
+      .filter((it) => (it.type || "Servicio") === "Servicio")
+      .reduce((s, it) => s + (it.subtotal || 0), 0);
+    return Math.round(serviceSub * (tech.commission_percentage / 100));
+  };
+  const paidCommissions = fOrders.filter((o) => o.commission_paid === true).reduce((s, o) => s + commissionOf(o), 0);
 
   const posRevenue = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + (x.total || 0), 0);
   const posCOGS = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + productCogsOf(itemsOf(x.items)), 0);
