@@ -185,7 +185,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto text-[hsl(var(--background))] bg-[#f9b515]">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto bg-[#f91515] text-[hsl(var(--background))]">
       {/* Encabezado con datos de la empresa */}
       <div className="mb-6 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl px-4 py-3 text-white shadow-sm">
         <div className="flex items-center gap-3">
@@ -214,8 +214,8 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-slate-900 text-center">Resumen</h2>
-        <p className="mt-1 text-[hsl(var(--background))] text-center">Resumen financiero y operativo en tiempo real</p>
+        <h2 className="text-xl md:text-2xl font-bold text-slate-900">Resumen</h2>
+        <p className="mt-1 text-[hsl(var(--background))]">Resumen financiero y operativo en tiempo real</p>
       </div>
 
       {/* Accesos directos */}
@@ -338,7 +338,7 @@ export default function Dashboard() {
 
       {/* Sales row */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="from-amber-500 to-amber-600 rounded-xl p-3 text-white bg-gradient-to-br">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-3 text-white">
           <div className="flex items-center gap-2 mb-1">
             <ShoppingCart className="w-4 h-4 opacity-80" />
             <p className="text-xs text-amber-100">Ventas del día</p>

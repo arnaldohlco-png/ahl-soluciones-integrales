@@ -76,11 +76,11 @@ export default function Layout() {
   }
 
   const role = user?.role;
-  const visibleGroups = navGroups.
-  map((g) => {
-    return { ...g, items: g.items.filter((it) => canAccess(role, it.to, roles)) };
-  }).
-  filter((g) => g.items.length > 0);
+  const visibleGroups = navGroups
+    .map((g) => {
+      return { ...g, items: g.items.filter((it) => canAccess(role, it.to, roles)) };
+    })
+    .filter((g) => g.items.length > 0);
 
   if (!canAccess(role, location.pathname, roles)) {
     return <Navigate to="/" replace />;
@@ -136,17 +136,17 @@ export default function Layout() {
           <BackupReminder />
         </div>
         <div className="px-3 py-3 border-t border-slate-800">
-          {user &&
-          <div className="mb-2 px-2 text-xs">
+          {user && (
+            <div className="mb-2 px-2 text-xs">
               <p className="truncate font-medium text-slate-200">{user.full_name || user.email}</p>
               <p className="capitalize text-slate-500">{user.role || "usuario"}</p>
             </div>
-          }
+          )}
           <button
             onClick={handleLogout}
             disabled={leaving}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60">
-            
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60"
+          >
             <LogOut className="w-5 h-5" />
             Salir de la app
           </button>
@@ -177,7 +177,7 @@ export default function Layout() {
                   <Bike className="w-6 h-6 text-slate-900" />
                 </div>
                 <div>
-                  <h1 className="text-white font-bold text-lg leading-tight text-center">HR MOTOCICLETAS</h1>
+                  <h1 className="text-white font-bold text-lg leading-tight">MotoTaller</h1>
                   <p className="text-xs text-slate-400">Taller & Almacén</p>
                 </div>
               </div>
@@ -192,17 +192,17 @@ export default function Layout() {
               <BackupReminder />
             </div>
             <div className="px-3 py-3 border-t border-slate-800">
-              {user &&
-            <div className="mb-2 px-2 text-xs">
+              {user && (
+                <div className="mb-2 px-2 text-xs">
                   <p className="truncate font-medium text-slate-200">{user.full_name || user.email}</p>
                   <p className="capitalize text-slate-500">{user.role || "usuario"}</p>
                 </div>
-            }
+              )}
               <button
-              onClick={handleLogout}
-              disabled={leaving}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60">
-              
+                onClick={handleLogout}
+                disabled={leaving}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60"
+              >
                 <LogOut className="w-5 h-5" />
                 Salir de la app
               </button>
