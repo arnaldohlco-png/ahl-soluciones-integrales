@@ -26,14 +26,14 @@ export default function Cash() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    type: "Entrada", category: "Otro ingreso", amount: 0, description: "",
+    type: "Entrada", category: "Otro ingreso", amount: "", description: "",
     payment_method: "Efectivo", register_type: "Caja principal",
     date: new Date().toISOString(),
   });
   const [openingOpen, setOpeningOpen] = useState(false);
-  const [openingForm, setOpeningForm] = useState({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo" });
+  const [openingForm, setOpeningForm] = useState({ register_type: "Caja principal", amount: "", payment_method: "Efectivo" });
   const [closingOpen, setClosingOpen] = useState(false);
-  const [closingForm, setClosingForm] = useState({ register_type: "Caja principal", date: moment().format("YYYY-MM-DD"), counted: 0 });
+  const [closingForm, setClosingForm] = useState({ register_type: "Caja principal", date: moment().format("YYYY-MM-DD"), counted: "" });
 
   useEffect(() => { load(); }, []);
 
@@ -69,12 +69,12 @@ export default function Cash() {
   };
 
   const openOpening = () => {
-    setOpeningForm({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo" });
+    setOpeningForm({ register_type: "Caja principal", amount: "", payment_method: "Efectivo" });
     setOpeningOpen(true);
   };
 
   const openClosing = () => {
-    setClosingForm({ register_type: "Caja principal", date: moment().format("YYYY-MM-DD"), counted: 0 });
+    setClosingForm({ register_type: "Caja principal", date: moment().format("YYYY-MM-DD"), counted: "" });
     setClosingOpen(true);
   };
 
@@ -92,19 +92,30 @@ export default function Cash() {
 
   const saveClosing = async () => {
     if (!daySummary) return;
-    const diferencia = Number(closingForm.counted) - daySummary.esperado;
-    if (Math.abs(diferencia) < 1) { setClosingOpen(false); return; }
+    const counted = Number(closingForm.counted) || 0;
+    const diferencia = counted - daySummary.esperado;
     setSaving(true);
     try {
-      await base44.entities.CashMovement.create({
-        type: diferencia > 0 ? "Entrada" : "Salida",
-        category: diferencia > 0 ? "Otro ingreso" : "Otro egreso",
-        amount: Math.abs(diferencia),
-        description: `Cierre de caja - ${diferencia > 0 ? "Sobrante" : "Faltante"} - ${closingForm.register_type}`,
-        payment_method: "Efectivo",
-        register_type: closingForm.register_type,
-        date: new Date().toISOString(),
-      });
+      // Consolidar en un solo cierre: eliminar cierres previos del mismo día/caja
+      const prevClosings = list.filter(m =>
+        m.register_type === closingForm.register_type &&
+        moment(m.date).isSame(closingForm.date, "day") &&
+        (m.description || "").includes("Cierre de caja")
+      );
+      for (const c of prevClosings) {
+        try { await base44.entities.CashMovement.delete(c.id); } catch {}
+      }
+      if (Math.abs(diferencia) >= 1) {
+        await base44.entities.CashMovement.create({
+          type: diferencia > 0 ? "Entrada" : "Salida",
+          category: diferencia > 0 ? "Otro ingreso" : "Otro egreso",
+          amount: Math.abs(diferencia),
+          description: `Cierre de caja - ${closingForm.register_type} | Esperado: ${fmt(daySummary.esperado)} | Contado: ${fmt(counted)} | ${diferencia > 0 ? "Sobrante" : "Faltante"}: ${fmt(Math.abs(diferencia))}`,
+          payment_method: "Efectivo",
+          register_type: closingForm.register_type,
+          date: new Date().toISOString(),
+        });
+      }
       setClosingOpen(false);
       await load();
     } catch (e) { console.error(e); } finally { setSaving(false); }
@@ -261,7 +272,7 @@ export default function Cash() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Monto *</Label>
-                <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} />
+                <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value === "" ? "" : Number(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Caja</Label>
@@ -311,7 +322,7 @@ export default function Cash() {
             </div>
             <div>
               <Label>Monto inicial *</Label>
-              <Input type="number" value={openingForm.amount} onChange={(e) => setOpeningForm({ ...openingForm, amount: parseFloat(e.target.value) || 0 })} />
+              <Input type="number" value={openingForm.amount} onChange={(e) => setOpeningForm({ ...openingForm, amount: e.target.value === "" ? "" : Number(e.target.value) || 0 })} />
             </div>
             <div>
               <Label>Forma de pago</Label>
@@ -364,7 +375,7 @@ export default function Cash() {
 
             <div>
               <Label>Monto contado (efectivo físico) *</Label>
-              <Input type="number" value={closingForm.counted} onChange={(e) => setClosingForm({ ...closingForm, counted: parseFloat(e.target.value) || 0 })} />
+              <Input type="number" value={closingForm.counted} onChange={(e) => setClosingForm({ ...closingForm, counted: e.target.value === "" ? "" : Number(e.target.value) || 0 })} />
             </div>
 
             {daySummary && (
