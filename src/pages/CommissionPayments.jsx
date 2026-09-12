@@ -63,6 +63,12 @@ export default function CommissionPayments() {
   const techName = (id) => techs.find((t) => t.id === id)?.name || "—";
   const techPct = (id) => techs.find((t) => t.id === id)?.commission_percentage || 0;
 
+  const createTechnician = async (name) => {
+    const t = await base44.entities.Technician.create({ name, status: "Activo" });
+    setTechs((prev) => [t, ...prev]);
+    return { id: t.id, label: t.name, sublabel: t.specialty || t.document_number || "" };
+  };
+
   // Base de comisión: solo servicios (type "Servicio"), excluyendo los denominados "terceros"
   const commissionBase = (o) => {
     let items = [];
@@ -280,6 +286,8 @@ export default function CommissionPayments() {
                 placeholder="Buscar técnico..."
                 value={selectedTech}
                 onValueChange={setSelectedTech}
+                onCreate={createTechnician}
+                createLabel="Crear técnico"
                 items={techs.map((t) => ({ id: t.id, label: t.name, sublabel: t.specialty || t.document_number }))}
               />
               <div className="sm:col-span-2 lg:col-span-2">

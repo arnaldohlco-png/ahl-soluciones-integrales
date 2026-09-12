@@ -55,6 +55,12 @@ export default function Invoices() {
 
   const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
 
+  const createCustomer = async (name) => {
+    const c = await base44.entities.Customer.create({ name });
+    setCustomers((prev) => [c, ...prev]);
+    return { id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") };
+  };
+
   // Facturas ya cobradas a crédito: tienen una cuenta por cobrar asociada
   const receivableInvoiceIds = useMemo(() => new Set(receivables.map((r) => r.invoice_id).filter(Boolean)), [receivables]);
   const isLocked = (inv) => inv.status === "Pagada" || receivableInvoiceIds.has(inv.id);
@@ -341,6 +347,8 @@ export default function Invoices() {
               placeholder="Buscar cliente..."
               value={form.customer_id}
               onValueChange={onCustomerChange}
+              onCreate={createCustomer}
+              createLabel="Crear cliente"
               items={customers.map(c => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))}
             />
             <div>

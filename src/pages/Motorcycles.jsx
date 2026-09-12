@@ -45,6 +45,12 @@ export default function Motorcycles() {
 
   const customerName = (id) => customers.find((c) => c.id === id)?.name || "—";
 
+  const createCustomer = async (name) => {
+    const c = await base44.entities.Customer.create({ name });
+    setCustomers((prev) => [c, ...prev]);
+    return { id: c.id, label: c.name, sublabel: c.document_number || c.phone || "" };
+  };
+
   const brandLines = (() => {
     if (!form.brand) return [];
     const b = brands.find((x) => x.name?.toLowerCase() === form.brand.toLowerCase());
@@ -187,6 +193,8 @@ export default function Motorcycles() {
                 placeholder="Buscar cliente..."
                 value={form.customer_id}
                 onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                onCreate={createCustomer}
+                createLabel="Crear cliente"
                 items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))}
               />
             </div>

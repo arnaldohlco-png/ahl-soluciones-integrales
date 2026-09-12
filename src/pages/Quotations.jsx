@@ -40,6 +40,12 @@ export default function Quotations() {
   const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
   const custName = (id) => customers.find((c) => c.id === id)?.name || "—";
 
+  const createCustomer = async (name) => {
+    const c = await base44.entities.Customer.create({ name });
+    setCustomers((prev) => [c, ...prev]);
+    return { id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") };
+  };
+
   const filtered = quotes.filter((q) =>
     matchAny(search, q.number, q.customer_name, custName(q.customer_id))
   );
@@ -231,6 +237,8 @@ export default function Quotations() {
                 placeholder="Buscar cliente..."
                 value={form.customer_id}
                 onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                onCreate={createCustomer}
+                createLabel="Crear cliente"
                 items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))}
               />
               <div>

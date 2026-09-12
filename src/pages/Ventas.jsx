@@ -41,6 +41,14 @@ export default function Ventas() {
   const quoteIdRef = useRef(null);
   const quoteOrderIdRef = useRef(null);
 
+  const createCustomer = async (name) => {
+    const c = await base44.entities.Customer.create({ name });
+    setCustomers((prev) => [c, ...prev]);
+    setCustomerId(c.id);
+    setCustomerName(c.name);
+    return { id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") };
+  };
+
   useEffect(() => {
     const st = location.state;
     if (st && st.fromQuote) {
@@ -543,6 +551,8 @@ export default function Ventas() {
                     placeholder="Buscar cliente..."
                     value={customerId || "walkin"}
                     onValueChange={(v) => { setCustomerId(v === "walkin" ? "" : v); const c = customers.find(c => c.id === v); if (c) setCustomerName(c.name); }}
+                    onCreate={createCustomer}
+                    createLabel="Crear cliente"
                     items={[{ id: "walkin", label: "Cliente mostrador" }, ...customers.map(c => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))]}
                   />
                 </div>

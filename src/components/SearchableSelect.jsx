@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Plus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
  *  - onValueChange: (id, item) => void
  *  - items: [{ id, label, sublabel? }]
  *  - required
+ *  - onCreate: (nombre) => Promise<{id,label,sublabel?}>  // crea un nuevo ítem al vuelo
+ *  - createLabel: texto del botón crear (default "Crear")
  */
 export default function SearchableSelect({
   label,
@@ -22,11 +24,16 @@ export default function SearchableSelect({
   items = [],
   required,
   emptyText = "Sin resultados",
+  onCreate,
+  createLabel = "Crear",
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
   const ref = useRef(null);
   const inputRef = useRef(null);
+
+  const canCreate = typeof onCreate === "function";
 
   const selected = items.find((i) => i.id === value);
 
@@ -52,6 +59,21 @@ export default function SearchableSelect({
   }, [query, items]);
 
   const showDisplay = !open && selected;
+
+  const handleCreate = async () => {
+    const name = query.trim();
+    if (!name || !canCreate || creating) return;
+    setCreating(true);
+    try {
+      const created = await onCreate(name);
+      if (created && created.id) {
+        onValueChange(created.id, created);
+        setOpen(false);
+        setQuery("");
+      }
+    } catch (e) { console.error(e); }
+    setCreating(false);
+  };
 
   return (
     <div>
@@ -93,6 +115,17 @@ export default function SearchableSelect({
                   {i.sublabel && <span className="text-xs text-slate-400 truncate">{i.sublabel}</span>}
                 </button>
               ))
+            )}
+            {canCreate && (
+              <button
+                type="button"
+                onClick={handleCreate}
+                disabled={creating || !query.trim()}
+                className="w-full text-left px-3 py-2 text-sm border-t border-slate-100 text-amber-600 hover:bg-amber-50 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed sticky bottom-0 bg-white"
+              >
+                {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                <span>{query.trim() ? `${createLabel} "${query.trim()}"` : `${createLabel} (escribe un nombre)`}</span>
+              </button>
             )}
           </div>
         )}

@@ -48,6 +48,12 @@ export default function TechnicianLoans() {
 
   const techName = (id) => techs.find((t) => t.id === id)?.name || "—";
 
+  const createTechnician = async (name) => {
+    const t = await base44.entities.Technician.create({ name, status: "Activo" });
+    setTechs((prev) => [t, ...prev]);
+    return { id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") };
+  };
+
   const filtered = loans.filter((l) => {
     const matchTech = filterTech === "all" || l.technician_id === filterTech;
     const matchSearch = matchAny(search, l.technician_name || techName(l.technician_id), l.description);
@@ -203,6 +209,8 @@ export default function TechnicianLoans() {
               placeholder="Buscar técnico..."
               value={form.technician_id}
               onValueChange={(v) => setForm({ ...form, technician_id: v })}
+              onCreate={createTechnician}
+              createLabel="Crear técnico"
               items={techs.map((t) => ({ id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") }))}
             />
             <div className="grid grid-cols-2 gap-4">

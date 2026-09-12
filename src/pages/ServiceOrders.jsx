@@ -104,6 +104,17 @@ export default function ServiceOrders() {
   };
   const technicianName = (id) => technicians.find((t) => t.id === id)?.name || "";
 
+  const createCustomer = async (name) => {
+    const c = await base44.entities.Customer.create({ name });
+    setCustomers((prev) => [c, ...prev]);
+    return { id: c.id, label: c.name, sublabel: c.document_number || c.phone || "" };
+  };
+  const createTechnician = async (name) => {
+    const t = await base44.entities.Technician.create({ name, status: "Activo" });
+    setTechnicians((prev) => [t, ...prev]);
+    return { id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") };
+  };
+
   const itemsTotal = (o) => {
     try {
       const items = JSON.parse(o.service_items || "[]");
@@ -362,6 +373,8 @@ export default function ServiceOrders() {
                 placeholder="Buscar cliente..."
                 value={form.customer_id}
                 onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                onCreate={createCustomer}
+                createLabel="Crear cliente"
                 required
                 items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: c.document_number || c.phone }))}
               />
@@ -386,6 +399,8 @@ export default function ServiceOrders() {
                 placeholder="Buscar técnico..."
                 value={form.technician_id}
                 onValueChange={(v) => setForm({ ...form, technician_id: v })}
+                onCreate={createTechnician}
+                createLabel="Crear técnico"
                 items={technicians.filter(t => t.status === "Activo").map((t) => ({ id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") }))}
               />
             </div>

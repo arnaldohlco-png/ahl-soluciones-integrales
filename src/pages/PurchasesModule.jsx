@@ -42,6 +42,12 @@ export default function Purchases() {
 
   const supplierPhone = (id) => suppliers.find((s) => s.id === id)?.phone || "";
 
+  const createSupplier = async (name) => {
+    const s = await base44.entities.Supplier.create({ name });
+    setSuppliers((prev) => [s, ...prev]);
+    return { id: s.id, label: s.name, sublabel: s.document_number || s.phone || "" };
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -295,6 +301,8 @@ export default function Purchases() {
                 placeholder="Buscar proveedor..."
                 value={supplierId}
                 onValueChange={setSupplierId}
+                onCreate={createSupplier}
+                createLabel="Crear proveedor"
                 items={suppliers.map(s => ({ id: s.id, label: s.name, sublabel: [s.document_number, s.phone].filter(Boolean).join(" · ") }))}
               />
               <div>
