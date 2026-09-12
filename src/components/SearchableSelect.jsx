@@ -87,7 +87,7 @@ export default function SearchableSelect({
         <Input
           ref={inputRef}
           value={showDisplay ? selected.label : query}
-          placeholder={selected ? selected.label : placeholder}
+          placeholder={open ? placeholder : (selected ? selected.label : placeholder)}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => { setOpen(true); setQuery(""); }}
           className="pl-9"

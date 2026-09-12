@@ -19,16 +19,6 @@
     "service_type": {
       "type": "string",
       "title": "Tipo de servicio",
-      "enum": [
-        "Mantenimiento",
-        "Reparaci\u00f3n",
-        "Diagn\u00f3stico",
-        "Cambio de aceite",
-        "Frenos",
-        "Motor",
-        "El\u00e9ctrico",
-        "Personalizado"
-      ],
       "default": "Mantenimiento"
     },
     "description": {

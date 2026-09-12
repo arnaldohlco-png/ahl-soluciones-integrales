@@ -59,6 +59,7 @@ export default function ServiceOrders() {
   const [printOrder, setPrintOrder] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [sales, setSales] = useState([]);
+  const [extraTypes, setExtraTypes] = useState([]);
   const navigate = useNavigate();
   const confirm = useConfirm();
 
@@ -79,6 +80,8 @@ export default function ServiceOrders() {
       setOrders(o); setMotos(m); setCustomers(c); setTechnicians(t);
       setProducts(p); setServices(sv); if (comp.length > 0) setCompany(comp[0]);
       setInvoices(inv); setSales(sal);
+      const custom = [...new Set(o.map((x) => x.service_type).filter(Boolean))].filter((t) => !serviceTypes.includes(t));
+      setExtraTypes(custom);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -113,6 +116,10 @@ export default function ServiceOrders() {
     const t = await base44.entities.Technician.create({ name, status: "Activo" });
     setTechnicians((prev) => [t, ...prev]);
     return { id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") };
+  };
+  const createServiceType = async (name) => {
+    setExtraTypes((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    return { id: name, label: name };
   };
 
   const itemsTotal = (o) => {
@@ -380,13 +387,15 @@ export default function ServiceOrders() {
               />
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <div>
-                <Label>Tipo de servicio</Label>
-                <Select value={form.service_type} onValueChange={(v) => setForm({ ...form, service_type: v })}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{serviceTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+              <SearchableSelect
+                label="Tipo de servicio"
+                placeholder="Buscar o crear tipo..."
+                value={form.service_type}
+                onValueChange={(v) => setForm({ ...form, service_type: v })}
+                onCreate={createServiceType}
+                createLabel="Crear tipo"
+                items={[...serviceTypes, ...extraTypes].map((t) => ({ id: t, label: t }))}
+              />
               <div>
                 <Label>Estado</Label>
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
