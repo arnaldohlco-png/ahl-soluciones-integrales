@@ -86,25 +86,39 @@ export default function Cash() {
     const apertura = dayMovs.filter(m => isOpen(m.description) && m.type === "Entrada").reduce((s, m) => s + (m.amount || 0), 0);
     const entradas = dayMovs.filter(m => !isOpen(m.description) && !isAdj(m.description) && m.type === "Entrada").reduce((s, m) => s + (m.amount || 0), 0);
     const salidas = dayMovs.filter(m => !isAdj(m.description) && m.type === "Salida").reduce((s, m) => s + (m.amount || 0), 0);
-    const esperado = apertura + entradas - salidas;
+    const esperado = list
+      .filter(m => m.register_type === closingForm.register_type && moment(m.date).isSameOrBefore(closingForm.date, "day") && !isAdj(m.description))
+      .reduce((s, m) => s + (m.type === "Entrada" ? (m.amount || 0) : -(m.amount || 0)), 0);
     const cierreMov = dayMovs.find(m => isAdj(m.description));
     return { apertura, entradas, salidas, esperado, count: dayMovs.length, alreadyClosed: !!cierreMov };
   }, [closingOpen, closingForm, list]);
 
   const saveClosing = async () => {
-    if (!daySummary || daySummary.alreadyClosed) return;
-    const diferencia = Number(closingForm.counted) - daySummary.esperado;
+    if (!daySummary) return;
+    const saldoEsperado = daySummary.esperado;
+    const counted = Number(closingForm.counted);
+    const diferencia = counted - saldoEsperado;
     setSaving(true);
     try {
-      await base44.entities.CashMovement.create({
-        type: diferencia >= 0 ? "Entrada" : "Salida",
-        category: diferencia > 0 ? "Otro ingreso" : "Otro egreso",
-        amount: Math.abs(diferencia),
-        description: `Cierre de caja - ${diferencia === 0 ? "Cuadre exacto" : diferencia > 0 ? "Sobrante" : "Faltante"} - ${closingForm.register_type}`,
-        payment_method: "Efectivo",
-        register_type: closingForm.register_type,
-        date: new Date().toISOString(),
-      });
+      // Reemplazar cierre anterior de esta caja/día (evita duplicados y acumulación)
+      const oldCierres = list.filter(m => m.register_type === closingForm.register_type && moment(m.date).isSame(closingForm.date, "day") && (m.description || "").includes("Cierre de caja"));
+      if (oldCierres.length > 0) {
+        await base44.entities.CashMovement.deleteMany({ id: { $in: oldCierres.map(m => m.id) } });
+      }
+      const base = { payment_method: "Efectivo", register_type: closingForm.register_type, date: new Date().toISOString() };
+      const movs = [];
+      if (diferencia > 0) {
+        movs.push({ ...base, type: "Entrada", category: "Otro ingreso", amount: diferencia, description: `Cierre de caja - Sobrante - ${closingForm.register_type}` });
+      } else if (diferencia < 0) {
+        movs.push({ ...base, type: "Salida", category: "Otro egreso", amount: Math.abs(diferencia), description: `Cierre de caja - Faltante - ${closingForm.register_type}` });
+      }
+      if (counted > 0) {
+        movs.push({ ...base, type: "Salida", category: "Retiro", amount: counted, description: `Cierre de caja - Retiro de efectivo - ${closingForm.register_type}` });
+      }
+      if (movs.length === 0) {
+        movs.push({ ...base, type: "Salida", category: "Otro egreso", amount: 0, description: `Cierre de caja - Cuadre exacto - ${closingForm.register_type}` });
+      }
+      await base44.entities.CashMovement.bulkCreate(movs);
       setClosingOpen(false);
       await load();
     } catch (e) { console.error(e); } finally { setSaving(false); }
@@ -353,8 +367,8 @@ export default function Cash() {
             </div>
 
             {daySummary && daySummary.alreadyClosed && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-                <span className="font-semibold">Caja ya cerrada</span> para {closingForm.register_type} el {moment(closingForm.date).format("DD/MM/YYYY")}. Elimina el movimiento de cierre anterior si necesitas volver a cuadrar.
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+                Esta caja ya tiene un cierre para {moment(closingForm.date).format("DD/MM/YYYY")}. Al confirmar se reemplazará por el nuevo cuadre.
               </div>
             )}
 
@@ -363,7 +377,7 @@ export default function Cash() {
                 <div className="flex justify-between"><span className="text-slate-600">Apertura</span><span className="font-medium">{fmt(daySummary.apertura)}</span></div>
                 <div className="flex justify-between text-emerald-600"><span>(+) Entradas del día</span><span>{fmt(daySummary.entradas)}</span></div>
                 <div className="flex justify-between text-red-600"><span>(−) Salidas del día</span><span>{fmt(daySummary.salidas)}</span></div>
-                <div className="flex justify-between border-t border-slate-200 pt-1.5 font-bold text-slate-900"><span>Saldo esperado</span><span>{fmt(daySummary.esperado)}</span></div>
+                <div className="flex justify-between border-t border-slate-200 pt-1.5 font-bold text-slate-900"><span>Saldo esperado en caja</span><span>{fmt(daySummary.esperado)}</span></div>
                 <div className="flex justify-between text-slate-600"><span>(−) Monto contado</span><span>{fmt(Number(closingForm.counted))}</span></div>
                 <div className={`flex justify-between border-t border-slate-200 pt-1.5 font-bold ${Number(closingForm.counted) - daySummary.esperado === 0 ? "text-emerald-700" : Number(closingForm.counted) - daySummary.esperado > 0 ? "text-amber-700" : "text-red-700"}`}>
                   <span>Diferencia</span>
@@ -375,13 +389,13 @@ export default function Cash() {
 
             <div>
               <Label>Monto contado (efectivo físico) *</Label>
-              <Input type="number" placeholder="0" disabled={daySummary?.alreadyClosed} value={closingForm.counted === 0 ? "" : closingForm.counted} onChange={(e) => setClosingForm({ ...closingForm, counted: e.target.value === "" ? 0 : (parseFloat(e.target.value) || 0) })} />
+              <Input type="number" placeholder="0" value={closingForm.counted === 0 ? "" : closingForm.counted} onChange={(e) => setClosingForm({ ...closingForm, counted: e.target.value === "" ? 0 : (parseFloat(e.target.value) || 0) })} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setClosingOpen(false)}>Cancelar</Button>
-            <Button onClick={saveClosing} disabled={saving || !!daySummary?.alreadyClosed} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-              {daySummary?.alreadyClosed ? "Ya cerrada" : saving ? "Guardando..." : "Confirmar Cierre"}
+            <Button onClick={saveClosing} disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+              {saving ? "Guardando..." : daySummary?.alreadyClosed ? "Re-cerrar caja" : "Confirmar Cierre"}
             </Button>
           </DialogFooter>
         </DialogContent>
