@@ -178,7 +178,7 @@ export default function Layout() {
                 </div>
                 <div>
                   <h1 className="text-white font-bold text-lg leading-tight text-center">HR MOTOCICLETAS</h1>
-                  <p className="text-xs text-slate-400 text-center">Taller & Almacén</p>
+                  <p className="text-xs text-slate-400 text-center">Almacén </p>
                 </div>
               </div>
               <button onClick={() => setMobileOpen(false)} className="p-2 text-slate-400">
