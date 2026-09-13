@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Truck, Plus, Search, Trash2, Pencil, CheckCircle, Printer } from "lucide-react";
+import { Truck, Plus, Search, Trash2, Pencil, CheckCircle, Printer, ChevronDown, ChevronRight } from "lucide-react";
 import moment from "moment";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -39,6 +39,7 @@ export default function Purchases() {
   const [paymentType, setPaymentType] = useState("Contado");
   const [productSearch, setProductSearch] = useState("");
   const [printP, setPrintP] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
   const supplierPhone = (id) => suppliers.find((s) => s.id === id)?.phone || "";
 
@@ -255,6 +256,7 @@ export default function Purchases() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-slate-400 border-b border-slate-100 bg-slate-50">
+                  <th className="px-4 py-3 font-medium w-8"></th>
                   <th className="px-4 py-3 font-medium">Fecha</th>
                   <th className="px-4 py-3 font-medium">Proveedor</th>
                   <th className="px-4 py-3 font-medium">Factura</th>
@@ -265,24 +267,67 @@ export default function Purchases() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(p => (
-                  <tr key={p.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{p.date ? moment(p.date).format("DD/MM/YYYY") : "—"}</td>
-                    <td className="px-4 py-3 font-medium text-slate-800">{p.supplier_name}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.invoice_number || "—"}</td>
-                    <td className="px-4 py-3 text-slate-500">{p.payment_type} · {p.payment_method}</td>
-                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${p.status === "Pagada" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.status}</span></td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-800">${(p.total || 0).toLocaleString("es-CO")}</td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => openEdit(p)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded" title="Editar"><Pencil className="w-4 h-4" /></button>
-                        <WhatsAppButton phone={supplierPhone(p.supplier_id)} message={buildDocMessage("purchase", p, company, { supplier: suppliers.find((s) => s.id === p.supplier_id) })} />
-                        <button onClick={() => setPrintP(p)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
-                        <button onClick={() => deletePurchase(p)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded" title="Eliminar"><Trash2 className="w-4 h-4" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map(p => {
+                  const parsedItems = p.items ? (typeof p.items === "string" ? JSON.parse(p.items) : p.items) : [];
+                  const isOpen = expandedId === p.id;
+                  return (
+                    <React.Fragment key={p.id}>
+                      <tr className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={() => setExpandedId(isOpen ? null : p.id)} className="p-1 text-slate-400 hover:text-slate-700 rounded" title="Ver items">
+                            {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{p.date ? moment(p.date).format("DD/MM/YYYY") : "—"}</td>
+                        <td className="px-4 py-3 font-medium text-slate-800">{p.supplier_name}</td>
+                        <td className="px-4 py-3 text-slate-600">{p.invoice_number || "—"}</td>
+                        <td className="px-4 py-3 text-slate-500">{p.payment_type} · {p.payment_method}</td>
+                        <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${p.status === "Pagada" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.status}</span></td>
+                        <td className="px-4 py-3 text-right font-semibold text-slate-800">${(p.total || 0).toLocaleString("es-CO")}</td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <button onClick={() => openEdit(p)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded" title="Editar"><Pencil className="w-4 h-4" /></button>
+                            <WhatsAppButton phone={supplierPhone(p.supplier_id)} message={buildDocMessage("purchase", p, company, { supplier: suppliers.find((s) => s.id === p.supplier_id) })} />
+                            <button onClick={() => setPrintP(p)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded"><Printer className="w-4 h-4" /></button>
+                            <button onClick={() => deletePurchase(p)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded" title="Eliminar"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                      {isOpen && (
+                        <tr className="bg-slate-50/60">
+                          <td colSpan={8} className="px-4 py-3">
+                            {parsedItems.length === 0 ? (
+                              <p className="text-sm text-slate-400">Esta compra no tiene items registrados.</p>
+                            ) : (
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="text-left text-slate-400 border-b border-slate-200">
+                                      <th className="px-3 py-1.5 font-medium">Producto</th>
+                                      <th className="px-3 py-1.5 font-medium text-right">Cant.</th>
+                                      <th className="px-3 py-1.5 font-medium text-right">Costo u.</th>
+                                      <th className="px-3 py-1.5 font-medium text-right">Subtotal</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {parsedItems.map((it, i) => (
+                                      <tr key={i} className="border-b border-slate-100 last:border-0">
+                                        <td className="px-3 py-1.5 text-slate-700">{it.name || "—"}</td>
+                                        <td className="px-3 py-1.5 text-right text-slate-600">{it.quantity}</td>
+                                        <td className="px-3 py-1.5 text-right text-slate-600">${(it.unit_cost || 0).toLocaleString("es-CO")}</td>
+                                        <td className="px-3 py-1.5 text-right font-medium text-slate-800">${(it.subtotal || 0).toLocaleString("es-CO")}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
