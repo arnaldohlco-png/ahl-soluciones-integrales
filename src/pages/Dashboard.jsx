@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
   Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard,
-  CalendarClock, FileText, Users, HandCoins } from
+  CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3 } from
 "lucide-react";
 import moment from "moment";
 
@@ -284,7 +284,7 @@ export default function Dashboard() {
           <div className="w-7 h-7 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center mb-1 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
             <CreditCard className="w-4 h-4" />
           </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Créditos</p>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Créditos y carteras</p>
         </Link>
         <Link to="/prestamos-tecnicos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
           <div className="w-7 h-7 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mb-1 group-hover:bg-yellow-600 group-hover:text-white transition-colors">
@@ -297,6 +297,30 @@ export default function Dashboard() {
             <DollarSign className="w-4 h-4" />
           </div>
           <p className="text-xs font-semibold text-slate-800 leading-tight">Pago comisiones</p>
+        </Link>
+        <Link to="/facturas-proveedor" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-1 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+            <Upload className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Cargar factura proveedor</p>
+        </Link>
+        <Link to="/caja" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-1 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <Wallet className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Caja y bancos</p>
+        </Link>
+        <Link to="/devoluciones" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-1 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+            <Undo2 className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Devoluciones</p>
+        </Link>
+        <Link to="/estado-resultados" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center mb-1 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+            <BarChart3 className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Estado de resultado</p>
         </Link>
       </div>
 
