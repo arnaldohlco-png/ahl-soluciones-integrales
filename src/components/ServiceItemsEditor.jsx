@@ -89,7 +89,22 @@ export default function ServiceItemsEditor({ items, setItems, products, services
                   <td className="px-3 py-2">
                     <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${it.type === "Producto" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"}`}>{it.type}</span>
                   </td>
-                  <td className="px-3 py-2 text-slate-700">{it.name}</td>
+                  <td className="px-3 py-2 text-slate-700">
+                    <div>{it.name}</div>
+                    {(() => {
+                      const prod = it.product_id && products ? products.find((p) => p.id === it.product_id) : null;
+                      if (!prod) return null;
+                      const det = [
+                        prod.sku && `SKU: ${prod.sku}`,
+                        prod.reference && `Ref: ${prod.reference}`,
+                        prod.brand && `Marca: ${prod.brand}`,
+                        prod.category,
+                        prod.stock != null && `Stock: ${prod.stock}`,
+                        prod.compatibility && `Compat.: ${prod.compatibility}`,
+                      ].filter(Boolean);
+                      return det.length ? <p className="text-xs text-slate-400 mt-0.5">{det.join(" · ")}</p> : null;
+                    })()}
+                  </td>
                   <td className="px-3 py-2 text-center">
                     <input type="number" value={it.quantity} onChange={(e) => updateItem(i, "quantity", Number(e.target.value))} className="w-16 text-center border border-slate-200 rounded px-1 py-0.5" />
                   </td>

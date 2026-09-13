@@ -227,7 +227,7 @@ export default function Quotations() {
       )}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl">
           <DialogHeader><DialogTitle>{editing ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
@@ -272,7 +272,22 @@ export default function Quotations() {
                     <tbody>
                       {items.map((it, i) => (
                         <tr key={i} className="border-t border-slate-100">
-                          <td className="px-2 py-1"><input value={it.name} onChange={(e) => updateItem(i, "name", e.target.value)} className="w-full border-0 px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-300 rounded" /></td>
+                          <td className="px-2 py-1">
+                            <input value={it.name} onChange={(e) => updateItem(i, "name", e.target.value)} className="w-full border-0 px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-300 rounded" />
+                            {(() => {
+                              const prod = it.product_id ? products.find((p) => p.id === it.product_id) : null;
+                              if (!prod) return null;
+                              const det = [
+                                prod.sku && `SKU: ${prod.sku}`,
+                                prod.reference && `Ref: ${prod.reference}`,
+                                prod.brand && `Marca: ${prod.brand}`,
+                                prod.category,
+                                prod.stock != null && `Stock: ${prod.stock}`,
+                                prod.compatibility && `Compat.: ${prod.compatibility}`,
+                              ].filter(Boolean);
+                              return det.length ? <p className="text-xs text-slate-400 mt-0.5 px-1">{det.join(" · ")}</p> : null;
+                            })()}
+                          </td>
                           <td className="px-2 py-1"><input type="number" value={it.quantity} onChange={(e) => updateItem(i, "quantity", Number(e.target.value))} className="w-14 text-center border border-slate-200 rounded px-1 py-0.5" /></td>
                           <td className="px-2 py-1"><input type="number" value={it.unit_price} onChange={(e) => updateItem(i, "unit_price", Number(e.target.value))} className="w-24 text-right border border-slate-200 rounded px-1 py-0.5" /></td>
                           <td className="px-2 py-2 text-right font-semibold">{fmt(it.subtotal)}</td>

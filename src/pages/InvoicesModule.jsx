@@ -356,7 +356,7 @@ export default function Invoices() {
       )}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-5xl">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar documento" : "Nuevo documento"}</DialogTitle>
           </DialogHeader>

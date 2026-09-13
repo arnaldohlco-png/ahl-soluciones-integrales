@@ -63,7 +63,7 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
         <Search className="w-3.5 h-3.5 mr-1" /> {label}
       </Button>
       {open && (
-        <div className="absolute z-50 mt-1 w-80 max-w-[90vw] bg-white rounded-md border border-slate-200 shadow-lg p-2 left-0">
+        <div className="absolute z-50 mt-1 w-96 max-w-[92vw] bg-white rounded-md border border-slate-200 shadow-lg p-2 left-0">
           <div className="relative mb-2">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <Input
@@ -74,23 +74,39 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
               className="h-8 pl-7 text-sm"
             />
           </div>
-          <div className="max-h-60 overflow-y-auto rounded-md border border-slate-100">
+          <div className="max-h-72 overflow-y-auto rounded-md border border-slate-100">
             {filtered.length === 0 ? (
               <p className="text-center text-xs text-slate-400 py-4">Sin resultados</p>
             ) : (
-              filtered.slice(0, 50).map((o) => (
-                <button
-                  key={o.id}
-                  type="button"
-                  onClick={() => handleSelect(o)}
-                  className="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm border-b border-slate-50 last:border-0"
-                >
-                  <span className="text-slate-800">{o.name}</span>
-                  {showPrice && o.price != null && (
-                    <span className="text-slate-400 ml-2">{fmt(o.price)}</span>
-                  )}
-                </button>
-              ))
+              filtered.slice(0, 50).map((o) => {
+                const details = [
+                  o.sku && `SKU: ${o.sku}`,
+                  o.reference && `Ref: ${o.reference}`,
+                  o.brand && `Marca: ${o.brand}`,
+                  o.category,
+                  o.barcode && `Barras: ${o.barcode}`,
+                  o.stock != null && `Stock: ${o.stock}`,
+                  o.compatibility && `Compat.: ${o.compatibility}`,
+                ].filter(Boolean);
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => handleSelect(o)}
+                    className="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm border-b border-slate-50 last:border-0"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-slate-800 font-medium">{o.name}</span>
+                      {showPrice && o.price != null && (
+                        <span className="text-slate-500 shrink-0">{fmt(o.price)}</span>
+                      )}
+                    </div>
+                    {details.length > 0 && (
+                      <p className="text-xs text-slate-400 mt-0.5 truncate">{details.join(" · ")}</p>
+                    )}
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
