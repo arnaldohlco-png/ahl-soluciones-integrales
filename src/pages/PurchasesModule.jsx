@@ -15,6 +15,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
+import CatalogPicker from "@/components/CatalogPicker";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Purchases() {
@@ -386,47 +387,47 @@ export default function Purchases() {
             </div>
 
             {/* Product search */}
-            <div>
-              <Label>Buscar producto para agregar</Label>
-              <Input placeholder="Nombre o SKU..." value={productSearch} onChange={(e) => setProductSearch(e.target.value)} />
-              {productSearch && filteredProducts.length > 0 && (
-                <div className="mt-1 border border-slate-200 rounded-lg overflow-hidden">
-                  {filteredProducts.map(p => (
-                    <button key={p.id} onClick={() => addItem(p)} className="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm border-b border-slate-100 last:border-0">
-                      {p.name} <span className="text-slate-400">· {p.brand} · Stock: {p.stock}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <Label>Agregar producto</Label>
+                <CatalogPicker
+                  options={products}
+                  onSelect={(p) => addItem(p)}
+                  label="Buscar producto"
+                  placeholder="Nombre, SKU, marca..."
+                  buttonClass="w-full justify-start h-9"
+                  showPrice={false}
+                />
+              </div>
             </div>
 
             {/* Items */}
-            {items.length > 0 && (
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-3 py-2 text-left font-medium text-slate-400">Producto</th>
-                      <th className="px-3 py-2 text-right font-medium text-slate-400">Cant.</th>
-                      <th className="px-3 py-2 text-right font-medium text-slate-400">Costo u.</th>
-                      <th className="px-3 py-2 text-right font-medium text-slate-400">Subtotal</th>
-                      <th className="px-3 py-2"></th>
+            <div className="border border-slate-200 rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-medium text-slate-400">Producto</th>
+                    <th className="px-3 py-2 text-right font-medium text-slate-400">Cant.</th>
+                    <th className="px-3 py-2 text-right font-medium text-slate-400">Costo u.</th>
+                    <th className="px-3 py-2 text-right font-medium text-slate-400">Subtotal</th>
+                    <th className="px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.length === 0 ? (
+                    <tr><td colSpan={5} className="px-3 py-6 text-center text-slate-400 text-sm">No has agregado productos a esta compra</td></tr>
+                  ) : items.map(item => (
+                    <tr key={item.product_id} className="border-t border-slate-100">
+                      <td className="px-3 py-2 text-slate-800">{item.name}</td>
+                      <td className="px-3 py-2"><input type="number" value={item.quantity} onChange={(e) => updateItem(item.product_id, "quantity", e.target.value)} className="w-16 text-right border border-slate-200 rounded px-1 py-0.5 text-sm" /></td>
+                      <td className="px-3 py-2"><input type="number" value={item.unit_cost} onChange={(e) => updateItem(item.product_id, "unit_cost", e.target.value)} className="w-24 text-right border border-slate-200 rounded px-1 py-0.5 text-sm" /></td>
+                      <td className="px-3 py-2 text-right font-medium text-slate-800">${item.subtotal.toLocaleString("es-CO")}</td>
+                      <td className="px-3 py-2 text-right"><button onClick={() => removeItem(item.product_id)} className="text-slate-300 hover:text-red-500"><Trash2 className="w-4 h-4" /></button></td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {items.map(item => (
-                      <tr key={item.product_id} className="border-t border-slate-100">
-                        <td className="px-3 py-2 text-slate-800">{item.name}</td>
-                        <td className="px-3 py-2"><input type="number" value={item.quantity} onChange={(e) => updateItem(item.product_id, "quantity", e.target.value)} className="w-16 text-right border border-slate-200 rounded px-1 py-0.5 text-sm" /></td>
-                        <td className="px-3 py-2"><input type="number" value={item.unit_cost} onChange={(e) => updateItem(item.product_id, "unit_cost", e.target.value)} className="w-24 text-right border border-slate-200 rounded px-1 py-0.5 text-sm" /></td>
-                        <td className="px-3 py-2 text-right font-medium text-slate-800">${item.subtotal.toLocaleString("es-CO")}</td>
-                        <td className="px-3 py-2 text-right"><button onClick={() => removeItem(item.product_id)} className="text-slate-300 hover:text-red-500"><Trash2 className="w-4 h-4" /></button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
