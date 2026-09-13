@@ -260,6 +260,7 @@ export default function Purchases() {
                   <th className="px-4 py-3 font-medium">Fecha</th>
                   <th className="px-4 py-3 font-medium">Proveedor</th>
                   <th className="px-4 py-3 font-medium">Factura</th>
+                  <th className="px-4 py-3 font-medium">Productos</th>
                   <th className="px-4 py-3 font-medium">Pago</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
                   <th className="px-4 py-3 font-medium text-right">Total</th>
@@ -273,14 +274,26 @@ export default function Purchases() {
                   return (
                     <React.Fragment key={p.id}>
                       <tr className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
-                        <td className="px-4 py-3 text-center">
-                          <button onClick={() => setExpandedId(isOpen ? null : p.id)} className="p-1 text-slate-400 hover:text-slate-700 rounded" title="Ver items">
-                            {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                          </button>
+                        <td className="px-4 py-3 text-center align-top">
+                          {parsedItems.length > 0 && (
+                            <button onClick={() => setExpandedId(isOpen ? null : p.id)} className="p-1 text-slate-400 hover:text-slate-700 rounded" title="Ver items">
+                              {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            </button>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{p.date ? moment(p.date).format("DD/MM/YYYY") : "—"}</td>
                         <td className="px-4 py-3 font-medium text-slate-800">{p.supplier_name}</td>
                         <td className="px-4 py-3 text-slate-600">{p.invoice_number || "—"}</td>
+                        <td className="px-4 py-3 text-slate-600">
+                          {parsedItems.length === 0 ? (
+                            <span className="text-slate-400">—</span>
+                          ) : (
+                            <div className="max-w-xs">
+                              <span className="text-xs font-medium text-slate-500">{parsedItems.length} {parsedItems.length === 1 ? "producto" : "productos"}</span>
+                              <p className="text-sm text-slate-700 truncate" title={parsedItems[0]?.name}>{parsedItems[0]?.name}{parsedItems.length > 1 ? ` +${parsedItems.length - 1}` : ""}</p>
+                            </div>
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-slate-500">{p.payment_type} · {p.payment_method}</td>
                         <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${p.status === "Pagada" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.status}</span></td>
                         <td className="px-4 py-3 text-right font-semibold text-slate-800">${(p.total || 0).toLocaleString("es-CO")}</td>
@@ -295,7 +308,7 @@ export default function Purchases() {
                       </tr>
                       {isOpen && (
                         <tr className="bg-slate-50/60">
-                          <td colSpan={8} className="px-4 py-3">
+                          <td colSpan={9} className="px-4 py-3">
                             {parsedItems.length === 0 ? (
                               <p className="text-sm text-slate-400">Esta compra no tiene items registrados.</p>
                             ) : (
