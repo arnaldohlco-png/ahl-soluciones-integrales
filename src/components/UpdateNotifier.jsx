@@ -41,7 +41,17 @@ export default function UpdateNotifier() {
         remote.forEach((s) => {
           if (!local.has(s) && !local.has("/" + s) && !local.has(norm(s))) diff = true;
         });
-        if (active && diff) setAvailable(true);
+        if (active && diff) {
+          // Auto-recargar una sola vez por sesión para tomar la versión vigente,
+          // evitando bucles si por algún motivo el diff persiste tras recargar.
+          const key = "base44-autoreload-done";
+          if (!sessionStorage.getItem(key)) {
+            sessionStorage.setItem(key, "1");
+            window.location.reload();
+            return;
+          }
+          setAvailable(true);
+        }
       } catch (e) { /* ignore */ }
     };
     const id = setInterval(check, POLL_MS);

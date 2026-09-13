@@ -402,8 +402,12 @@ export default function Purchases() {
             </div>
 
             {/* Items */}
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="rounded-lg border-2 border-amber-300 overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 bg-amber-100 border-b border-amber-300">
+                <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">Productos agregados</span>
+                <span className="text-xs font-semibold text-amber-700">{items.length} {items.length === 1 ? "producto" : "productos"}</span>
+              </div>
+              <table className="w-full text-sm bg-white">
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-slate-400">Producto</th>
