@@ -26,6 +26,7 @@ import { useConfirm } from "@/components/ConfirmProvider";
 
 const DOC_TYPES = ["Factura de venta", "Cotización", "Proforma", "Nota crédito", "Recibo de pago", "Comprobante de abono", "Factura de taller"];
 const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
+const INVENTORY_TYPES = ["Factura de venta", "Factura de taller"];
 
 export default function Invoices() {
   const navigate = useNavigate();
@@ -59,6 +60,25 @@ export default function Invoices() {
     const c = await base44.entities.Customer.create({ name });
     setCustomers((prev) => [c, ...prev]);
     return { id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") };
+  };
+
+  // Extrae los ítems de tipo Producto con product_id y cantidad válida
+  const productItemsOf = (itemsStr) => {
+    let arr = [];
+    try { const p = JSON.parse(itemsStr || "[]"); if (Array.isArray(p)) arr = p; } catch (e) { /* ignore */ }
+    return arr.filter((it) => it.type === "Producto" && it.product_id && Number(it.quantity) > 0);
+  };
+
+  // Ajusta el stock: sign = -1 descuenta, +1 devuelve
+  const adjustStock = async (prodItems, sign) => {
+    for (const it of prodItems) {
+      try {
+        const prod = await base44.entities.Product.get(it.product_id);
+        if (!prod) continue;
+        const newStock = (Number(prod.stock) || 0) + sign * Number(it.quantity);
+        await base44.entities.Product.update(it.product_id, { stock: newStock });
+      } catch (e) { console.error("Error ajustando stock", e); }
+    }
   };
 
   // Facturas ya cobradas a crédito: tienen una cuenta por cobrar asociada
@@ -117,23 +137,37 @@ export default function Invoices() {
       const inst = Number(form.installments) || 1;
       const instAmt = form.payment_terms === "Crédito" && inst > 0 ? Math.ceil(Number(form.total) / inst) : 0;
       const payload = { ...form, subtotal: Number(form.subtotal), iva: Number(form.iva), discount: Number(form.discount), total: Number(form.total), credit_days: Number(form.credit_days) || 0, installments: inst, installment_amount: instAmt, payment_due_date: dueDate, amount_paid: Number(form.amount_paid) || 0, change: Number(form.change) || 0 };
+      const newAffects = INVENTORY_TYPES.includes(payload.type) && payload.status !== "Anulada";
+      const newProdItems = productItemsOf(payload.items);
       if (editing) {
+        const oldAffects = INVENTORY_TYPES.includes(editing.type) && editing.status !== "Anulada";
+        if (oldAffects) await adjustStock(productItemsOf(editing.items), +1);
+        if (newAffects) await adjustStock(newProdItems, -1);
         await base44.entities.Invoice.update(editing.id, payload);
       } else {
         const number = form.number || await getNextDocNumber("Invoice", prefixForInvoiceType(company, form.type));
         await base44.entities.Invoice.create({ ...payload, number });
+        if (newAffects) await adjustStock(newProdItems, -1);
       }
       setModalOpen(false);
       const data = await base44.entities.Invoice.list("-date", 200);
       setList(data);
+      const prods = await fetchAllProducts();
+      setProducts(prods);
     } catch (e) { console.error(e); } finally { setSaving(false); }
   };
 
   const remove = async (id) => {
     if (!(await confirm({ title: "¿Anular este documento?", confirmText: "Sí, anular", cancelText: "No", variant: "destructive" }))) return;
+    const inv = list.find((i) => i.id === id);
+    if (inv && INVENTORY_TYPES.includes(inv.type) && inv.status !== "Anulada") {
+      await adjustStock(productItemsOf(inv.items), +1);
+    }
     await base44.entities.Invoice.delete(id);
     const data = await base44.entities.Invoice.list("-date", 200);
     setList(data);
+    const prods = await fetchAllProducts();
+    setProducts(prods);
   };
 
   const collect = async (inv) => {
