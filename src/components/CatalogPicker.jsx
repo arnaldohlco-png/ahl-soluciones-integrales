@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search } from "lucide-react";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
@@ -22,7 +23,6 @@ const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 export default function CatalogPicker({ options = [], onSelect, label = "Buscar", placeholder = "Buscar...", buttonClass = "", showPrice = true }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-  const wrapRef = useRef(null);
   const inputRef = useRef(null);
 
   const filtered = useMemo(() => {
@@ -37,44 +37,36 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
   }, [options, q]);
 
   useEffect(() => {
-    if (!open) return;
-    const onClick = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
-    };
-    const onEsc = (e) => { if (e.key === "Escape") setOpen(false); };
-    document.addEventListener("mousedown", onClick);
-    document.addEventListener("keydown", onEsc);
-    setTimeout(() => inputRef.current?.focus(), 0);
-    return () => {
-      document.removeEventListener("mousedown", onClick);
-      document.removeEventListener("keydown", onEsc);
-    };
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
   }, [open]);
 
   const handleSelect = (item) => {
     onSelect(item);
     setQ("");
-    setTimeout(() => inputRef.current?.focus(), 0);
+    setOpen(false);
   };
 
   return (
-    <div className="relative inline-block" ref={wrapRef}>
-      <Button type="button" variant="outline" size="sm" className={`h-7 text-xs ${buttonClass}`} onClick={() => setOpen((v) => !v)}>
+    <>
+      <Button type="button" variant="outline" size="sm" className={`h-7 text-xs ${buttonClass}`} onClick={() => setOpen(true)}>
         <Search className="w-3.5 h-3.5 mr-1" /> {label}
       </Button>
-      {open && (
-        <div className="absolute z-50 mt-1 w-96 max-w-[92vw] bg-white rounded-md border border-slate-200 shadow-lg p-2 left-0">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{label}</DialogTitle>
+          </DialogHeader>
           <div className="relative mb-2">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               ref={inputRef}
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder={placeholder}
-              className="h-8 pl-7 text-sm"
+              className="h-9 pl-8 text-sm"
             />
           </div>
-          <div className="max-h-72 overflow-y-auto rounded-md border border-slate-100">
+          <div className="max-h-[55vh] overflow-y-auto rounded-md border border-slate-100">
             {filtered.length === 0 ? (
               <p className="text-center text-xs text-slate-400 py-4">Sin resultados</p>
             ) : (
@@ -109,8 +101,8 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
               })
             )}
           </div>
-        </div>
-      )}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
