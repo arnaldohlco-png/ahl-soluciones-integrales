@@ -32,6 +32,7 @@ const navGroups = [
   items: [
   { to: "/inventario", label: "Inventario", icon: Package },
   { to: "/compras", label: "Compras", icon: Truck },
+  { to: "/facturas-proveedor", label: "Cargar Factura Proveedor", icon: FileText },
   { to: "/ventas", label: "Ventas / POS", icon: ShoppingCart },
   { to: "/devoluciones", label: "Devoluciones", icon: Undo2 }]
 

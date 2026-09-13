@@ -9,6 +9,7 @@ export const MODULE_OPTIONS = [
   { path: "/servicios", label: "Catálogo de Servicios" },
   { path: "/inventario", label: "Inventario" },
   { path: "/compras", label: "Compras" },
+  { path: "/facturas-proveedor", label: "Cargar Factura Proveedor" },
   { path: "/ventas", label: "Ventas / POS" },
   { path: "/devoluciones", label: "Devoluciones" },
   { path: "/cotizaciones", label: "Cotizaciones" },
@@ -31,14 +32,14 @@ export const DEFAULT_ROLE_DEFS = [
   { name: "administrador", label: "Administrador", routes: "*" },
   { name: "gerente", label: "Gerente", routes: [
     "/", "/clientes", "/motocicletas", "/ordenes", "/servicios", "/citas",
-    "/inventario", "/compras", "/ventas", "/devoluciones", "/cotizaciones", "/facturacion",
+    "/inventario", "/compras", "/facturas-proveedor", "/ventas", "/devoluciones", "/cotizaciones", "/facturacion",
     "/creditos", "/gastos", "/caja", "/estado-resultados",
     "/tecnicos", "/proveedores", "/marcas",
     "/prestamos-tecnicos", "/pago-comisiones",
   ] },
   { name: "vendedor", label: "Vendedor", routes: [
     "/", "/clientes", "/motocicletas", "/ordenes", "/citas",
-    "/cotizaciones", "/ventas", "/devoluciones", "/facturacion", "/creditos",
+    "/cotizaciones", "/ventas", "/devoluciones", "/facturacion", "/creditos", "/facturas-proveedor",
   ] },
   { name: "tecnico", label: "Técnico", routes: [
     "/", "/ordenes", "/citas", "/motocicletas", "/clientes",

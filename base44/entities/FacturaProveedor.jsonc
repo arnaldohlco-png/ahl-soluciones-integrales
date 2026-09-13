@@ -1,0 +1,129 @@
+{
+  "name": "FacturaProveedor",
+  "type": "object",
+  "properties": {
+    "supplier_id": {
+      "type": "string",
+      "title": "Proveedor"
+    },
+    "supplier_name": {
+      "type": "string",
+      "title": "Nombre del proveedor"
+    },
+    "invoice_number": {
+      "type": "string",
+      "title": "N\u00famero de factura"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha"
+    },
+    "items": {
+      "type": "string",
+      "title": "L\u00edneas (JSON)",
+      "description": "Array JSON: [{sku, description, quantity, unit_price, subtotal}]"
+    },
+    "subtotal": {
+      "type": "number",
+      "title": "Subtotal",
+      "default": 0
+    },
+    "iva_total": {
+      "type": "number",
+      "title": "IVA total",
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "title": "Total",
+      "default": 0
+    },
+    "pdf_url": {
+      "type": "string",
+      "title": "PDF (URI privada)"
+    },
+    "purchase_id": {
+      "type": "string",
+      "title": "Compra vinculada"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Aplicada",
+        "Anulada"
+      ],
+      "default": "Aplicada"
+    }
+  },
+  "required": [
+    "date",
+    "total"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendedor"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    }
+  }
+}
