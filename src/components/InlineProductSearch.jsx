@@ -44,17 +44,19 @@ export default function InlineProductSearch({ options = [], onSelect, placeholde
   };
 
   return (
-    <div className="relative" ref={wrapRef}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-      <Input
-        value={q}
-        onChange={(e) => { setQ(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        placeholder={placeholder}
-        className="pl-9"
-      />
+    <div className="relative flex flex-col" ref={wrapRef}>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <Input
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          placeholder={placeholder}
+          className="pl-9"
+        />
+      </div>
       {open && q.trim() && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-72 overflow-y-auto">
+        <div className="mt-1 w-full bg-white border border-slate-200 rounded-md max-h-60 overflow-y-auto">
           {filtered.length === 0 ? (
             <p className="text-center text-xs text-slate-400 py-4">Sin resultados</p>
           ) : filtered.map((o) => {
