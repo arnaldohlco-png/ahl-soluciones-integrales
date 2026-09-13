@@ -10,6 +10,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { lazy, Suspense, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { ConfirmProvider } from "@/components/ConfirmProvider";
+import ChunkErrorBoundary from "@/components/ChunkErrorBoundary";
 const Login = lazy(() => import("@/pages/Login"));
 const Register = lazy(() => import("@/pages/Register"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <ChunkErrorBoundary>
     <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" /></div>}>
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -110,6 +112,7 @@ const AuthenticatedApp = () => {
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </Suspense>
+    </ChunkErrorBoundary>
   );
 };
 
