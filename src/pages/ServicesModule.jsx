@@ -105,6 +105,7 @@ export default function ServicesModule() {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
               <tr>
@@ -138,6 +139,7 @@ export default function ServicesModule() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

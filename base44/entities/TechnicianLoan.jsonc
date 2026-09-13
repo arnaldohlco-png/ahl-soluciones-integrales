@@ -33,6 +33,11 @@
       "title": "Saldo pendiente",
       "default": 0
     },
+    "payments": {
+      "type": "string",
+      "title": "Abonos (JSON)",
+      "description": "Array JSON: [{date, amount, method, note}]"
+    },
     "status": {
       "type": "string",
       "title": "Estado",
