@@ -20,6 +20,7 @@ export default function InlineProductSearch({ options = [], onSelect, placeholde
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
   const filtered = useMemo(() => {
@@ -56,7 +57,9 @@ export default function InlineProductSearch({ options = [], onSelect, placeholde
 
   useEffect(() => {
     const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+      const inWrap = wrapRef.current && wrapRef.current.contains(e.target);
+      const inDrop = dropdownRef.current && dropdownRef.current.contains(e.target);
+      if (!inWrap && !inDrop) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -81,6 +84,7 @@ export default function InlineProductSearch({ options = [], onSelect, placeholde
       />
       {open && q.trim() && createPortal(
         <div
+          ref={dropdownRef}
           style={{ position: "fixed", top: coords.top, left: coords.left, width: coords.width }}
           className="z-[100] bg-white border border-slate-200 rounded-md shadow-lg max-h-72 overflow-y-auto"
         >
