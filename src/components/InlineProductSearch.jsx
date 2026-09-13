@@ -1,22 +1,22 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
 /**
- * Buscador de productos en línea (sin diálogo anidado) para usarse dentro
- * de modales. Muestra un campo de texto con resultados desplegables.
+ * Buscador de productos en línea (sin flotantes) para usarse dentro
+ * de modales con scroll. La lista de resultados se renderiza en flujo
+ * normal (debajo del input), empujando el contenido hacia abajo en lugar
+ * de flotar encima, evitando recortes por contenedores con overflow.
  *
  * props:
- * - options: array de { id, name, price?, sku?, barcode?, brand?, stock? }
+ * - options: array de { id, name, price?, sku?, barcode?, brand?, stock?, reference?, category? }
  * - onSelect: (item) => void
  * - placeholder: texto del campo
  */
 export default function InlineProductSearch({ options = [], onSelect, placeholder = "Buscar producto..." }) {
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
 
   const filtered = useMemo(() => {
     const term = q.toLowerCase().trim();
@@ -29,32 +29,22 @@ export default function InlineProductSearch({ options = [], onSelect, placeholde
     ).slice(0, 12);
   }, [options, q]);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   const handleSelect = (item) => {
     onSelect(item);
     setQ("");
-    setOpen(false);
   };
 
   return (
-    <div className="relative" ref={wrapRef}>
+    <div className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
       <Input
         value={q}
-        onChange={(e) => { setQ(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
+        onChange={(e) => setQ(e.target.value)}
         placeholder={placeholder}
         className="pl-9"
       />
-      {open && q.trim() && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-72 overflow-y-auto">
+      {q.trim() && (
+        <div className="mt-1 w-full bg-white border border-slate-200 rounded-md shadow-sm max-h-60 overflow-y-auto">
           {filtered.length === 0 ? (
             <p className="text-center text-xs text-slate-400 py-4">Sin resultados</p>
           ) : filtered.map((o) => {
