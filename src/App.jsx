@@ -11,6 +11,7 @@ import { lazy, Suspense, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { ConfirmProvider } from "@/components/ConfirmProvider";
 import ChunkErrorBoundary from "@/components/ChunkErrorBoundary";
+import UpdateNotifier from "@/components/UpdateNotifier";
 const Login = lazy(() => import("@/pages/Login"));
 const Register = lazy(() => import("@/pages/Register"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
@@ -128,6 +129,7 @@ function App() {
             <AuthenticatedApp />
           </ConfirmProvider>
         </Router>
+        <UpdateNotifier />
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
