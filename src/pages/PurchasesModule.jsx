@@ -15,7 +15,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
-import CatalogPicker from "@/components/CatalogPicker";
+import InlineProductSearch from "@/components/InlineProductSearch";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Purchases() {
@@ -390,13 +390,10 @@ export default function Purchases() {
             <div className="flex items-end gap-2">
               <div className="flex-1">
                 <Label>Agregar producto</Label>
-                <CatalogPicker
+                <InlineProductSearch
                   options={products}
                   onSelect={(p) => addItem(p)}
-                  label="Buscar producto"
                   placeholder="Nombre, SKU, marca..."
-                  buttonClass="w-full justify-start h-9"
-                  showPrice={false}
                 />
               </div>
             </div>
