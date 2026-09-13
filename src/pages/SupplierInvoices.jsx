@@ -66,8 +66,10 @@ export default function SupplierInvoices() {
   async function handleSelectPdf(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      setError("El archivo debe ser un PDF.");
+    const isImage = file.type.startsWith("image/") || /\.(png|jpe?g)$/i.test(file.name);
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isImage && !isPdf) {
+      setError("El archivo debe ser un PDF o una imagen (JPG/PNG).");
       return;
     }
     setError("");
@@ -269,7 +271,7 @@ export default function SupplierInvoices() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold">Cargar factura de proveedor</h1>
-          <p className="text-sm text-slate-500">Sube un PDF, revisa los datos extraídos y actualiza inventario.</p>
+          <p className="text-sm text-slate-500">Sube un PDF o una foto de la factura, revisa los datos extraídos y actualiza inventario.</p>
         </div>
         {stage !== "idle" && stage !== "done" && (
           <Button variant="outline" size="sm" onClick={resetAll} disabled={busy}>
@@ -286,10 +288,10 @@ export default function SupplierInvoices() {
               className="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center cursor-pointer hover:border-amber-500 hover:bg-amber-50/30 transition-colors"
             >
               <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-              <p className="font-medium text-slate-700">Selecciona el PDF de la factura</p>
+              <p className="font-medium text-slate-700">Selecciona el PDF o la foto de la factura</p>
               <p className="text-sm text-slate-400 mt-1">Se extraerán proveedor, número, fecha y líneas automáticamente</p>
             </div>
-            <input ref={fileInputRef} type="file" accept="application/pdf" className="hidden" onChange={handleSelectPdf} />
+            <input ref={fileInputRef} type="file" accept="application/pdf,image/png,image/jpeg" className="hidden" onChange={handleSelectPdf} />
           </CardContent>
         </Card>
       )}
@@ -298,7 +300,7 @@ export default function SupplierInvoices() {
         <Card>
           <CardContent className="pt-6 flex flex-col items-center py-10">
             <Loader2 className="w-10 h-10 text-amber-500 animate-spin mb-3" />
-            <p className="font-medium">{stage === "uploading" ? "Subiendo PDF..." : "Extrayendo datos de la factura..."}</p>
+            <p className="font-medium">{stage === "uploading" ? "Subiendo archivo..." : "Extrayendo datos de la factura..."}</p>
             <p className="text-sm text-slate-400">{pdfName}</p>
           </CardContent>
         </Card>
