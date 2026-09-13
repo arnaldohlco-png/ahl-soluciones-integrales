@@ -47,6 +47,25 @@
       "type": "string",
       "title": "Compra vinculada"
     },
+    "payment_type": {
+      "type": "string",
+      "title": "Tipo de pago",
+      "enum": [
+        "Contado",
+        "Cr\u00e9dito"
+      ],
+      "default": "Contado"
+    },
+    "credit_days": {
+      "type": "number",
+      "title": "D\u00edas de cr\u00e9dito",
+      "default": 0
+    },
+    "payment_due_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de vencimiento"
+    },
     "status": {
       "type": "string",
       "title": "Estado",

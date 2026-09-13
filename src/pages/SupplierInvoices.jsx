@@ -9,6 +9,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Upload, FileText, Loader2, Trash2, Plus, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import { chargesIva, calcIvaFlat } from "@/lib/iva";
+import { addDays } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const DEFAULT_MARGIN = 30;
 
@@ -33,6 +35,8 @@ export default function SupplierInvoices() {
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10));
   const [lines, setLines] = useState([emptyLine()]);
   const [margin, setMargin] = useState(DEFAULT_MARGIN);
+  const [paymentType, setPaymentType] = useState("Contado");
+  const [creditDays, setCreditDays] = useState(0);
 
   const [company, setCompany] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
@@ -125,6 +129,8 @@ export default function SupplierInvoices() {
     setInvoiceDate(new Date().toISOString().slice(0, 10));
     setLines([emptyLine()]);
     setMargin(DEFAULT_MARGIN);
+    setPaymentType("Contado");
+    setCreditDays(0);
   }
 
   const missingSku = lines.some((l) => !String(l.sku || "").trim());
@@ -149,6 +155,12 @@ export default function SupplierInvoices() {
       cancelLabel: "Cancelar",
     });
     if (!ok) return;
+
+    const isCredit = paymentType === "Crédito";
+    const days = isCredit ? (Number(creditDays) || 0) : 0;
+    const dueDate = isCredit && days > 0
+      ? addDays(new Date(invoiceDate + "T00:00:00"), days).toISOString().slice(0, 10)
+      : "";
 
     setStage("saving");
     try {
@@ -214,8 +226,8 @@ export default function SupplierInvoices() {
         iva_total: ivaTotal,
         total,
         payment_method: "Efectivo",
-        payment_type: "Contado",
-        status: "Pagada",
+        payment_type: isCredit ? "Crédito" : "Contado",
+        status: isCredit ? "Pendiente" : "Pagada",
       });
 
       // 5. Crear FacturaProveedor
@@ -236,6 +248,9 @@ export default function SupplierInvoices() {
         total,
         pdf_url: pdfUri,
         purchase_id: purchase.id,
+        payment_type: isCredit ? "Crédito" : "Contado",
+        credit_days: days,
+        payment_due_date: dueDate,
         status: "Aplicada",
       });
 
@@ -333,6 +348,31 @@ export default function SupplierInvoices() {
                 <Input type="number" value={margin} onChange={(e) => setMargin(e.target.value)} min={0} />
                 <p className="text-xs text-slate-400 mt-1">Precio de venta = costo × (1 + margen). Solo aplica a productos nuevos.</p>
               </div>
+              <div>
+                <Label>Modo de compra</Label>
+                <Select
+                  value={paymentType}
+                  onValueChange={(v) => {
+                    setPaymentType(v);
+                    if (v === "Crédito" && (!creditDays || creditDays === 0)) {
+                      setCreditDays(company?.credit_default_days || 30);
+                    }
+                  }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Contado">Contado</SelectItem>
+                    <SelectItem value="Crédito">Crédito</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {paymentType === "Crédito" && (
+                <div>
+                  <Label>Plazo (días)</Label>
+                  <Input type="number" value={creditDays} onChange={(e) => setCreditDays(e.target.value)} min={1} />
+                  <p className="text-xs text-slate-400 mt-1">Vencimiento: {invoiceDate && creditDays > 0 ? addDays(new Date(invoiceDate + "T00:00:00"), Number(creditDays) || 0).toLocaleDateString("es-CO") : "—"}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
