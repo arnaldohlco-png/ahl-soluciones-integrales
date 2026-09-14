@@ -8,6 +8,7 @@ const DEFAULT_PREFIXES = {
   purchase: "COMP",
   order: "ORD",
   invoice: "FAC",
+  supplier_order: "PED",
 };
 
 export function getPrefix(company, type) {

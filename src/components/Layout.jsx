@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
-  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote, CalendarClock, LogOut, Undo2 } from
+  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote, CalendarClock, LogOut, Undo2, ClipboardList } from
 "lucide-react";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
@@ -32,6 +32,7 @@ const navGroups = [
   items: [
   { to: "/inventario", label: "Inventario", icon: Package },
   { to: "/compras", label: "Compras", icon: Truck },
+  { to: "/pedidos", label: "Pedidos a Proveedor", icon: ClipboardList },
   { to: "/facturas-proveedor", label: "Cargar Factura Proveedor", icon: FileText },
   { to: "/ventas", label: "Ventas / POS", icon: ShoppingCart },
   { to: "/devoluciones", label: "Devoluciones", icon: Undo2 }]

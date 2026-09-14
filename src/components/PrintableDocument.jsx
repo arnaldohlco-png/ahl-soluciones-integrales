@@ -192,6 +192,12 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                   <p><span className="text-slate-500">Estado:</span> {doc.status}</p>
                 </>
               )}
+              {type === "supplier_order" && (
+                <>
+                  <p><span className="text-slate-500">Estado:</span> {doc.status}</p>
+                  {doc.notes && <p><span className="text-slate-500">Notas:</span> {doc.notes}</p>}
+                </>
+              )}
               {(type === "quotation" || type === "invoice") && (
                 <>
                   <p><span className="text-slate-500">Estado:</span> {doc.status}</p>

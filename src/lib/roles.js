@@ -9,6 +9,7 @@ export const MODULE_OPTIONS = [
   { path: "/servicios", label: "Catálogo de Servicios" },
   { path: "/inventario", label: "Inventario" },
   { path: "/compras", label: "Compras" },
+  { path: "/pedidos", label: "Pedidos a Proveedor" },
   { path: "/facturas-proveedor", label: "Cargar Factura Proveedor" },
   { path: "/ventas", label: "Ventas / POS" },
   { path: "/devoluciones", label: "Devoluciones" },
@@ -32,14 +33,14 @@ export const DEFAULT_ROLE_DEFS = [
   { name: "administrador", label: "Administrador", routes: "*" },
   { name: "gerente", label: "Gerente", routes: [
     "/", "/clientes", "/motocicletas", "/ordenes", "/servicios", "/citas",
-    "/inventario", "/compras", "/facturas-proveedor", "/ventas", "/devoluciones", "/cotizaciones", "/facturacion",
+    "/inventario", "/compras", "/pedidos", "/facturas-proveedor", "/ventas", "/devoluciones", "/cotizaciones", "/facturacion",
     "/creditos", "/gastos", "/caja", "/estado-resultados",
     "/tecnicos", "/proveedores", "/marcas",
     "/prestamos-tecnicos", "/pago-comisiones",
   ] },
   { name: "vendedor", label: "Vendedor", routes: [
     "/", "/clientes", "/motocicletas", "/ordenes", "/citas",
-    "/cotizaciones", "/ventas", "/devoluciones", "/facturacion", "/creditos", "/facturas-proveedor",
+    "/cotizaciones", "/ventas", "/devoluciones", "/facturacion", "/creditos", "/facturas-proveedor", "/pedidos",
   ] },
   { name: "tecnico", label: "Técnico", routes: [
     "/", "/ordenes", "/citas", "/motocicletas", "/clientes",

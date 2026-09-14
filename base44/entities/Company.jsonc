@@ -98,6 +98,11 @@
       "type": "string",
       "title": "Prefijo facturas",
       "default": "FAC"
+    },
+    "supplier_order_prefix": {
+      "type": "string",
+      "title": "Prefijo pedidos a proveedor",
+      "default": "PED"
     }
   },
   "required": [
