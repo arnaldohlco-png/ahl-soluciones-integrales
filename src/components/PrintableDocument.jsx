@@ -30,6 +30,7 @@ const TITLES = {
   invoice: null,
   loan: "Comprobante de Préstamo",
   commission: "Comprobante de Pago de Comisiones",
+  supplier_order: "Pedido a Proveedor",
 };
 
 const SignatureBlock = ({ label, img, name, docId }) => (
@@ -258,7 +259,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
             </div>
           )}
 
-          {(type === "quotation" || type === "invoice" || type === "purchase") && (
+          {(type === "quotation" || type === "invoice" || type === "purchase" || type === "supplier_order") && (
             <div className="py-4">{renderItemsTable()}</div>
           )}
 
@@ -329,6 +330,13 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                   {!!Number(doc.transport_cost) && <div className="flex justify-between"><span>Transporte</span><span>{fmt(doc.transport_cost)}</span></div>}
                   {!!Number(doc.discount) && <div className="flex justify-between"><span>Descuento</span><span>-{fmt(doc.discount)}</span></div>}
                   <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total</span><span>{fmt(doc.total)}</span></div>
+                </>
+              )}
+              {type === "supplier_order" && (
+                <>
+                  <div className="flex justify-between"><span>Subtotal</span><span>{fmt(doc.subtotal)}</span></div>
+                  {chargesIva && !!Number(doc.iva_total) && <div className="flex justify-between"><span>IVA</span><span>{fmt(doc.iva_total)}</span></div>}
+                  <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total estimado</span><span>{fmt(doc.total)}</span></div>
                 </>
               )}
               {type === "loan" && (
