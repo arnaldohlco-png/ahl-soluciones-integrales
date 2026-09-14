@@ -10,6 +10,7 @@ import { useLocation } from "react-router-dom";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 import SearchableSelect from "@/components/SearchableSelect";
+import ProductQuickForm from "@/components/ProductQuickForm";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 export default function Ventas() {
@@ -40,6 +41,7 @@ export default function Ventas() {
   const [pendingQuote, setPendingQuote] = useState(null);
   const quoteIdRef = useRef(null);
   const quoteOrderIdRef = useRef(null);
+  const [showCreateProduct, setShowCreateProduct] = useState(false);
 
   const createCustomer = async (name) => {
     const c = await base44.entities.Customer.create({ name });
@@ -469,7 +471,12 @@ export default function Ventas() {
                 })}
               </div>
               {filtered.length === 0 && (
-                <p className="text-center text-slate-400 py-12">No se encontraron productos</p>
+                <div className="text-center py-10">
+                  <p className="text-slate-400 mb-4">No se encontraron productos</p>
+                  <Button onClick={() => setShowCreateProduct(true)} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+                    <Plus className="w-4 h-4" /> Crear producto {search ? `"${search}"` : ""}
+                  </Button>
+                </div>
               )}
             </>
           ) : (
@@ -678,6 +685,19 @@ export default function Ventas() {
           company={company}
           customer={customers.find((c) => c.id === invoiceSale.customer_id)}
           onClose={() => setInvoiceSale(null)}
+        />
+      )}
+
+      {showCreateProduct && (
+        <ProductQuickForm
+          open={showCreateProduct}
+          onOpenChange={setShowCreateProduct}
+          defaultName={search}
+          onCreated={(p) => {
+            setProducts((prev) => [p, ...prev]);
+            addToCart(p);
+            setSearch("");
+          }}
         />
       )}
     </div>

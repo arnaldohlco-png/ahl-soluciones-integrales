@@ -2,7 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
+import ProductQuickForm from "@/components/ProductQuickForm";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -20,9 +21,10 @@ const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
  * - buttonClass: clases extra para el botón
  * - showPrice: mostrar el precio en la lista (default true)
  */
-export default function CatalogPicker({ options = [], onSelect, label = "Buscar", placeholder = "Buscar...", buttonClass = "", showPrice = true }) {
+export default function CatalogPicker({ options = [], onSelect, label = "Buscar", placeholder = "Buscar...", buttonClass = "", showPrice = true, allowCreate = false, onProductCreated, suppliers }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
   const inputRef = useRef(null);
 
   const filtered = useMemo(() => {
@@ -44,6 +46,14 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
     onSelect(item);
     setQ("");
     setOpen(false);
+  };
+
+  const handleCreated = (created) => {
+    onProductCreated?.(created);
+    setShowCreate(false);
+    setQ("");
+    setOpen(false);
+    onSelect(created);
   };
 
   return (
@@ -68,7 +78,19 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
           </div>
           <div className="max-h-[55vh] overflow-y-auto rounded-md border border-slate-100">
             {filtered.length === 0 ? (
-              <p className="text-center text-xs text-slate-400 py-4">Sin resultados</p>
+              <div className="py-2">
+                <p className="text-center text-xs text-slate-400 py-3">Sin resultados</p>
+                {allowCreate && q.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCreate(true)}
+                    className="w-full text-left px-3 py-2 text-sm border-t border-slate-100 text-amber-600 hover:bg-amber-50 flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Crear producto &ldquo;{q.trim()}&rdquo;</span>
+                  </button>
+                )}
+              </div>
             ) : (
               filtered.slice(0, 50).map((o) => {
                 const details = [
@@ -101,8 +123,28 @@ export default function CatalogPicker({ options = [], onSelect, label = "Buscar"
               })
             )}
           </div>
+          {allowCreate && filtered.length > 0 && q.trim() && (
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="w-full text-left px-3 py-2 mt-2 text-sm border border-amber-200 rounded-md text-amber-600 hover:bg-amber-50 flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Crear producto &ldquo;{q.trim()}&rdquo;</span>
+            </button>
+          )}
         </DialogContent>
       </Dialog>
+
+      {showCreate && (
+        <ProductQuickForm
+          open={showCreate}
+          onOpenChange={setShowCreate}
+          defaultName={q.trim()}
+          suppliers={suppliers}
+          onCreated={handleCreated}
+        />
+      )}
     </>
   );
 }

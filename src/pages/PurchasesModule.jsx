@@ -398,6 +398,8 @@ export default function Purchases() {
                   options={products}
                   onSelect={(p) => addItem(p)}
                   placeholder="Nombre, SKU, marca..."
+                  suppliers={suppliers}
+                  onProductCreated={(p) => setProducts((prev) => [p, ...prev])}
                 />
               </div>
             </div>

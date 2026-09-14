@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2 } from "lucide-react";
 import CatalogPicker from "@/components/CatalogPicker";
 
-export default function ServiceItemsEditor({ items, setItems, products, services }) {
+export default function ServiceItemsEditor({ items, setItems, products, services, allowCreateProduct = true, onProductCreated, suppliers }) {
   const [newItem, setNewItem] = useState({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
 
   const addItem = () => {
@@ -53,7 +53,7 @@ export default function ServiceItemsEditor({ items, setItems, products, services
         </div>
         {newItem.type === "Producto" && products?.length > 0 ? (
           <div className="flex-1 min-w-[150px] flex items-center">
-            <CatalogPicker options={products} onSelect={onProductSelect} label="Buscar producto" placeholder="Buscar producto..." buttonClass="w-full justify-start" />
+            <CatalogPicker options={products} onSelect={onProductSelect} label="Buscar producto" placeholder="Buscar producto..." buttonClass="w-full justify-start" allowCreate={allowCreateProduct} onProductCreated={onProductCreated} suppliers={suppliers} />
           </div>
         ) : newItem.type === "Servicio" && services?.length > 0 ? (
           <div className="flex-1 min-w-[150px] flex items-center">

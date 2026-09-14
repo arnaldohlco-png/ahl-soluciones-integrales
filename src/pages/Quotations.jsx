@@ -251,7 +251,7 @@ export default function Quotations() {
               <div className="flex items-center justify-between mb-2">
                 <Label>Items</Label>
                 <div className="flex gap-2">
-                  <CatalogPicker options={products} onSelect={addItem} label="+ Producto" placeholder="Buscar producto..." />
+                  <CatalogPicker options={products} onSelect={addItem} label="+ Producto" placeholder="Buscar producto..." allowCreate onProductCreated={(p) => setProducts((prev) => [p, ...prev])} />
                   <CatalogPicker options={services} onSelect={addService} label="+ Servicio" placeholder="Buscar servicio..." />
                 </div>
               </div>

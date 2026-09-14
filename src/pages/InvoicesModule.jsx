@@ -391,7 +391,7 @@ export default function Invoices() {
             </div>
             <div>
               <Label>Detalle / Items</Label>
-              <ServiceItemsEditor items={items} setItems={updateItems} products={products} services={services} />
+              <ServiceItemsEditor items={items} setItems={updateItems} products={products} services={services} onProductCreated={(p) => setProducts((prev) => [p, ...prev])} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
