@@ -84,6 +84,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
       <thead>
         <tr className="bg-slate-100 text-slate-700">
           <th className="text-left py-2 px-2 border border-slate-300">Cant.</th>
+          <th className="text-left py-2 px-2 border border-slate-300">SKU</th>
           <th className="text-left py-2 px-2 border border-slate-300">Descripción</th>
           <th className="text-right py-2 px-2 border border-slate-300">Vr. Unitario</th>
           <th className="text-right py-2 px-2 border border-slate-300">Subtotal</th>
@@ -91,10 +92,11 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
       </thead>
       <tbody>
         {items.length === 0 ? (
-          <tr><td colSpan={4} className="py-3 px-2 border border-slate-300 text-center text-slate-400">Sin items</td></tr>
+          <tr><td colSpan={5} className="py-3 px-2 border border-slate-300 text-center text-slate-400">Sin items</td></tr>
         ) : items.map((it, i) => (
           <tr key={i}>
             <td className="py-1.5 px-2 border border-slate-300 text-center">{it.quantity}</td>
+            <td className="py-1.5 px-2 border border-slate-300 font-mono text-[11px] text-slate-600">{it.sku || "—"}</td>
             <td className="py-1.5 px-2 border border-slate-300">
               {it.name || "—"}
               {it.type && <span className="ml-2 text-[10px] text-slate-500">[{it.type}]</span>}
