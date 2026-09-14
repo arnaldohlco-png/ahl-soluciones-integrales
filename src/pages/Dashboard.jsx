@@ -65,8 +65,8 @@ export default function Dashboard() {
           filter((it) => !/tercero/i.test((it.name || "").trim())).
           reduce((s, it) => s + (it.subtotal || 0), 0);
         };
-        const finalizedOrders = orders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status));
-        const visibleCompleted = visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado");
+        const finalizedOrders = orders.filter((o) => ["Terminado", "Entregado"].includes(o.status));
+        const visibleCompleted = visibleOrders.filter((o) => o.status === "Terminado" || o.status === "Entregado");
         let workshopIncome = 0;
         let workshopCost = 0;
         finalizedOrders.forEach((o) => {
@@ -138,7 +138,7 @@ export default function Dashboard() {
         const topTechnicians = Object.values(techCommissions).sort((a, b) => b.commission - a.commission);
 
         const motosInWorkshop = visibleOrders.filter((o) => o.status === "Ingresado" || o.status === "En proceso");
-        const pendingOrders = visibleOrders.filter((o) => o.status !== "Entregado" && o.status !== "Cobrada");
+        const pendingOrders = visibleOrders.filter((o) => o.status !== "Entregado");
         const pendingInvoices = invoices.filter((i) => i.status === "Pendiente");
 
         const activeAppointments = appointments.filter((a) => a.status === "Pendiente" || a.status === "Confirmada");
@@ -157,7 +157,7 @@ export default function Dashboard() {
           pendingOrders: pendingOrders.length, pendingInvoices: pendingInvoices.length,
           customers: customers.length, motorcycles: motorcycles.length, products: products.length,
           lowStockProducts: lowStock.slice(0, 5),
-          completedOrders: visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado").length,
+          completedOrders: visibleOrders.filter((o) => o.status === "Terminado" || o.status === "Entregado").length,
           appointmentsTodayCount: appointmentsToday.length,
           upcomingAppointments
         });
@@ -180,8 +180,8 @@ export default function Dashboard() {
   const statusColors = {
     "Ingresado": "bg-blue-100 text-blue-700",
     "En proceso": "bg-amber-100 text-amber-700",
-    "Completado": "bg-emerald-100 text-emerald-700",
-    "Entregado": "bg-slate-100 text-slate-700"
+    "Terminado": "bg-emerald-100 text-emerald-700",
+    "Entregado": "bg-slate-200 text-slate-700"
   };
 
   return (

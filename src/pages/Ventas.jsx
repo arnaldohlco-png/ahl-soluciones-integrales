@@ -270,8 +270,8 @@ export default function Ventas() {
     if (linkedOrderId) {
       try {
         const order = await base44.entities.ServiceOrder.get(linkedOrderId);
-        if (order && order.status === "Cobrada") {
-          alert("Esta orden de servicio ya fue cobrada. No se puede cobrar dos veces.");
+        if (order && order.status === "Entregado") {
+          alert("Esta orden de servicio ya fue entregada. No se puede cobrar dos veces.");
           return;
         }
         const existingSales = await base44.entities.Sale.filter({ related_order_id: linkedOrderId });
@@ -363,7 +363,7 @@ export default function Ventas() {
         quoteIdRef.current = null;
       }
       if (quoteOrderIdRef.current) {
-        try { await base44.entities.ServiceOrder.update(quoteOrderIdRef.current, { status: "Cobrada" }); } catch (e) { /* ignore */ }
+        // La orden se mantiene en "Terminado"; la venta vinculada habilita el botón Entregar en Órdenes
         quoteOrderIdRef.current = null;
       }
       setInvoiceSale(sale);

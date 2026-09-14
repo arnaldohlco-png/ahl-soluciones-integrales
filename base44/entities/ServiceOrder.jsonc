@@ -31,9 +31,8 @@
       "enum": [
         "Ingresado",
         "En proceso",
-        "Completado",
-        "Entregado",
-        "Cobrada"
+        "Terminado",
+        "Entregado"
       ],
       "default": "Ingresado"
     },

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, AlertTriangle, Phone } from "lucide-react";
+import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, AlertTriangle, Phone, PackageCheck } from "lucide-react";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import OrderPhotosUploader from "@/components/OrderPhotosUploader";
@@ -24,7 +24,7 @@ import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
-const statuses = ["Ingresado", "En proceso", "Completado", "Entregado", "Cobrada"];
+const statuses = ["Ingresado", "En proceso", "Terminado", "Entregado"];
 const fuelLevels = ["1/4", "1/2", "3/4", "Full"];
 
 const empty = {
@@ -203,11 +203,16 @@ export default function ServiceOrders() {
 
   const cycleStatus = async (o) => {
     const idx = statuses.indexOf(o.status);
-    const next = statuses[(idx + 1) % statuses.length];
+    if (idx < 0 || idx >= 2) return; // el ciclo se detiene en "Terminado"; "Entregado" se alcanza solo con el botón Entregar
+    const next = statuses[idx + 1];
     if (!(await confirm({ title: "¿Cambiar el estado de la orden?", description: `De "${o.status}" a "${next}"`, confirmText: "Sí", cancelText: "No" }))) return;
-    const payload = { status: next };
-    if (next === "Entregado") payload.delivery_date = new Date().toISOString().split("T")[0];
-    await base44.entities.ServiceOrder.update(o.id, payload);
+    await base44.entities.ServiceOrder.update(o.id, { status: next });
+    await load();
+  };
+
+  const entregar = async (o) => {
+    if (!(await confirm({ title: "¿Marcar esta orden como entregada?", description: "Confirma que la motocicleta fue entregada al cliente.", confirmText: "Sí, entregar", cancelText: "No" }))) return;
+    await base44.entities.ServiceOrder.update(o.id, { status: "Entregado", delivery_date: new Date().toISOString().split("T")[0] });
     await load();
   };
 
@@ -225,7 +230,6 @@ export default function ServiceOrders() {
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
         subtotal, iva, total: subtotal + iva, status: "Pendiente", related_order_id: o.id,
       });
-      await base44.entities.ServiceOrder.update(o.id, { status: "Cobrada" });
       await load();
       alert("Cotización creada correctamente");
     } catch (e) { console.error(e); alert("Error al crear cotización"); }
@@ -248,24 +252,28 @@ export default function ServiceOrders() {
     });
   };
 
-  // Órdenes que ya se convirtieron en cotización/factura/venta no deben seguir apareciendo
+  // Órdenes con venta/factura vinculada (habilita el botón Entregar)
   const convertedOrderIds = new Set([
     ...invoices.map((i) => i.related_order_id).filter(Boolean),
     ...sales.map((s) => s.related_order_id).filter(Boolean),
   ]);
   const filtered = orders.filter((o) => {
-    if (convertedOrderIds.has(o.id)) return false;
     const matchSearch = matchAny(search, o.service_type, motoLabel(o.motorcycle_id), customerName(o.customer_id), o.number, o.description);
-    const matchStatus = filterStatus === "all" || o.status === filterStatus;
-    return matchSearch && matchStatus;
+    // Las entregadas solo aparecen bajo el filtro "Entregado"; no en la lista general
+    if (filterStatus === "all") return matchSearch && o.status !== "Entregado";
+    if (filterStatus === "Entregado") return matchSearch && o.status === "Entregado";
+    return matchSearch && o.status === filterStatus;
   });
+
+  // En el formulario, "Entregado" solo se permite si la orden ya tiene venta/factura vinculada (o ya está entregada)
+  const editingHasLink = editing && (convertedOrderIds.has(editing.id) || editing.status === "Entregado");
+  const formStatuses = editingHasLink ? statuses : statuses.filter((s) => s !== "Entregado");
 
   const statusColors = {
     "Ingresado": "bg-blue-100 text-blue-700 border-blue-200",
     "En proceso": "bg-amber-100 text-amber-700 border-amber-200",
-    "Completado": "bg-emerald-100 text-emerald-700 border-emerald-200",
-    "Entregado": "bg-slate-100 text-slate-600 border-slate-200",
-    "Cobrada": "bg-purple-100 text-purple-700 border-purple-200",
+    "Terminado": "bg-emerald-100 text-emerald-700 border-emerald-200",
+    "Entregado": "bg-slate-200 text-slate-700 border-slate-300",
   };
 
   return (
@@ -342,16 +350,19 @@ export default function ServiceOrders() {
                     )}
                     <WhatsAppButton phone={customerPhone(o.customer_id)} message={buildDocMessage("order", o, company, { motorcycle: motos.find((m) => m.id === o.motorcycle_id), customer: customers.find((c) => c.id === o.customer_id) })} label="Enviar por WhatsApp" />
                     <button onClick={() => setPrintOrder(o)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"><Printer className="w-4 h-4" /></button>
-                    {o.status !== "Cobrada" && (
+                    {o.status === "Terminado" && (
                       <>
                         <button onClick={() => convertToQuotation(o)} title="Convertir a cotización" className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"><FileText className="w-4 h-4" /></button>
                         <button onClick={() => cobrar(o)} title="Cobrar en POS" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
+                        {convertedOrderIds.has(o.id) && (
+                          <button onClick={() => entregar(o)} title="Marcar como entregada" className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"><PackageCheck className="w-4 h-4" /></button>
+                        )}
                       </>
                     )}
-                    {o.status !== "Cobrada" && (
+                    {o.status !== "Entregado" && (
                       <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
                     )}
-                    {o.status !== "Cobrada" && (
+                    {o.status !== "Entregado" && (
                       <button onClick={() => remove(o)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                     )}
                   </div>
@@ -400,7 +411,7 @@ export default function ServiceOrders() {
                 <Label>Estado</Label>
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectContent>{formStatuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <SearchableSelect

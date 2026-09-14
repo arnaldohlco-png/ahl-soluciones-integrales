@@ -85,7 +85,7 @@ export default function IncomeStatement() {
   const posCOGS = fSales.filter((s) => s.status === "Pagada").reduce((s, x) => s + productCogsOf(itemsOf(x.items)), 0);
 
   // Órdenes contabilizadas como ingreso de taller (excluye las que ya se facturaron y cobraron)
-  const countedOrders = fOrders.filter((o) => ["Completado", "Entregado", "Cobrada"].includes(o.status) && !orderIdsWithPaidInvoice.has(o.id) && !orderIdsWithSale.has(o.id));
+  const countedOrders = fOrders.filter((o) => ["Terminado", "Entregado"].includes(o.status) && !orderIdsWithPaidInvoice.has(o.id) && !orderIdsWithSale.has(o.id));
 
   const workshopRevenue = countedOrders.reduce((s, o) => s + (o.cost || 0), 0);
   const workshopParts = countedOrders.reduce((s, o) => s + productCogsOf(itemsOf(o.service_items)), 0);
@@ -155,7 +155,7 @@ export default function IncomeStatement() {
 
         <Row label="Ventas POS (almacén)" value={posRevenue} bold />
         <Row label="Facturas cobradas (Facturación)" value={invoiceRevenue} bold />
-        <Row label="Ingresos de taller (Completadas/Entregadas/Cobradas)" value={workshopRevenue} bold />
+        <Row label="Ingresos de taller (Terminadas/Entregadas)" value={workshopRevenue} bold />
         <Row label="Total Ingresos" value={totalRevenue} bold color="text-emerald-600" />
 
         <div className="my-3" />

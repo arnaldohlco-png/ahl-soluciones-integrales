@@ -36,17 +36,20 @@ export default function CommissionPayments() {
   const [techSig, setTechSig] = useState("");
   const [adminSig, setAdminSig] = useState("");
   const [tab, setTab] = useState("pendientes");
+  const [convertedOrderIds, setConvertedOrderIds] = useState(new Set());
 
   useEffect(() => {
     (async () => {
       try {
-        const [t, p, o, m, c, comp] = await Promise.all([
+        const [t, p, o, m, c, comp, sal, inv] = await Promise.all([
           fetchAll("Technician"),
           fetchAll("CommissionPayment"),
           fetchAll("ServiceOrder"),
           fetchAll("Motorcycle"),
           fetchAllCustomers(),
           base44.entities.Company.list("-created_date", 10),
+          fetchAll("Sale"),
+          fetchAll("Invoice"),
         ]);
         setTechs(t.filter((x) => x.status === "Activo"));
         setPayments(p);
@@ -54,6 +57,10 @@ export default function CommissionPayments() {
         setMotos(m);
         setCustomers(c);
         if (comp.length > 0) setCompany(comp[0]);
+        setConvertedOrderIds(new Set([
+          ...inv.map((i) => i.related_order_id).filter(Boolean),
+          ...sal.map((s) => s.related_order_id).filter(Boolean),
+        ]));
       } catch (e) { console.error(e); }
       setLoading(false);
     })();
@@ -62,6 +69,8 @@ export default function CommissionPayments() {
   const techPhone = (id) => techs.find((t) => t.id === id)?.phone || "";
   const techName = (id) => techs.find((t) => t.id === id)?.name || "—";
   const techPct = (id) => techs.find((t) => t.id === id)?.commission_percentage || 0;
+  // Comisión pagable: orden entregada (siempre con venta/factura vinculada) o cobrada (Terminado con vínculo)
+  const isChargedOrDelivered = (o) => o.status === "Entregado" || (o.status === "Terminado" && convertedOrderIds.has(o.id));
 
   const createTechnician = async (name) => {
     const t = await base44.entities.Technician.create({ name, status: "Activo" });
@@ -87,7 +96,7 @@ export default function CommissionPayments() {
   // Órdenes pendientes de pago de comisión en el período seleccionado
   const pendingOrders = orders.filter((o) => {
     const d = o.entry_date || (o.created_date || "").slice(0, 10);
-    return d >= from && d <= to && (o.status === "Entregado" || o.status === "Cobrada") && commissionBase(o) > 0 && !o.commission_paid;
+    return d >= from && d <= to && isChargedOrDelivered(o) && commissionBase(o) > 0 && !o.commission_paid;
   });
 
   // Agrupar pendientes por técnico
@@ -116,7 +125,7 @@ export default function CommissionPayments() {
         const ords = await base44.entities.ServiceOrder.filter({ technician_id: p.technician_id }, "-created_date", 500);
         inRange = ords.filter((o) => {
           const d = o.entry_date || (o.created_date || "").slice(0, 10);
-          return d >= p.period_start && d <= p.period_end && (o.status === "Entregado" || o.status === "Cobrada");
+          return d >= p.period_start && d <= p.period_end && isChargedOrDelivered(o);
         });
       }
       setPrintPay({ doc: p, orders: inRange });
@@ -137,7 +146,7 @@ export default function CommissionPayments() {
 
       const inRange = ords.filter((o) => {
         const d = o.entry_date || (o.created_date || "").slice(0, 10);
-        return d >= from && d <= to && (o.status === "Entregado" || o.status === "Cobrada") && !o.commission_paid && commissionBase(o) > 0;
+        return d >= from && d <= to && isChargedOrDelivered(o) && !o.commission_paid && commissionBase(o) > 0;
       });
 
       const pct = techPct(techId);
