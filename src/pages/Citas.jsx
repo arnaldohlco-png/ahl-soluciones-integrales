@@ -19,6 +19,7 @@ import {
 import moment from "moment";
 import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { wrapWhatsApp } from "@/lib/whatsappTemplate";
 
 const STATUS = {
   Pendiente: { label: "Pendiente", cls: "bg-amber-100 text-amber-700 border-amber-300" },
@@ -149,15 +150,18 @@ export default function Citas() {
   const buildMessage = (a) => {
     const c = customerById[a.customer_id];
     const name = a.customer_name || c?.name || "";
-    const biz = company?.name || "el taller";
     const fecha = fmtDate(a.date);
     const hora = a.time || "";
     const svc = a.service_requested || "";
     if (a.message) return a.message;
     if (a.type === "Recordatorio") {
-      return `Hola ${name}, le recordamos que su motocicleta podría necesitar${svc ? `: ${svc}` : " un servicio"}. Agende su cita en ${biz} respondiendo a este mensaje. ¡Gracias!`;
+      const intro = `su motocicleta podría necesitar${svc ? `: ${svc}` : " un servicio"}.`;
+      const body = "Agende su cita respondiendo a este mensaje.";
+      return wrapWhatsApp({ name, intro, body, status: a.status, statusLabel: "Estado de la cita" });
     }
-    return `Hola ${name}, le confirmamos su cita en ${biz} el ${fecha}${hora ? ` a las ${hora}` : ""}${svc ? ` para: ${svc}` : ""}. Por favor confirme su asistencia respondiendo a este mensaje. ¡Gracias!`;
+    const intro = `su cita está agendada para el ${fecha}${hora ? ` a las ${hora}` : ""}${svc ? ` para ${svc}` : ""}.`;
+    const body = "Por favor confirme su asistencia respondiendo a este mensaje.";
+    return wrapWhatsApp({ name, intro, body, status: a.status, statusLabel: "Estado de la cita" });
   };
 
   const sendWhatsApp = async (a) => {
@@ -181,10 +185,11 @@ export default function Citas() {
   const buildRescheduleMessage = (a) => {
     const c = customerById[a.customer_id];
     const name = a.customer_name || c?.name || "";
-    const biz = company?.name || "el taller";
     const fecha = fmtDate(a.date);
     const hora = a.time || "";
-    return `Hola ${name}, su cita del ${fecha}${hora ? ` a las ${hora}` : ""} en ${biz} ha sido cancelada. ¿Desea reagendarla? Responda a este mensaje para coordinar una nueva fecha. ¡Gracias!`;
+    const intro = `su cita del ${fecha}${hora ? ` a las ${hora}` : ""} ha sido cancelada.`;
+    const body = "¿Desea reagendarla? Responda a este mensaje para coordinar una nueva fecha.";
+    return wrapWhatsApp({ name, intro, body, status: "Cancelada", statusLabel: "Estado de la cita" });
   };
 
   const cancelAppointment = async (a) => {

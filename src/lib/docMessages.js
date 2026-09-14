@@ -1,4 +1,5 @@
 import moment from "moment";
+import { wrapWhatsApp } from "@/lib/whatsappTemplate";
 
 const fmt = (n) => `$${(Number(n) || 0).toLocaleString("es-CO")}`;
 const fmtDate = (d) => (d ? moment(d).format("DD/MM/YYYY") : "—");
@@ -10,85 +11,66 @@ const listItems = (items) =>
   (items || []).map((it) => `• ${it.name || "—"} x${it.quantity} — ${fmt(it.subtotal)}`).join("\n");
 
 export function buildDocMessage(type, doc, company, extras = {}) {
-  const biz = company?.name || "Taller";
-  const head = `*${biz}*\n`;
-
   switch (type) {
     case "order": {
       const items = parseItems(doc.service_items);
       const m = extras.motorcycle;
-      const lines = [
-        `${head}Orden de Servicio N° ${doc.number || "—"}`,
-        `Fecha: ${fmtDate(doc.entry_date || doc.date)}`,
-        `Cliente: ${extras.customer?.name || "—"}`,
-        `Motocicleta: ${motoLabel(m)}`,
-        `Servicio: ${doc.service_type || "—"}`,
-        `Estado: ${doc.status || "—"}`,
-        "",
+      const name = extras.customer?.name || "—";
+      const total = doc.cost || items.reduce((s, i) => s + (i.subtotal || 0), 0);
+      const intro = `su motocicleta ${motoLabel(m)} ingresó para ${doc.service_type || "servicio"}${doc.number ? ` (Orden N° ${doc.number})` : ""}.`;
+      const body = [
         "Detalle de servicios y repuestos:",
         items.length ? listItems(items) : "• Sin items",
-        "",
-        `Total: ${fmt(doc.cost || items.reduce((s, i) => s + (i.subtotal || 0), 0))}`,
-      ];
-      return lines.join("\n");
+        `Total: ${fmt(total)}`,
+      ].join("\n");
+      return wrapWhatsApp({ name, intro, body, status: doc.status, statusLabel: "Estado del servicio" });
     }
     case "quotation": {
       const items = parseItems(doc.items);
-      const lines = [
-        `${head}Cotización N° ${doc.number || "—"}`,
-        `Fecha: ${fmtDate(doc.date)}`,
-        `Cliente: ${extras.customer?.name || doc.customer_name || "—"}`,
-        "",
+      const name = extras.customer?.name || doc.customer_name || "—";
+      const intro = `hemos preparado la Cotización N° ${doc.number || "—"} para usted.`;
+      const body = [
         "Detalle:",
         items.length ? listItems(items) : "• Sin items",
-        "",
         `Subtotal: ${fmt(doc.subtotal)}`,
         `IVA: ${fmt(doc.iva)}`,
         `Total: ${fmt(doc.total)}`,
-      ];
-      return lines.join("\n");
+      ].join("\n");
+      return wrapWhatsApp({ name, intro, body, status: doc.status, statusLabel: "Estado" });
     }
     case "invoice": {
       const items = parseItems(doc.items);
-      const lines = [
-        `${head}${doc.type || "Factura"} N° ${doc.number || "—"}`,
-        `Fecha: ${fmtDate(doc.date)}`,
-        `Cliente: ${extras.customer?.name || doc.customer_name || "—"}`,
-        `Estado: ${doc.status || "—"}`,
-        "",
+      const name = extras.customer?.name || doc.customer_name || "—";
+      const intro = `adjuntamos la ${doc.type || "Factura"} N° ${doc.number || "—"}.`;
+      const body = [
         "Detalle:",
         items.length ? listItems(items) : (doc.items || "• Sin items"),
-        "",
         `Total: ${fmt(doc.total)}`,
-      ];
-      return lines.join("\n");
+      ].join("\n");
+      return wrapWhatsApp({ name, intro, body, status: doc.status, statusLabel: "Estado" });
     }
     case "purchase": {
       const items = parseItems(doc.items);
-      const lines = [
-        `${head}Orden de Compra N° ${doc.number || "—"}`,
-        `Fecha: ${fmtDate(doc.date)}`,
-        `Proveedor: ${extras.supplier?.name || doc.supplier_name || "—"}`,
-        "",
+      const name = extras.supplier?.name || doc.supplier_name || "—";
+      const intro = `registramos la Orden de Compra N° ${doc.number || "—"}.`;
+      const body = [
         "Detalle:",
         items.length ? listItems(items) : "• Sin items",
-        "",
         `Total: ${fmt(doc.total)}`,
-      ];
-      return lines.join("\n");
+      ].join("\n");
+      return wrapWhatsApp({ name, intro, body, status: doc.status, statusLabel: "Estado" });
     }
     case "loan": {
-      const lines = [
-        `${head}Comprobante de Préstamo`,
+      const name = extras.technician?.name || doc.technician_name || "—";
+      const intro = `se ha registrado un comprobante de préstamo a su favor.`;
+      const body = [
         `Fecha: ${fmtDate(doc.date)}`,
-        `Técnico: ${extras.technician?.name || doc.technician_name || "—"}`,
         `Monto: ${fmt(doc.amount)}`,
         `Descontado: ${fmt(doc.deducted_amount)}`,
         `Saldo: ${fmt(doc.balance)}`,
         doc.description ? `Motivo: ${doc.description}` : "",
-        `Estado: ${doc.status}`,
-      ].filter(Boolean);
-      return lines.join("\n");
+      ].filter(Boolean).join("\n");
+      return wrapWhatsApp({ name, intro, body, status: doc.status, statusLabel: "Estado" });
     }
     case "commission": {
       const orders = extras.orders || [];
@@ -97,10 +79,9 @@ export function buildDocMessage(type, doc, company, extras = {}) {
         const comm = o.technician_commission || ((o.cost || 0) * (extras.technician?.commission_percentage || 0) / 100);
         return `• ${fmtDate(o.entry_date || (o.created_date || "").slice(0, 10))} — ${o.service_type || ""} — ${motoLabel(m)} — ${fmt(comm)}`;
       }).join("\n");
-      const lines = [
-        `${head}Comprobante de Pago de Comisiones`,
-        `Técnico: ${extras.technician?.name || doc.technician_name || "—"}`,
-        `Período: ${fmtDate(doc.period_start)} a ${fmtDate(doc.period_end)}`,
+      const name = extras.technician?.name || doc.technician_name || "—";
+      const intro = `se ha generado el comprobante de pago de comisiones del período ${fmtDate(doc.period_start)} a ${fmtDate(doc.period_end)}.`;
+      const body = [
         `Órdenes: ${doc.orders_count}`,
         "",
         "Detalle (servicios y motos atendidas):",
@@ -109,10 +90,10 @@ export function buildDocMessage(type, doc, company, extras = {}) {
         `Total comisiones: ${fmt(doc.total_commission)}`,
         `Descuentos: -${fmt(doc.loans_deducted)}`,
         `Neto a pagar: ${fmt(doc.net_amount)}`,
-      ];
-      return lines.join("\n");
+      ].join("\n");
+      return wrapWhatsApp({ name, intro, body, status: doc.status, statusLabel: "Estado" });
     }
     default:
-      return head + "Documento";
+      return wrapWhatsApp({ intro: "no hay detalle disponible." });
   }
 }
