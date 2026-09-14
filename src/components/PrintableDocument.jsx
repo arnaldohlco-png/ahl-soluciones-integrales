@@ -224,6 +224,31 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
               {renderItemsTable()}
               {doc.description && <p className="mt-2 text-slate-600">Descripción: {doc.description}</p>}
               {doc.work_done && <p className="mt-1 text-slate-600">Trabajo realizado: {doc.work_done}</p>}
+
+              {[
+                ["Queja del cliente", doc.customer_complaint],
+                ["Falla reportada", doc.reported_fault],
+                ["Diagnóstico técnico", doc.technical_diagnosis],
+                ["Pruebas realizadas", doc.tests_performed],
+                ["Recomendaciones", doc.recommendations],
+              ].some(([, v]) => v && String(v).trim()) && (
+                <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                  <p className="font-semibold uppercase text-xs text-slate-500">Diagnóstico</p>
+                  {[
+                    ["Queja del cliente", doc.customer_complaint],
+                    ["Falla reportada", doc.reported_fault],
+                    ["Diagnóstico técnico", doc.technical_diagnosis],
+                    ["Pruebas realizadas", doc.tests_performed],
+                    ["Recomendaciones", doc.recommendations],
+                  ].map(([label, val]) =>
+                    val && String(val).trim() ? (
+                      <p key={label} className="text-slate-700">
+                        <span className="font-medium text-slate-500">{label}:</span> {val}
+                      </p>
+                    ) : null
+                  )}
+                </div>
+              )}
             </div>
           )}
 
