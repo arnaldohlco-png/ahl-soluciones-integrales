@@ -1,7 +1,7 @@
 // Plantilla unificada para mensajes de WhatsApp del taller.
 
 export const BRAND = "HR SOLUCIONES INTEGRALES";
-export const SLOGAN = "HR Soluciones Integrales, nacidos para rodar.";
+export const SLOGAN = "HR SOLUCIONES INTEGRALES, nacidos para rodar.";
 
 // Saludo según la hora del día (hora local del dispositivo).
 // 5–12: Buenos días · 12–19: Buenas tardes · resto: Buenas noches
