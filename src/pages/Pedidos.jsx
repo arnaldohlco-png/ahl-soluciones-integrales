@@ -437,11 +437,11 @@ export default function Pedidos() {
 
       {/* Modal crear/editar pedido */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>{editingId ? "Editar pedido" : "Nuevo pedido a proveedor"}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-4 py-2 flex-1 overflow-y-auto min-h-0">
             <div className="grid grid-cols-2 gap-4">
               <SearchableSelect
                 label="Proveedor"
@@ -556,11 +556,11 @@ export default function Pedidos() {
 
       {/* Modal convertir en compra */}
       <Dialog open={convertOpen} onOpenChange={setConvertOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>Recibir y convertir en compra</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-4 py-2 flex-1 overflow-y-auto min-h-0">
             <p className="text-sm text-slate-500">Ajusta las cantidades y costos recibidos, luego confirma para crear la compra, actualizar el inventario y registrar el egreso en caja.</p>
             <div className="border border-slate-200 rounded-lg overflow-hidden">
               <table className="w-full text-sm">
