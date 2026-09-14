@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
   Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard,
-  CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3, ClipboardList } from
+  CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3 } from
 "lucide-react";
 import moment from "moment";
 
@@ -19,7 +19,7 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians, companies, appointments, supplierOrders] = await Promise.all([
+        const [sales, orders, customers, motorcycles, products, expenses, receivables, invoices, technicians, companies, appointments] = await Promise.all([
         fetchAll("Sale"),
         fetchAll("ServiceOrder"),
         fetchAll("Customer"),
@@ -30,8 +30,7 @@ export default function Dashboard() {
         fetchAll("Invoice"),
         fetchAll("Technician"),
         base44.entities.Company.list("-created_date", 1),
-        fetchAll("Appointment", "-date"),
-        fetchAll("SupplierOrder")]
+        fetchAll("Appointment", "-date")]
         );
         setCompany(companies[0] || null);
 
@@ -142,8 +141,6 @@ export default function Dashboard() {
         const pendingOrders = visibleOrders.filter((o) => o.status !== "Entregado" && o.status !== "Cobrada");
         const pendingInvoices = invoices.filter((i) => i.status === "Pendiente");
 
-        const pendingSupplierOrders = supplierOrders.filter((s) => s.status === "Borrador" || s.status === "Enviado").length;
-
         const activeAppointments = appointments.filter((a) => a.status === "Pendiente" || a.status === "Confirmada");
         const appointmentsToday = activeAppointments.filter((a) => (a.date || "") === today);
         const upcomingAppointments = activeAppointments.
@@ -158,7 +155,6 @@ export default function Dashboard() {
           lowStock, topProducts, topServices, topTechnicians,
           motosInWorkshop: motosInWorkshop.slice(0, 5), motosInWorkshopCount: motosInWorkshop.length,
           pendingOrders: pendingOrders.length, pendingInvoices: pendingInvoices.length,
-          pendingSupplierOrders,
           customers: customers.length, motorcycles: motorcycles.length, products: products.length,
           lowStockProducts: lowStock.slice(0, 5),
           completedOrders: visibleOrders.filter((o) => o.status === "Completado" || o.status === "Entregado").length,
@@ -421,7 +417,7 @@ export default function Dashboard() {
       </div>
 
       {/* Operational stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-2">
             <Bike className="w-5 h-5 text-amber-600" />
@@ -449,13 +445,6 @@ export default function Dashboard() {
             <p className="text-2xl font-bold text-slate-900">{d.lowStock?.length || 0}</p>
           </div>
           <p className="text-xs text-slate-500 mt-1">Productos stock bajo</p>
-        </Link>
-        <Link to="/pedidos" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-orange-600" />
-            <p className="text-2xl font-bold text-slate-900">{d.pendingSupplierOrders || 0}</p>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">Pedidos a proveedores</p>
         </Link>
       </div>
 
