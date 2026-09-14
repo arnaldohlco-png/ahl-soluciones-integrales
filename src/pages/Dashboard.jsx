@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
   Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard,
-  CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3 } from
+  CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3, ClipboardList } from
 "lucide-react";
 import moment from "moment";
 
@@ -273,6 +273,12 @@ export default function Dashboard() {
             <ShoppingCart className="w-4 h-4" />
           </div>
           <p className="text-xs font-semibold text-slate-800 leading-tight">Compras</p>
+        </Link>
+        <Link to="/pedidos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
+          <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-1 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+            <ClipboardList className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-800 leading-tight">Pedidos a proveedores</p>
         </Link>
         <Link to="/gastos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
           <div className="w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-1 group-hover:bg-red-600 group-hover:text-white transition-colors">
