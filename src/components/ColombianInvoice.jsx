@@ -123,7 +123,6 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
           <div className="mt-6 pt-3 border-t border-slate-200 text-[11px] text-slate-600 text-center space-y-1">
             {resolutionLine && <p>Esta factura electrónica se expide de acuerdo con la {resolutionLine}.</p>}
             <p>Formato de factura imprimible conforme a la Ley 1231 de 2008 y normativa DIAN vigente.</p>
-            {company?.footer_text && <p className="whitespace-pre-wrap">{company.footer_text}</p>}
           </div>
         </div>
       </div>
