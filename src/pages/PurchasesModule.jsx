@@ -399,8 +399,8 @@ export default function Purchases() {
             </div>
 
             {/* Items */}
-            <div className="border border-slate-200 rounded-lg overflow-x-auto">
-              <table className="w-full text-sm min-w-[480px]">
+            <div className="border border-slate-200 rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-slate-400">Producto</th>
