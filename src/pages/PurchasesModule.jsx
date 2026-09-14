@@ -138,10 +138,6 @@ export default function Purchases() {
         })
       ));
       await base44.entities.Purchase.delete(p.id);
-      // Eliminar el egreso de caja asociado a la compra (si existe)
-      try {
-        await base44.entities.CashMovement.deleteMany({ reference_id: p.id, category: "Compra" });
-      } catch (e) { console.error("No se pudo eliminar el movimiento de caja:", e); }
       const prods = await base44.entities.Product.list("-created_date", 5000);
       setProducts(prods);
       const purchs = await base44.entities.Purchase.list("-date", 5000);
@@ -398,8 +394,6 @@ export default function Purchases() {
                   options={products}
                   onSelect={(p) => addItem(p)}
                   placeholder="Nombre, SKU, marca..."
-                  suppliers={suppliers}
-                  onProductCreated={(p) => setProducts((prev) => [p, ...prev])}
                 />
               </div>
             </div>
