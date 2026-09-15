@@ -10,6 +10,7 @@ const fmtDate = (d) => (d ? moment(d).format("DD/MM/YYYY") : "—");
 const parseItems = (s) => { try { return JSON.parse(s || "[]"); } catch { return []; } };
 const parsePhotos = (s) => { try { const v = JSON.parse(s || "[]"); return Array.isArray(v) ? v.filter(Boolean) : []; } catch { return []; } };
 const has = (v) => v != null && String(v).trim() !== "" && !(typeof v === "number" && isNaN(v));
+const hasNum = (v) => has(v) && Number(v) > 0;
 
 // Base de comisión: solo servicios (type "Servicio"), excluyendo los denominados "terceros"
 const commissionBase = (o) => {
