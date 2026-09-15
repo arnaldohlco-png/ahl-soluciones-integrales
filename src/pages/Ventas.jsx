@@ -275,8 +275,7 @@ export default function Ventas() {
           return;
         }
         const existingSales = await base44.entities.Sale.filter({ related_order_id: linkedOrderId });
-        const yaVendida = existingSales.some((s) => s.status === "Pagada");
-        if (yaVendida) {
+        if (existingSales.length > 0) {
           alert("Esta orden ya tiene una venta POS registrada. No se puede cobrar dos veces.");
           return;
         }

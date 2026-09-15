@@ -353,7 +353,9 @@ export default function ServiceOrders() {
                     {o.status === "Terminado" && (
                       <>
                         <button onClick={() => convertToQuotation(o)} title="Convertir a cotización" className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"><FileText className="w-4 h-4" /></button>
-                        <button onClick={() => cobrar(o)} title="Cobrar en POS" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
+                        {!convertedOrderIds.has(o.id) && (
+                          <button onClick={() => cobrar(o)} title="Cobrar en POS" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
+                        )}
                         {convertedOrderIds.has(o.id) && (
                           <button onClick={() => entregar(o)} title="Marcar como entregada" className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"><PackageCheck className="w-4 h-4" /></button>
                         )}
