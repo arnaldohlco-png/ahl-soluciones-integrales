@@ -22,6 +22,7 @@ export default function CommissionPayments() {
   const [techs, setTechs] = useState([]);
   const [payments, setPayments] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTech, setSelectedTech] = useState("");
   const [from, setFrom] = useState(moment().startOf("month").format("YYYY-MM-DD"));
@@ -41,7 +42,7 @@ export default function CommissionPayments() {
   useEffect(() => {
     (async () => {
       try {
-        const [t, p, o, m, c, comp, sal, inv] = await Promise.all([
+        const [t, p, o, m, c, comp, sal, inv, sv] = await Promise.all([
           fetchAll("Technician"),
           fetchAll("CommissionPayment"),
           fetchAll("ServiceOrder"),
@@ -50,12 +51,14 @@ export default function CommissionPayments() {
           base44.entities.Company.list("-created_date", 10),
           fetchAll("Sale"),
           fetchAll("Invoice"),
+          fetchAll("Service"),
         ]);
         setTechs(t.filter((x) => x.status === "Activo"));
         setPayments(p);
         setOrders(o);
         setMotos(m);
         setCustomers(c);
+        setServices(sv);
         if (comp.length > 0) setCompany(comp[0]);
         setConvertedOrderIds(new Set([
           ...inv.map((i) => i.related_order_id).filter(Boolean),
@@ -78,13 +81,20 @@ export default function CommissionPayments() {
     return { id: t.id, label: t.name, sublabel: t.specialty || t.document_number || "" };
   };
 
-  // Base de comisión: solo servicios (type "Servicio"), excluyendo los denominados "terceros"
+  // Base de comisión: solo servicios (type "Servicio"), excluyendo los de categoría "Terceros"
+  const isTercero = (i) => {
+    if (i.service_id) {
+      const svc = services.find((s) => s.id === i.service_id);
+      if (svc && String(svc.category || "").toLowerCase() === "terceros") return true;
+    }
+    return /tercero/i.test((i.name || "").trim());
+  };
   const commissionBase = (o) => {
     let items = [];
     try { items = JSON.parse(o.service_items || "[]"); } catch { items = []; }
     return items
       .filter((i) => String(i.type || "").toLowerCase() === "servicio")
-      .filter((i) => !/tercero/i.test((i.name || "").trim()))
+      .filter((i) => !isTercero(i))
       .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
   };
 
@@ -510,7 +520,7 @@ export default function CommissionPayments() {
           type="commission"
           doc={printPay.doc}
           company={company}
-          extras={{ technician: techs.find((t) => t.id === printPay.doc.technician_id), motos, customers, orders: printPay.orders }}
+          extras={{ technician: techs.find((t) => t.id === printPay.doc.technician_id), motos, customers, orders: printPay.orders, services }}
           onClose={() => setPrintPay(null)}
         />
       )}

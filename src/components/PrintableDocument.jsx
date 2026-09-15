@@ -12,12 +12,19 @@ const parsePhotos = (s) => { try { const v = JSON.parse(s || "[]"); return Array
 const has = (v) => v != null && String(v).trim() !== "" && !(typeof v === "number" && isNaN(v));
 const hasNum = (v) => has(v) && Number(v) > 0;
 
-// Base de comisión: solo servicios (type "Servicio"), excluyendo los denominados "terceros"
-const commissionBase = (o) => {
+// Base de comisión: solo servicios (type "Servicio"), excluyendo los de categoría "Terceros"
+const isTerceroItem = (i, services) => {
+  if (i.service_id && services) {
+    const svc = services.find((s) => s.id === i.service_id);
+    if (svc && String(svc.category || "").toLowerCase() === "terceros") return true;
+  }
+  return /tercero/i.test((i.name || "").trim());
+};
+const commissionBase = (o, services) => {
   const items = parseItems(o.service_items);
   return items
     .filter((i) => String(i.type || "").toLowerCase() === "servicio")
-    .filter((i) => !/tercero/i.test((i.name || "").trim()))
+    .filter((i) => !isTerceroItem(i, services))
     .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
 };
 const serviceConcept = (o) => {
@@ -63,7 +70,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
   // Desglose de comisiones recalculado desde las órdenes (base = solo servicios)
   const commBreakdown = type === "commission"
     ? (extras.orders || []).map((o) => {
-        const base = commissionBase(o);
+        const base = commissionBase(o, extras.services);
         const pct = technician?.commission_percentage || 0;
         return { order: o, base, commission: base * pct / 100, concept: serviceConcept(o) };
       })
