@@ -599,7 +599,7 @@ export default function Ventas() {
                   <Button onClick={startNewSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10">
                     <FilePlus2 className="w-4 h-4" /> Nueva
                   </Button>
-                  <Button onClick={checkout} disabled={processing || cart.some(i => (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity)} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
+                  <Button onClick={checkout} disabled={processing || cart.some(i => i.product_id && (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity)} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
                     {processing ? "..." : "Cobrar"}
                   </Button>
                 </div>
