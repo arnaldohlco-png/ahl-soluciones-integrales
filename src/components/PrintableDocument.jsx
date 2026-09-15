@@ -277,21 +277,21 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
               {/* Mano de obra y costos */}
               {[
                 ["Descripción de mano de obra", doc.labor_description],
-                ["Horas trabajadas", has(doc.hours_worked) ? `${doc.hours_worked} h` : null],
-                ["Costo de mano de obra", has(doc.labor_cost) ? fmt(doc.labor_cost) : null],
-                ["Costo de repuestos", has(doc.parts_cost) ? fmt(doc.parts_cost) : null],
-                ["Costo de lubricantes", has(doc.lubricants_cost) ? fmt(doc.lubricants_cost) : null],
-                ["Comisión del técnico", has(doc.technician_commission) ? fmt(doc.technician_commission) : null],
+                ["Horas trabajadas", hasNum(doc.hours_worked) ? `${doc.hours_worked} h` : null],
+                ["Costo de mano de obra", hasNum(doc.labor_cost) ? fmt(doc.labor_cost) : null],
+                ["Costo de repuestos", hasNum(doc.parts_cost) ? fmt(doc.parts_cost) : null],
+                ["Costo de lubricantes", hasNum(doc.lubricants_cost) ? fmt(doc.lubricants_cost) : null],
+                ["Comisión del técnico", hasNum(doc.technician_commission) ? fmt(doc.technician_commission) : null],
               ].some(([, v]) => v) && (
                 <div className="mt-3 space-y-1 border-t border-slate-200 pt-3">
                   <p className="font-semibold uppercase text-xs text-slate-500">Mano de obra y costos</p>
                   {[
                     ["Descripción de mano de obra", doc.labor_description],
-                    ["Horas trabajadas", has(doc.hours_worked) ? `${doc.hours_worked} h` : null],
-                    ["Costo de mano de obra", has(doc.labor_cost) ? fmt(doc.labor_cost) : null],
-                    ["Costo de repuestos", has(doc.parts_cost) ? fmt(doc.parts_cost) : null],
-                    ["Costo de lubricantes", has(doc.lubricants_cost) ? fmt(doc.lubricants_cost) : null],
-                    ["Comisión del técnico", has(doc.technician_commission) ? fmt(doc.technician_commission) : null],
+                    ["Horas trabajadas", hasNum(doc.hours_worked) ? `${doc.hours_worked} h` : null],
+                    ["Costo de mano de obra", hasNum(doc.labor_cost) ? fmt(doc.labor_cost) : null],
+                    ["Costo de repuestos", hasNum(doc.parts_cost) ? fmt(doc.parts_cost) : null],
+                    ["Costo de lubricantes", hasNum(doc.lubricants_cost) ? fmt(doc.lubricants_cost) : null],
+                    ["Comisión del técnico", hasNum(doc.technician_commission) ? fmt(doc.technician_commission) : null],
                   ].map(([label, val]) =>
                     val ? (
                       <p key={label} className="text-slate-700">
@@ -304,20 +304,20 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
 
               {/* Kilometraje y aceite */}
               {[
-                ["Kilometraje anterior", has(doc.previous_mileage) ? Number(doc.previous_mileage).toLocaleString("es-CO") + " km" : null],
-                ["Kilometraje actual", has(doc.current_mileage) ? Number(doc.current_mileage).toLocaleString("es-CO") + " km" : null],
-                ["Km recorridos", has(doc.kms_traveled) ? Number(doc.kms_traveled).toLocaleString("es-CO") + " km" : null],
+                ["Kilometraje anterior", hasNum(doc.previous_mileage) ? Number(doc.previous_mileage).toLocaleString("es-CO") + " km" : null],
+                ["Kilometraje actual", hasNum(doc.current_mileage) ? Number(doc.current_mileage).toLocaleString("es-CO") + " km" : null],
+                ["Km recorridos", hasNum(doc.kms_traveled) ? Number(doc.kms_traveled).toLocaleString("es-CO") + " km" : null],
                 ["Intervalo de cambio de aceite", has(doc.oil_change_interval) ? `${doc.oil_change_interval} km` : null],
-                ["Próximo cambio de aceite", has(doc.next_oil_change) ? Number(doc.next_oil_change).toLocaleString("es-CO") + " km" : null],
+                ["Próximo cambio de aceite", hasNum(doc.next_oil_change) ? Number(doc.next_oil_change).toLocaleString("es-CO") + " km" : null],
               ].some(([, v]) => v) && (
                 <div className="mt-3 space-y-1 border-t border-slate-200 pt-3">
                   <p className="font-semibold uppercase text-xs text-slate-500">Kilometraje y mantenimiento</p>
                   {[
-                    ["Kilometraje anterior", has(doc.previous_mileage) ? Number(doc.previous_mileage).toLocaleString("es-CO") + " km" : null],
-                    ["Kilometraje actual", has(doc.current_mileage) ? Number(doc.current_mileage).toLocaleString("es-CO") + " km" : null],
-                    ["Km recorridos", has(doc.kms_traveled) ? Number(doc.kms_traveled).toLocaleString("es-CO") + " km" : null],
+                    ["Kilometraje anterior", hasNum(doc.previous_mileage) ? Number(doc.previous_mileage).toLocaleString("es-CO") + " km" : null],
+                    ["Kilometraje actual", hasNum(doc.current_mileage) ? Number(doc.current_mileage).toLocaleString("es-CO") + " km" : null],
+                    ["Km recorridos", hasNum(doc.kms_traveled) ? Number(doc.kms_traveled).toLocaleString("es-CO") + " km" : null],
                     ["Intervalo de cambio de aceite", has(doc.oil_change_interval) ? `${doc.oil_change_interval} km` : null],
-                    ["Próximo cambio de aceite", has(doc.next_oil_change) ? Number(doc.next_oil_change).toLocaleString("es-CO") + " km" : null],
+                    ["Próximo cambio de aceite", hasNum(doc.next_oil_change) ? Number(doc.next_oil_change).toLocaleString("es-CO") + " km" : null],
                   ].map(([label, val]) =>
                     val ? (
                       <p key={label} className="text-slate-700">
