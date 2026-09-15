@@ -86,9 +86,9 @@ export default function Cash() {
     const apertura = dayMovs.filter(m => isOpen(m.description) && m.type === "Entrada").reduce((s, m) => s + (m.amount || 0), 0);
     const entradas = dayMovs.filter(m => !isOpen(m.description) && !isAdj(m.description) && m.type === "Entrada").reduce((s, m) => s + (m.amount || 0), 0);
     const salidas = dayMovs.filter(m => !isAdj(m.description) && m.type === "Salida").reduce((s, m) => s + (m.amount || 0), 0);
-    const esperado = list
-      .filter(m => m.register_type === closingForm.register_type && moment(m.date).isSameOrBefore(closingForm.date, "day") && !isAdj(m.description))
-      .reduce((s, m) => s + (m.type === "Entrada" ? (m.amount || 0) : -(m.amount || 0)), 0);
+    // Saldo esperado del día: solo movimientos del MISMO día (apertura + entradas − salidas).
+    // No acumula saldos de días anteriores ni retiros de cierres previos.
+    const esperado = apertura + entradas - salidas;
     const cierreMov = dayMovs.find(m => isAdj(m.description));
     return { apertura, entradas, salidas, esperado, count: dayMovs.length, alreadyClosed: !!cierreMov };
   }, [closingOpen, closingForm, list]);
@@ -377,7 +377,7 @@ export default function Cash() {
                 <div className="flex justify-between"><span className="text-slate-600">Apertura</span><span className="font-medium">{fmt(daySummary.apertura)}</span></div>
                 <div className="flex justify-between text-emerald-600"><span>(+) Entradas del día</span><span>{fmt(daySummary.entradas)}</span></div>
                 <div className="flex justify-between text-red-600"><span>(−) Salidas del día</span><span>{fmt(daySummary.salidas)}</span></div>
-                <div className="flex justify-between border-t border-slate-200 pt-1.5 font-bold text-slate-900"><span>Saldo esperado en caja</span><span>{fmt(daySummary.esperado)}</span></div>
+                <div className="flex justify-between border-t border-slate-200 pt-1.5 font-bold text-slate-900"><span>Saldo esperado del día en caja</span><span>{fmt(daySummary.esperado)}</span></div>
                 <div className="flex justify-between text-slate-600"><span>(−) Monto contado</span><span>{fmt(Number(closingForm.counted))}</span></div>
                 <div className={`flex justify-between border-t border-slate-200 pt-1.5 font-bold ${Number(closingForm.counted) - daySummary.esperado === 0 ? "text-emerald-700" : Number(closingForm.counted) - daySummary.esperado > 0 ? "text-amber-700" : "text-red-700"}`}>
                   <span>Diferencia</span>
