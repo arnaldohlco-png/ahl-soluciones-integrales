@@ -3,10 +3,13 @@ import moment from "moment";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import PrintToolbar from "@/components/PrintToolbar";
+import { Image } from "@/components/ui/image";
 
 const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 });
 const fmtDate = (d) => (d ? moment(d).format("DD/MM/YYYY") : "—");
 const parseItems = (s) => { try { return JSON.parse(s || "[]"); } catch { return []; } };
+const parsePhotos = (s) => { try { const v = JSON.parse(s || "[]"); return Array.isArray(v) ? v.filter(Boolean) : []; } catch { return []; } };
+const has = (v) => v != null && String(v).trim() !== "" && !(typeof v === "number" && isNaN(v));
 
 // Base de comisión: solo servicios (type "Servicio"), excluyendo los denominados "terceros"
 const commissionBase = (o) => {
@@ -184,8 +187,11 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                   <p><span className="text-slate-500">Estado:</span> {doc.status}</p>
                   <p><span className="text-slate-500">Servicio:</span> {doc.service_type}</p>
                   {doc.technician_id && <p><span className="text-slate-500">Técnico:</span> {technician?.name || doc.technician_id}</p>}
-                  {doc.entry_date && <p><span className="text-slate-500">Ingreso:</span> {fmtDate(doc.entry_date)}</p>}
+                  {doc.entry_date && <p><span className="text-slate-500">Ingreso:</span> {fmtDate(doc.entry_date)}{has(doc.entry_time) ? ` ${doc.entry_time}` : ""}</p>}
                   {doc.delivery_date && <p><span className="text-slate-500">Entrega:</span> {fmtDate(doc.delivery_date)}</p>}
+                  {has(doc.fuel_level) && <p><span className="text-slate-500">Combustible:</span> {doc.fuel_level}</p>}
+                  {has(doc.visual_condition) && <p><span className="text-slate-500">Estado visual:</span> {doc.visual_condition}</p>}
+                  {has(doc.accessories) && <p><span className="text-slate-500">Accesorios:</span> {doc.accessories}</p>}
                 </>
               )}
               {type === "purchase" && (
@@ -256,6 +262,100 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                       </p>
                     ) : null
                   )}
+                </div>
+              )}
+
+              {/* Repuestos utilizados (texto) */}
+              {has(doc.parts_used) && (
+                <div className="mt-3 border-t border-slate-200 pt-3">
+                  <p className="font-semibold uppercase text-xs text-slate-500">Repuestos utilizados</p>
+                  <p className="text-slate-700 whitespace-pre-wrap">{doc.parts_used}</p>
+                </div>
+              )}
+
+              {/* Mano de obra y costos */}
+              {[
+                ["Descripción de mano de obra", doc.labor_description],
+                ["Horas trabajadas", has(doc.hours_worked) ? `${doc.hours_worked} h` : null],
+                ["Costo de mano de obra", has(doc.labor_cost) ? fmt(doc.labor_cost) : null],
+                ["Costo de repuestos", has(doc.parts_cost) ? fmt(doc.parts_cost) : null],
+                ["Costo de lubricantes", has(doc.lubricants_cost) ? fmt(doc.lubricants_cost) : null],
+                ["Comisión del técnico", has(doc.technician_commission) ? fmt(doc.technician_commission) : null],
+              ].some(([, v]) => v) && (
+                <div className="mt-3 space-y-1 border-t border-slate-200 pt-3">
+                  <p className="font-semibold uppercase text-xs text-slate-500">Mano de obra y costos</p>
+                  {[
+                    ["Descripción de mano de obra", doc.labor_description],
+                    ["Horas trabajadas", has(doc.hours_worked) ? `${doc.hours_worked} h` : null],
+                    ["Costo de mano de obra", has(doc.labor_cost) ? fmt(doc.labor_cost) : null],
+                    ["Costo de repuestos", has(doc.parts_cost) ? fmt(doc.parts_cost) : null],
+                    ["Costo de lubricantes", has(doc.lubricants_cost) ? fmt(doc.lubricants_cost) : null],
+                    ["Comisión del técnico", has(doc.technician_commission) ? fmt(doc.technician_commission) : null],
+                  ].map(([label, val]) =>
+                    val ? (
+                      <p key={label} className="text-slate-700">
+                        <span className="font-medium text-slate-500">{label}:</span> {val}
+                      </p>
+                    ) : null
+                  )}
+                </div>
+              )}
+
+              {/* Kilometraje y aceite */}
+              {[
+                ["Kilometraje anterior", has(doc.previous_mileage) ? Number(doc.previous_mileage).toLocaleString("es-CO") + " km" : null],
+                ["Kilometraje actual", has(doc.current_mileage) ? Number(doc.current_mileage).toLocaleString("es-CO") + " km" : null],
+                ["Km recorridos", has(doc.kms_traveled) ? Number(doc.kms_traveled).toLocaleString("es-CO") + " km" : null],
+                ["Intervalo de cambio de aceite", has(doc.oil_change_interval) ? `${doc.oil_change_interval} km` : null],
+                ["Próximo cambio de aceite", has(doc.next_oil_change) ? Number(doc.next_oil_change).toLocaleString("es-CO") + " km" : null],
+              ].some(([, v]) => v) && (
+                <div className="mt-3 space-y-1 border-t border-slate-200 pt-3">
+                  <p className="font-semibold uppercase text-xs text-slate-500">Kilometraje y mantenimiento</p>
+                  {[
+                    ["Kilometraje anterior", has(doc.previous_mileage) ? Number(doc.previous_mileage).toLocaleString("es-CO") + " km" : null],
+                    ["Kilometraje actual", has(doc.current_mileage) ? Number(doc.current_mileage).toLocaleString("es-CO") + " km" : null],
+                    ["Km recorridos", has(doc.kms_traveled) ? Number(doc.kms_traveled).toLocaleString("es-CO") + " km" : null],
+                    ["Intervalo de cambio de aceite", has(doc.oil_change_interval) ? `${doc.oil_change_interval} km` : null],
+                    ["Próximo cambio de aceite", has(doc.next_oil_change) ? Number(doc.next_oil_change).toLocaleString("es-CO") + " km" : null],
+                  ].map(([label, val]) =>
+                    val ? (
+                      <p key={label} className="text-slate-700">
+                        <span className="font-medium text-slate-500">{label}:</span> {val}
+                      </p>
+                    ) : null
+                  )}
+                </div>
+              )}
+
+              {/* Entrega y garantía */}
+              {[
+                ["Recomendaciones de entrega", doc.delivery_recommendations],
+                ["Garantía", doc.warranty],
+              ].some(([, v]) => has(v)) && (
+                <div className="mt-3 space-y-1 border-t border-slate-200 pt-3">
+                  <p className="font-semibold uppercase text-xs text-slate-500">Entrega y garantía</p>
+                  {[
+                    ["Recomendaciones de entrega", doc.delivery_recommendations],
+                    ["Garantía", doc.warranty],
+                  ].map(([label, val]) =>
+                    has(val) ? (
+                      <p key={label} className="text-slate-700 whitespace-pre-wrap">
+                        <span className="font-medium text-slate-500">{label}:</span> {val}
+                      </p>
+                    ) : null
+                  )}
+                </div>
+              )}
+
+              {/* Fotos de evidencia */}
+              {parsePhotos(doc.photos).length > 0 && (
+                <div className="mt-3 border-t border-slate-200 pt-3">
+                  <p className="font-semibold uppercase text-xs text-slate-500 mb-2">Fotos de evidencia</p>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {parsePhotos(doc.photos).map((url, i) => (
+                      <Image key={i} src={url} alt={`Evidencia ${i + 1}`} className="w-full h-20 rounded border border-slate-200" />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -375,6 +475,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           {/* Footer */}
           <div className="mt-6 pt-3 border-t border-slate-200 text-[11px] text-slate-600 text-center space-y-1">
             {type === "order" && company?.footer_text && <p className="whitespace-pre-wrap">{company.footer_text}</p>}
+            {type === "order" && has(doc.admin_footer) && <p className="whitespace-pre-wrap">{doc.admin_footer}</p>}
             <p>Documento generado el {moment().format("DD/MM/YYYY")}.</p>
           </div>
         </div>
