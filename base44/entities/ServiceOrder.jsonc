@@ -187,6 +187,11 @@
       "title": "Items (productos y servicios)",
       "description": "JSON: [{type, name, quantity, unit_price, subtotal, product_id?}]"
     },
+    "anticipos": {
+      "type": "string",
+      "title": "Anticipos (JSON)",
+      "description": "Array JSON de anticipos: [{date, amount, method}]"
+    },
     "admin_footer": {
       "type": "string",
       "title": "Pie de p\u00e1gina admin"

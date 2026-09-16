@@ -9,6 +9,7 @@ import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle, Pause, Play, Fi
 import { useLocation } from "react-router-dom";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
+import { sumAnticipos } from "@/lib/anticipos";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -38,6 +39,7 @@ export default function Ventas() {
   const searchRef = useRef(null);
   const location = useLocation();
   const [pendingQuote, setPendingQuote] = useState(null);
+  const [anticipoTotal, setAnticipoTotal] = useState(0);
   const quoteIdRef = useRef(null);
   const quoteOrderIdRef = useRef(null);
 
@@ -78,6 +80,7 @@ export default function Ventas() {
       setCustomerId(pendingQuote.customer_id);
       setCustomerName(c?.name || pendingQuote.customer_name || "Cliente mostrador");
     }
+    setAnticipoTotal(sumAnticipos(pendingQuote.anticipos));
     setPendingQuote(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuote, products, customers]);
@@ -107,11 +110,13 @@ export default function Ventas() {
       paymentType,
       discount,
       amountPaid,
+      anticipoTotal,
       savedAt: new Date().toISOString(),
     };
     persistParked([entry, ...parkedSales]);
     setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
     setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
+    setAnticipoTotal(0);
     searchRef.current?.focus();
   };
 
@@ -125,6 +130,7 @@ export default function Ventas() {
     setPaymentType(entry.paymentType || "Contado");
     setDiscount(entry.discount || 0);
     setAmountPaid(entry.amountPaid || 0);
+    setAnticipoTotal(entry.anticipoTotal || 0);
     persistParked(parkedSales.filter(p => p.id !== id));
   };
 
@@ -163,6 +169,7 @@ export default function Ventas() {
   const startNewSale = () => {
     setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
     setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
+    setAnticipoTotal(0);
     setCreditDays(company?.credit_default_days ?? 30);
     setSearch("");
     quoteIdRef.current = null;
@@ -249,12 +256,16 @@ export default function Ventas() {
     const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
     const iva = chargesIva ? cart.reduce((s, c) => s + (c.subtotal * (c.iva_rate || 19) / 100), 0) : 0;
     const total = Math.max(0, subtotal + iva - (discount || 0));
-    return { subtotal, iva, total };
-  }, [cart, discount, company]);
+    const saldo = Math.max(0, total - anticipoTotal);
+    return { subtotal, iva, total, anticipo: anticipoTotal, saldo };
+  }, [cart, discount, company, anticipoTotal]);
 
   const checkout = async () => {
     if (cart.length === 0) return;
-    if (!(await confirm({ title: "¿Cobrar esta venta?", description: `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`, confirmText: "Sí, cobrar", cancelText: "No" }))) return;
+    const cobroDesc = totals.anticipo > 0
+      ? `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })} · Anticipo: $${totals.anticipo.toLocaleString("es-CO", { maximumFractionDigits: 0 })} · Saldo: $${totals.saldo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`
+      : `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
+    if (!(await confirm({ title: "¿Cobrar esta venta?", description: cobroDesc, confirmText: "Sí, cobrar", cancelText: "No" }))) return;
     const insufficient = cart.find(item => {
       if (!item.product_id) return false;
       const prod = products.find(p => p.id === item.product_id);
@@ -296,13 +307,14 @@ export default function Ventas() {
         subtotal: totals.subtotal,
         iva_total: totals.iva,
         discount: discount || 0,
-        total: totals.total,
+        total: totals.saldo,
+        anticipo: totals.anticipo || 0,
         payment_method: paymentMethod,
         payment_type: paymentType,
         status: paymentType === "Contado" ? "Pagada" : "Pendiente",
-        balance: paymentType === "Crédito" ? totals.total : 0,
+        balance: paymentType === "Crédito" ? totals.saldo : 0,
         amount_paid: paymentMethod === "Efectivo" && paymentType === "Contado" ? amountPaid : 0,
-        change: paymentMethod === "Efectivo" && paymentType === "Contado" ? Math.max(0, amountPaid - totals.total) : 0,
+        change: paymentMethod === "Efectivo" && paymentType === "Contado" ? Math.max(0, amountPaid - totals.saldo) : 0,
         related_order_id: quoteOrderIdRef.current || undefined,
       });
 
@@ -317,7 +329,7 @@ export default function Ventas() {
           date: new Date().toISOString(),
           type: "Entrada",
           category: "Venta",
-          amount: totals.total,
+          amount: totals.saldo,
           description: `Venta POS - ${sale.customer_name}`,
           payment_method: paymentMethod,
           register_type: "Caja almacén",
@@ -327,16 +339,16 @@ export default function Ventas() {
         await base44.entities.AccountReceivable.create({
           customer_id: customerId || "",
           customer_name: cust?.name || customerName,
-          initial_amount: totals.total,
+          initial_amount: totals.saldo,
           payments: "[]",
-          balance: totals.total,
+          balance: totals.saldo,
           due_date: new Date(Date.now() + (creditDays || 30) * 86400000).toISOString().split("T")[0],
           status: "Al día",
         });
         if (customerId) {
           try {
             const c = await base44.entities.Customer.get(customerId);
-            if (c) await base44.entities.Customer.update(customerId, { balance: (c.balance || 0) + totals.total });
+            if (c)             await base44.entities.Customer.update(customerId, { balance: (c.balance || 0) + totals.saldo });
           } catch (e) { console.error(e); }
         }
       }
@@ -356,6 +368,7 @@ export default function Ventas() {
       setCustomerName("Cliente mostrador");
       setDiscount(0);
       setAmountPaid(0);
+      setAnticipoTotal(0);
       setCheckoutMsg("¡Venta registrada! Stock actualizado.");
       if (quoteIdRef.current) {
         try { await base44.entities.Invoice.update(quoteIdRef.current, { status: "Pagada", related_sale_id: sale.id }); } catch (e) { /* ignore */ }
@@ -527,6 +540,12 @@ export default function Ventas() {
                   <Input type="number" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="w-20 h-7 text-right text-sm" />
                 </div>
                 <div className="flex justify-between font-bold text-slate-900 text-base pt-1"><span>Total</span><span>${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+                {totals.anticipo > 0 && (
+                  <>
+                    <div className="flex justify-between text-emerald-700 pt-1"><span>Anticipo aplicado</span><span>-${totals.anticipo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+                    <div className="flex justify-between font-bold text-slate-900 text-base pt-1 border-t border-slate-200"><span>Saldo a cobrar</span><span>${totals.saldo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+                  </>
+                )}
                 {paymentMethod === "Efectivo" && paymentType === "Contado" && (
                   <>
                     <div className="flex justify-between items-center text-slate-600 pt-1">
@@ -536,7 +555,7 @@ export default function Ventas() {
                     {amountPaid > 0 && (
                       <div className="flex justify-between font-semibold text-emerald-700">
                         <span>Cambio/Vueltas</span>
-                        <span>${Math.max(0, amountPaid - totals.total).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
+                        <span>${Math.max(0, amountPaid - totals.saldo).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                   </>

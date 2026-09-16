@@ -17,6 +17,8 @@ import SignaturePad from "@/components/SignaturePad";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SearchableSelect from "@/components/SearchableSelect";
 import PrintableDocument from "@/components/PrintableDocument";
+import AnticiposEditor from "@/components/AnticiposEditor";
+import { sumAnticipos, parseAnticipos } from "@/lib/anticipos";
 import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
@@ -36,7 +38,7 @@ const empty = {
   hours_worked: "", technician_commission: "", work_done: "", delivery_recommendations: "",
   warranty: "", delivery_date: "", cost: "", parts_used: "",
   previous_mileage: "", current_mileage: "", kms_traveled: 0, oil_change_interval: 1000, next_oil_change: "",
-  photos: "[]", admin_footer: "",
+  photos: "[]", anticipos: "[]", admin_footer: "",
   customer_signature: "", technician_signature: "",
 };
 
@@ -153,7 +155,7 @@ export default function ServiceOrders() {
       cost: o.cost ?? "", parts_used: o.parts_used || "",
       previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "", kms_traveled: o.kms_traveled ?? 0,
       oil_change_interval: o.oil_change_interval || 1000, next_oil_change: o.next_oil_change ?? "",
-      photos: o.photos || "[]", admin_footer: o.admin_footer || company?.footer_text || "",
+      photos: o.photos || "[]", anticipos: o.anticipos || "[]", admin_footer: o.admin_footer || company?.footer_text || "",
       customer_signature: o.customer_signature || "", technician_signature: o.technician_signature || "",
     });
     try { setServiceItems(JSON.parse(o.service_items || "[]")); } catch { setServiceItems([]); }
@@ -185,11 +187,31 @@ export default function ServiceOrders() {
     if (payload.status === "Entregado" && !payload.delivery_date) payload.delivery_date = new Date().toISOString().split("T")[0];
     numFields.forEach((f) => { payload[f] = Number(payload[f]) || 0; });
     try {
-      if (editing) { await base44.entities.ServiceOrder.update(editing.id, payload); }
-      else {
-        const orderNumber = await getNextDocNumber("ServiceOrder", getPrefix(company, "order"));
-        await base44.entities.ServiceOrder.create({ ...payload, number: orderNumber });
+      let orderId = editing?.id || null;
+      let orderNumber = editing?.number || "";
+      if (editing) {
+        await base44.entities.ServiceOrder.update(editing.id, payload);
+      } else {
+        orderNumber = await getNextDocNumber("ServiceOrder", getPrefix(company, "order"));
+        const created = await base44.entities.ServiceOrder.create({ ...payload, number: orderNumber });
+        orderId = created.id;
       }
+      // Registrar en caja solo los anticipos NUEVOS (no presentes en los previos)
+      const prevKey = (a) => JSON.stringify({ date: a.date || "", amount: Number(a.amount) || 0, method: a.method || "" });
+      const previos = new Set(parseAnticipos(editing?.anticipos).map(prevKey));
+      const nuevos = parseAnticipos(payload.anticipos).filter((a) => !previos.has(prevKey(a)) && (Number(a.amount) || 0) > 0);
+      await Promise.all(nuevos.map((a) =>
+        base44.entities.CashMovement.create({
+          date: new Date().toISOString(),
+          type: "Entrada",
+          category: "Abono",
+          amount: Number(a.amount) || 0,
+          description: `Anticipo orden N° ${orderNumber} - ${customerName(form.customer_id)}`,
+          payment_method: a.method || "Efectivo",
+          register_type: "Caja almacén",
+          reference_id: orderId,
+        })
+      ));
       setOpen(false); await load();
     } catch (e) { console.error(e); alert("Error al guardar"); }
     setSaving(false);
@@ -228,7 +250,7 @@ export default function ServiceOrders() {
         type: "Cotización", number: await getNextDocNumber("Invoice", getPrefix(company, "quote")),
         date: new Date().toISOString().slice(0, 10),
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
-        subtotal, iva, total: subtotal + iva, status: "Pendiente", related_order_id: o.id,
+        subtotal, iva, total: subtotal + iva, anticipo: sumAnticipos(o.anticipos), status: "Pendiente", related_order_id: o.id,
       });
       await load();
       alert("Cotización creada correctamente");
@@ -247,6 +269,7 @@ export default function ServiceOrders() {
           items,
           customer_id: o.customer_id,
           customer_name: customerName(o.customer_id),
+          anticipos: o.anticipos || "[]",
         },
       },
     });
@@ -340,6 +363,7 @@ export default function ServiceOrders() {
                 <div className="flex items-center gap-4 ml-auto">
                   <div className="text-right">
                     <p className="text-lg font-bold text-slate-900">${itemsTotal(o).toLocaleString("es-CO")}</p>
+                    {sumAnticipos(o.anticipos) > 0 && <p className="text-xs text-emerald-600 font-medium">Anticipo: ${sumAnticipos(o.anticipos).toLocaleString("es-CO")}</p>}
                     {o.mechanic && <p className="text-xs text-slate-400">{o.mechanic}</p>}
                     {o.entry_date && <p className="text-xs text-slate-400">Ingreso: {o.entry_date}</p>}
                     {o.delivery_date && <p className="text-xs text-slate-400">Entrega: {o.delivery_date}</p>}
@@ -509,6 +533,10 @@ export default function ServiceOrders() {
               </div>
               <div className="mt-3"><Label>Descripción de mano de obra</Label><Textarea value={form.labor_description} onChange={(e) => setForm({ ...form, labor_description: e.target.value })} className="mt-1" rows={2} /></div>
               <div className="mt-3"><Label>Repuestos utilizados</Label><Input value={form.parts_used} onChange={(e) => setForm({ ...form, parts_used: e.target.value })} className="mt-1" placeholder="Ej: aceite, filtro, pastillas..." /></div>
+            </div>
+
+            <div className="border-t border-slate-100 pt-3">
+              <AnticiposEditor value={form.anticipos} onChange={(v) => setForm({ ...form, anticipos: v })} />
             </div>
 
             <div className="border-t border-slate-100 pt-3">

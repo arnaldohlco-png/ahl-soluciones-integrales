@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import PrintToolbar from "@/components/PrintToolbar";
 import { Image } from "@/components/ui/image";
+import { parseAnticipos, sumAnticipos } from "@/lib/anticipos";
 
 const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 });
 const fmtDate = (d) => (d ? moment(d).format("DD/MM/YYYY") : "—");
@@ -248,6 +249,20 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
               {doc.description && <p className="mt-2 text-slate-600">Descripción: {doc.description}</p>}
               {doc.work_done && <p className="mt-1 text-slate-600">Trabajo realizado: {doc.work_done}</p>}
 
+              {parseAnticipos(doc.anticipos).length > 0 && (
+                <div className="mt-3 border-t border-slate-200 pt-3">
+                  <p className="font-semibold uppercase text-xs text-slate-500 mb-1">Anticipos</p>
+                  <ul className="text-slate-700 space-y-0.5">
+                    {parseAnticipos(doc.anticipos).map((a, i) => (
+                      <li key={i} className="flex justify-between">
+                        <span>{fmtDate(a.date)} · {a.method || "Efectivo"}</span>
+                        <span className="font-medium">{fmt(a.amount)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {[
                 ["Queja del cliente", doc.customer_complaint],
                 ["Falla reportada", doc.reported_fault],
@@ -419,20 +434,35 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           {/* Totals */}
           <div className="flex justify-end mt-3">
             <div className="w-72 text-xs space-y-1 print-totals">
-              {type === "order" && (
-                <>
-                  <div className="flex justify-between"><span>Subtotal</span><span>{fmt(items.reduce((s, i) => s + (i.subtotal || 0), 0))}</span></div>
-                  <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total</span><span>{fmt(doc.cost || items.reduce((s, i) => s + (i.subtotal || 0), 0))}</span></div>
-                </>
-              )}
-              {(type === "quotation" || type === "invoice") && (
-                <>
-                  <div className="flex justify-between"><span>Subtotal</span><span>{fmt(doc.subtotal)}</span></div>
-                  {!!Number(doc.iva) && <div className="flex justify-between"><span>IVA</span><span>{fmt(doc.iva)}</span></div>}
-                  {!!Number(doc.discount) && <div className="flex justify-between"><span>Descuento</span><span>-{fmt(doc.discount)}</span></div>}
-                  <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total</span><span>{fmt(doc.total)}</span></div>
-                </>
-              )}
+              {type === "order" && (() => {
+                const ant = sumAnticipos(doc.anticipos);
+                const totalOrd = doc.cost || items.reduce((s, i) => s + (i.subtotal || 0), 0);
+                return (
+                  <>
+                    <div className="flex justify-between"><span>Subtotal</span><span>{fmt(items.reduce((s, i) => s + (i.subtotal || 0), 0))}</span></div>
+                    <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total</span><span>{fmt(totalOrd)}</span></div>
+                    {ant > 0 && (<>
+                      <div className="flex justify-between"><span>Anticipo</span><span>-{fmt(ant)}</span></div>
+                      <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Saldo a pagar</span><span>{fmt(Math.max(0, totalOrd - ant))}</span></div>
+                    </>)}
+                  </>
+                );
+              })()}
+              {(type === "quotation" || type === "invoice") && (() => {
+                const ant = Number(doc.anticipo) || 0;
+                return (
+                  <>
+                    <div className="flex justify-between"><span>Subtotal</span><span>{fmt(doc.subtotal)}</span></div>
+                    {!!Number(doc.iva) && <div className="flex justify-between"><span>IVA</span><span>{fmt(doc.iva)}</span></div>}
+                    {!!Number(doc.discount) && <div className="flex justify-between"><span>Descuento</span><span>-{fmt(doc.discount)}</span></div>}
+                    <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total</span><span>{fmt(doc.total)}</span></div>
+                    {ant > 0 && (<>
+                      <div className="flex justify-between"><span>Anticipo</span><span>-{fmt(ant)}</span></div>
+                      <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Saldo a pagar</span><span>{fmt(Math.max(0, Number(doc.total) - ant))}</span></div>
+                    </>)}
+                  </>
+                );
+              })()}
               {type === "purchase" && (
                 <>
                   <div className="flex justify-between"><span>Subtotal</span><span>{fmt(doc.subtotal)}</span></div>

@@ -41,6 +41,11 @@
       "type": "number",
       "title": "Total"
     },
+    "anticipo": {
+      "type": "number",
+      "title": "Anticipo aplicado",
+      "default": 0
+    },
     "payment_method": {
       "type": "string",
       "title": "Medio de pago",

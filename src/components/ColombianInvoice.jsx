@@ -109,7 +109,15 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
                 <div key={r} className="flex justify-between"><span>IVA {r}%</span><span>{fmt(ivaGroups[r].iva)}</span></div>
               ))}
               {!!sale.discount && <div className="flex justify-between"><span>Descuento</span><span>-{fmt(sale.discount)}</span></div>}
-              <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total</span><span>{fmt(sale.total)}</span></div>
+              {sale.anticipo > 0 ? (
+                <>
+                  <div className="flex justify-between"><span>Total</span><span>{fmt((sale.subtotal || 0) + (sale.iva_total || 0) - (sale.discount || 0))}</span></div>
+                  <div className="flex justify-between"><span>Anticipo</span><span>-{fmt(sale.anticipo)}</span></div>
+                  <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Saldo a pagar</span><span>{fmt(sale.total)}</span></div>
+                </>
+              ) : (
+                <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Total</span><span>{fmt(sale.total)}</span></div>
+              )}
               {sale.payment_type === "Contado" && sale.amount_paid > 0 && (
                 <>
                   <div className="flex justify-between"><span>Recibido</span><span>{fmt(sale.amount_paid)}</span></div>

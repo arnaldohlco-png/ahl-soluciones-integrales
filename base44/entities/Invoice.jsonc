@@ -54,6 +54,11 @@
       "type": "number",
       "title": "Total"
     },
+    "anticipo": {
+      "type": "number",
+      "title": "Anticipo aplicado",
+      "default": 0
+    },
     "status": {
       "type": "string",
       "title": "Estado",
