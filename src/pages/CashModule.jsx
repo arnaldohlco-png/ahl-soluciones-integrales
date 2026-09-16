@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock } from "lucide-react";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
+import nowLocalISO from "@/lib/localDate";
 import {
   isApertura, isCierre, nextTurnoNumber, findCurrentTurno, findOpenTurno,
   turnoSummary, turnoLabel, buildAperturaDescription, parseTurnoDesc,
@@ -34,7 +35,7 @@ export default function Cash() {
   const [form, setForm] = useState({
     type: "Entrada", category: "Otro ingreso", amount: 0, description: "",
     payment_method: "Efectivo", register_type: "Caja principal",
-    date: new Date().toISOString(),
+    date: nowLocalISO(),
   });
   const [openingOpen, setOpeningOpen] = useState(false);
   const [openingForm, setOpeningForm] = useState({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo", vendedor: "" });
@@ -110,7 +111,7 @@ export default function Cash() {
   const openNew = () => {
     setForm({
       type: "Entrada", category: "Otro ingreso", amount: 0, description: "",
-      payment_method: "Efectivo", register_type: "Caja principal", date: new Date().toISOString(),
+      payment_method: "Efectivo", register_type: "Caja principal", date: nowLocalISO(),
     });
     setModalOpen(true);
   };
@@ -153,7 +154,7 @@ export default function Cash() {
       if (oldCierres.length > 0) {
         await base44.entities.CashMovement.deleteMany({ id: { $in: oldCierres.map((m) => m.id) } });
       }
-      const base = { payment_method: "Efectivo", register_type: closingForm.register_type, date: new Date().toISOString() };
+      const base = { payment_method: "Efectivo", register_type: closingForm.register_type, date: nowLocalISO() };
       const tv = `Turno ${turno.turno} | ${turno.vendedor || "Sin vendedor"}`;
       const movs = [];
       if (diferencia > 0) {
@@ -187,7 +188,7 @@ export default function Cash() {
         payment_method: openingForm.payment_method,
         register_type: openingForm.register_type,
         reference_id: `TURNO-${n}`,
-        date: new Date().toISOString(),
+        date: nowLocalISO(),
       });
       setOpeningOpen(false);
       await load();
