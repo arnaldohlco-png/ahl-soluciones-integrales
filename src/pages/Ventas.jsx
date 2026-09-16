@@ -42,6 +42,7 @@ export default function Ventas() {
   const [anticipoTotal, setAnticipoTotal] = useState(0);
   const quoteIdRef = useRef(null);
   const quoteOrderIdRef = useRef(null);
+  const [fromOrder, setFromOrder] = useState(false);
 
   const createCustomer = async (name) => {
     const c = await base44.entities.Customer.create({ name });
@@ -57,6 +58,7 @@ export default function Ventas() {
       setPendingQuote(st.fromQuote);
       quoteIdRef.current = st.fromQuote.id || null;
       quoteOrderIdRef.current = st.fromQuote.related_order_id || null;
+      setFromOrder(!!st.fromQuote.related_order_id);
     }
   }, [location]);
 
@@ -174,6 +176,7 @@ export default function Ventas() {
     setSearch("");
     quoteIdRef.current = null;
     quoteOrderIdRef.current = null;
+    setFromOrder(false);
     searchRef.current?.focus();
   };
 
@@ -266,15 +269,17 @@ export default function Ventas() {
       ? `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })} · Anticipo: $${totals.anticipo.toLocaleString("es-CO", { maximumFractionDigits: 0 })} · Saldo: $${totals.saldo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`
       : `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
     if (!(await confirm({ title: "¿Cobrar esta venta?", description: cobroDesc, confirmText: "Sí, cobrar", cancelText: "No" }))) return;
-    const insufficient = cart.find(item => {
-      if (!item.product_id) return false;
-      const prod = products.find(p => p.id === item.product_id);
-      return !prod || (prod.stock || 0) < item.quantity;
-    });
-    if (insufficient) {
-      const prod = products.find(p => p.id === insufficient.product_id);
-      alert(`Stock insuficiente para "${prod?.name || "un producto"}". No se puede completar la venta.`);
-      return;
+    if (!fromOrder) {
+      const insufficient = cart.find(item => {
+        if (!item.product_id) return false;
+        const prod = products.find(p => p.id === item.product_id);
+        return !prod || (prod.stock || 0) < item.quantity;
+      });
+      if (insufficient) {
+        const prod = products.find(p => p.id === insufficient.product_id);
+        alert(`Stock insuficiente para "${prod?.name || "un producto"}". No se puede completar la venta.`);
+        return;
+      }
     }
     // Guard anti-duplicidad: si la venta viene de una orden/cotización, verificar que no esté ya cobrada
     const linkedOrderId = quoteOrderIdRef.current;
@@ -617,7 +622,7 @@ export default function Ventas() {
                   <Button onClick={startNewSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10">
                     <FilePlus2 className="w-4 h-4" /> Nueva
                   </Button>
-                  <Button onClick={checkout} disabled={processing || cart.some(i => i.product_id && (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity)} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
+                  <Button onClick={checkout} disabled={processing || (!fromOrder && cart.some(i => i.product_id && (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity))} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
                     {processing ? "..." : "Cobrar"}
                   </Button>
                 </div>
