@@ -344,7 +344,7 @@ const startMonth = moment().utcOffset(-5).startOf("month").format("YYYY-MM-DD");
         <p className="text-slate-400 text-sm py-4 text-center">No hay citas programadas</p> :
         <div className="space-y-2">
             {d.upcomingAppointments?.map((a) => {
-            const isToday = (a.date || "") === moment().format("YYYY-MM-DD");
+            const isToday = (a.date || "") === moment().utcOffset(-5).format("YYYY-MM-DD");
             return (
               <div key={a.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                   <div className="flex items-center gap-3 min-w-0">
