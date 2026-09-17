@@ -33,10 +33,9 @@ export default function Dashboard() {
         fetchAll("Appointment", "-date")]
         );
         setCompany(companies[0] || null);
-
-        const today = moment().format("YYYY-MM-DD");
-        const startWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
-        const startMonth = moment().startOf("month").format("YYYY-MM-DD");
+const today = moment().utcOffset(-5).format("YYYY-MM-DD");
+const startWeek = moment().utcOffset(-5).startOf("isoWeek").format("YYYY-MM-DD");
+const startMonth = moment().utcOffset(-5).startOf("month").format("YYYY-MM-DD");
 
         // Órdenes ya convertidas en cotización/factura/venta no cuentan en el dashboard (igual que en el módulo Órdenes)
         const convertedOrderIds = new Set([
