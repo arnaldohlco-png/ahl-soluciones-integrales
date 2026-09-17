@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
+import { registerForPayment } from "@/lib/cashRegister";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -87,7 +88,7 @@ export default function Expenses() {
           amount: payload.amount,
           description: payload.description || payload.category,
           payment_method: payload.payment_method || "Efectivo",
-          register_type: "Caja principal",
+          register_type: registerForPayment(payload.payment_method || "Efectivo", "Caja principal"),
           reference_id: saved.id,
         });
       }

@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
+import { registerForPayment } from "@/lib/cashRegister";
 import { fetchAllCustomers } from "@/lib/customersLoader";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { Button } from "@/components/ui/button";
@@ -167,7 +168,7 @@ export default function ReturnsModule() {
         date: new Date().toISOString(), type: "Salida", category: "Otro egreso",
         amount: form.total,
         description: `Devolución ${number} - ${form.source_type} ${form.source_number} - ${form.customer_name || ""}`.trim(),
-        payment_method: form.payment_method, register_type: "Caja principal", reference_id: created.id,
+        payment_method: form.payment_method, register_type: registerForPayment(form.payment_method, "Caja principal"), reference_id: created.id,
       });
 
       setModalOpen(false);

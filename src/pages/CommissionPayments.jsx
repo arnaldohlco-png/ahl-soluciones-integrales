@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
+import { registerForPayment } from "@/lib/cashRegister";
 import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -208,7 +209,7 @@ export default function CommissionPayments() {
           amount: calc.netAmount,
           description: `Pago de comisiones - ${calc.techName} (${calc.orders.map((o) => o.number || "—").join(", ")})`,
           payment_method: "Efectivo",
-          register_type: "Caja principal",
+          register_type: registerForPayment("Efectivo", "Caja principal"),
           reference_id: payment.id,
         });
       }

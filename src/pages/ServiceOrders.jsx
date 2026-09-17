@@ -23,6 +23,7 @@ import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
+import { registerForPayment } from "@/lib/cashRegister";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 const serviceTypes = ["Mantenimiento", "Reparación", "Diagnóstico", "Cambio de aceite", "Frenos", "Motor", "Eléctrico", "Personalizado"];
@@ -208,7 +209,7 @@ export default function ServiceOrders() {
           amount: Number(a.amount) || 0,
           description: `Anticipo orden N° ${orderNumber} - ${customerName(form.customer_id)}`,
           payment_method: a.method || "Efectivo",
-          register_type: "Caja almacén",
+          register_type: registerForPayment(a.method || "Efectivo", "Caja almacén"),
           reference_id: orderId,
         })
       ));

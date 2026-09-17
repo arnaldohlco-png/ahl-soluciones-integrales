@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
+import { registerForPayment } from "@/lib/cashRegister";
 import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -193,7 +194,7 @@ export default function Invoices() {
           date: new Date().toISOString(), type: "Entrada", category: "Abono",
           amount: meta.amountPaid || meta.total,
           description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
-          payment_method: meta.paymentMethod, register_type: "Caja principal", reference_id: inv.id,
+          payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
         });
       } else {
         const initialAbono = Number(meta.amountPaid) || 0;
@@ -209,7 +210,7 @@ export default function Invoices() {
           await base44.entities.CashMovement.create({
             date: new Date().toISOString(), type: "Entrada", category: "Abono",
             amount: initialAbono, description: `Abono inicial ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
-            payment_method: meta.paymentMethod, register_type: "Caja principal", reference_id: inv.id,
+            payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
           });
         }
         if (arBalance <= 0) {

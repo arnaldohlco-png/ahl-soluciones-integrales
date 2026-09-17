@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
+import { registerForPayment } from "@/lib/cashRegister";
 import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,7 +114,7 @@ export default function Credits() {
         amount: payAmount,
         description: `Abono - ${payModal.customer_name}`,
         payment_method: payMethod,
-        register_type: "Caja principal",
+        register_type: registerForPayment(payMethod, "Caja principal"),
         reference_id: payModal.id,
       });
 

@@ -14,7 +14,7 @@ import { matchAny } from "@/lib/search";
 import nowLocalISO, { todayLocalKey, localDateKey } from "@/lib/localDate";
 import {
   isApertura, isCierre, nextTurnoNumber, findCurrentTurno, findOpenTurno,
-  turnoSummary, turnoLabel, buildAperturaDescription, parseTurnoDesc,
+  turnoWindow, turnoSummary, turnoLabel, buildAperturaDescription, parseTurnoDesc,
 } from "@/lib/turnos";
 
 const REGISTERS = ["Caja principal", "Caja taller", "Caja almacén", "Bancos"];
@@ -56,13 +56,31 @@ export default function Cash() {
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
+  // Saldos por caja: solo el neto del turno abierto. Bancos acumula sin turno
+  // (las transferencias/tarjeta no son efectivo físico y no se cuadran por turno).
   const balances = useMemo(() => {
     const result = {};
     REGISTERS.forEach((r) => (result[r] = 0));
-    list.forEach((m) => {
-      const reg = m.register_type || "Caja principal";
-      if (!result[reg]) result[reg] = 0;
-      result[reg] += m.type === "Entrada" ? m.amount || 0 : -(m.amount || 0);
+    REGISTERS.forEach((reg) => {
+      if (reg === "Bancos") {
+        // Bancos: acumulado histórico (no tiene turno de efectivo)
+        result[reg] = list
+          .filter((m) => (m.register_type || "Caja principal") === "Bancos")
+          .reduce((s, m) => s + (m.type === "Entrada" ? m.amount || 0 : -(m.amount || 0)), 0);
+      } else {
+        // Cajas de efectivo: solo el neto del turno abierto
+        const turno = findOpenTurno(list, reg);
+        if (!turno) { result[reg] = 0; return; }
+        const movs = turnoWindow(list, reg, turno.apertura.date, null);
+        const apertura = turno.base || 0;
+        const entradas = movs
+          .filter((m) => !isApertura(m) && !isCierre(m) && m.type === "Entrada")
+          .reduce((s, m) => s + (m.amount || 0), 0);
+        const salidas = movs
+          .filter((m) => !isCierre(m) && m.type === "Salida")
+          .reduce((s, m) => s + (m.amount || 0), 0);
+        result[reg] = apertura + entradas - salidas;
+      }
     });
     return result;
   }, [list]);
@@ -143,7 +161,9 @@ export default function Cash() {
 
   const closingSummary = useMemo(() => {
     if (!currentClosingTurno) return null;
-    return turnoSummary(list, closingForm.register_type, currentClosingTurno, todayLocalKey());
+    // Cierre abarca TODO el turno (sin filtro de día) para que el saldo esperado
+    // incluya los movimientos de días anteriores dentro del mismo turno.
+    return turnoSummary(list, closingForm.register_type, currentClosingTurno, null);
   }, [list, closingForm.register_type, currentClosingTurno]);
 
   const saveClosing = async () => {

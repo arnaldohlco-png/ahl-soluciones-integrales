@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
+import { registerForPayment } from "@/lib/cashRegister";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,7 +103,7 @@ export default function TechnicianLoans() {
           amount: amt,
           description: `Préstamo - ${payload.technician_name}`,
           payment_method: "Efectivo",
-          register_type: "Caja principal",
+          register_type: registerForPayment("Efectivo", "Caja principal"),
           reference_id: saved.id,
         });
       }
@@ -166,7 +167,7 @@ export default function TechnicianLoans() {
         amount,
         description: `Abono préstamo - ${payLoan.technician_name || techName(payLoan.technician_id)}`,
         payment_method: payMethod,
-        register_type: "Caja principal",
+        register_type: registerForPayment(payMethod, "Caja principal"),
         reference_id: payLoan.id,
       });
       setPayLoan(null);

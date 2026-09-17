@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
+import { registerForPayment } from "@/lib/cashRegister";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -206,7 +207,7 @@ export default function Purchases() {
             amount: totals.total,
             description: "Compra - " + (supplier?.name || "Sin proveedor"),
             payment_method: paymentMethod,
-            register_type: "Caja principal",
+            register_type: registerForPayment(paymentMethod, "Caja principal"),
             reference_id: purchase.id,
           });
         }

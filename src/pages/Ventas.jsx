@@ -10,6 +10,7 @@ import { useLocation } from "react-router-dom";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 import { sumAnticipos } from "@/lib/anticipos";
+import { registerForPayment } from "@/lib/cashRegister";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -337,7 +338,7 @@ export default function Ventas() {
           amount: totals.saldo,
           description: `Venta POS - ${sale.customer_name}`,
           payment_method: paymentMethod,
-          register_type: "Caja almacén",
+          register_type: registerForPayment(paymentMethod, "Caja almacén"),
           reference_id: sale.id,
         });
       } else {
