@@ -178,7 +178,14 @@ export default function Cash() {
       if (movs.length === 0) {
         movs.push({ ...base, type: "Salida", category: "Otro egreso", amount: 0, description: `Cierre de caja - Cuadre exacto | ${tv}` });
       }
-      await base44.entities.CashMovement.bulkCreate(movs);
+      const created = await base44.entities.CashMovement.bulkCreate(movs);
+      // Actualización optimista: agrega los movimientos de cierre a la lista local
+      // para que findOpenTurno detecte el cierre y la tarjeta "Abierto" desaparezca
+      // de inmediato, sin esperar al re-fetch.
+      const createdRecords = Array.isArray(created) && created.length > 0
+        ? created
+        : movs.map((m, i) => ({ ...m, id: `tmp-cierre-${Date.now()}-${i}` }));
+      setList((prev) => [...createdRecords, ...prev]);
       setClosingOpen(false);
       await load();
     } catch (e) { console.error(e); } finally { setSaving(false); }
