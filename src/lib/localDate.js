@@ -17,4 +17,17 @@ export function nowLocalISO(date = new Date()) {
   return `${y}-${mo}-${d}T${h}:${mi}:${s}-05:00`;
 }
 
+// Clave de día calendario local de Bogotá ("YYYY-MM-DD") para un instante dado.
+export function localDateKey(date = new Date()) {
+  const shifted = new Date(new Date(date).getTime() + BOGOTA_OFFSET_MIN * 60 * 1000);
+  const y = shifted.getUTCFullYear();
+  const mo = String(shifted.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(shifted.getUTCDate()).padStart(2, "0");
+  return `${y}-${mo}-${d}`;
+}
+
+export function todayLocalKey() {
+  return localDateKey(new Date());
+}
+
 export default nowLocalISO;

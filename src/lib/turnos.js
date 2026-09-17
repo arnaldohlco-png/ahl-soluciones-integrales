@@ -1,4 +1,5 @@
 import moment from "moment";
+import { localDateKey } from "@/lib/localDate";
 
 const APERTURA_KEY = "Apertura de caja";
 const CIERRE_KEY = "Cierre de caja";
@@ -83,10 +84,13 @@ export function turnoWindow(list, register, openDate, closeDate) {
 
 // Summary for the current turno. Cierre adjustment movements are excluded
 // from entradas/salidas so re-closing yields the same expected balance.
-export function turnoSummary(list, register, turno) {
+export function turnoSummary(list, register, turno, onlyDayKey = null) {
   if (!turno) return null;
   const start = new Date(turno.apertura.date).getTime();
-  const movs = list.filter((m) => m.register_type === register && new Date(m.date).getTime() >= start);
+  let movs = list.filter((m) => m.register_type === register && new Date(m.date).getTime() >= start);
+  if (onlyDayKey) {
+    movs = movs.filter((m) => localDateKey(new Date(m.date)) === onlyDayKey);
+  }
   const apertura = turno.base;
   const entradas = movs
     .filter((m) => !isApertura(m) && !isCierre(m) && m.type === "Entrada")

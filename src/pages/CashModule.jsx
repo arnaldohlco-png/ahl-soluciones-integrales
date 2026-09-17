@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock } from "lucide-react";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
-import nowLocalISO from "@/lib/localDate";
+import nowLocalISO, { todayLocalKey, localDateKey } from "@/lib/localDate";
 import {
   isApertura, isCierre, nextTurnoNumber, findCurrentTurno, findOpenTurno,
   turnoSummary, turnoLabel, buildAperturaDescription, parseTurnoDesc,
@@ -29,6 +29,7 @@ export default function Cash() {
   const [currentUser, setCurrentUser] = useState("");
   const [filterRegister, setFilterRegister] = useState("all");
   const [filterTurnoId, setFilterTurnoId] = useState("all");
+  const [filterDay, setFilterDay] = useState("hoy");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -92,6 +93,9 @@ export default function Cash() {
     });
   }, [list]);
 
+  const openApIds = useMemo(() => new Set(openTurnos.map((t) => t.apertura.id)), [openTurnos]);
+  const todayKey = useMemo(() => todayLocalKey(), []);
+
   const filtered = list.filter((m) => {
     const matchReg = filterRegister === "all" || m.register_type === filterRegister;
     let matchTurno = true;
@@ -104,8 +108,14 @@ export default function Cash() {
         matchTurno = ts >= start && ts <= end && m.register_type === t.register;
       }
     }
+    let matchDay = true;
+    if (filterDay === "hoy") {
+      const isToday = localDateKey(new Date(m.date)) === todayKey;
+      const isBase = openApIds.has(m.id);
+      matchDay = isToday || isBase;
+    }
     const matchSearch = matchAny(search, m.description, m.category, m.amount);
-    return matchReg && matchTurno && matchSearch;
+    return matchReg && matchTurno && matchDay && matchSearch;
   });
 
   const openNew = () => {
@@ -133,7 +143,7 @@ export default function Cash() {
 
   const closingSummary = useMemo(() => {
     if (!currentClosingTurno) return null;
-    return turnoSummary(list, closingForm.register_type, currentClosingTurno);
+    return turnoSummary(list, closingForm.register_type, currentClosingTurno, todayLocalKey());
   }, [list, closingForm.register_type, currentClosingTurno]);
 
   const saveClosing = async () => {
@@ -285,6 +295,13 @@ export default function Cash() {
           <SelectContent>
             <SelectItem value="all">Todas las cajas</SelectItem>
             {REGISTERS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterDay} onValueChange={setFilterDay}>
+          <SelectTrigger className="w-full sm:w-36"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="hoy">Hoy</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
           </SelectContent>
         </Select>
         <Select value={filterTurnoId} onValueChange={setFilterTurnoId}>
