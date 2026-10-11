@@ -11,6 +11,7 @@ import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 import { sumAnticipos } from "@/lib/anticipos";
 import { registerForPayment } from "@/lib/cashRegister";
+import { nowLocalISO, todayLocalKey } from "@/lib/localDate";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -308,7 +309,7 @@ export default function Ventas() {
         number: saleNumber,
         customer_id: customerId || "",
         customer_name: cust?.name || customerName,
-        date: new Date().toISOString().split("T")[0],
+        date: todayLocalKey(),
         items: JSON.stringify(cart),
         subtotal: totals.subtotal,
         iva_total: totals.iva,
@@ -332,7 +333,7 @@ export default function Ventas() {
 
       if (paymentType === "Contado") {
         await base44.entities.CashMovement.create({
-          date: new Date().toISOString(),
+          date: nowLocalISO(),
           type: "Entrada",
           category: "Venta",
           amount: totals.saldo,

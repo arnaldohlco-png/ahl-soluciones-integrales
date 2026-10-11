@@ -70,7 +70,15 @@ export default function Cash() {
       } else {
         // Cajas de efectivo: solo el neto del turno abierto
         const turno = findOpenTurno(list, reg);
-        if (!turno) { result[reg] = 0; return; }
+        if (!turno) {
+          // Sin turno abierto: mostrar el neto de los movimientos de HOY (hora Bogotá)
+          // para que las ventas hechas sin abrir turno no queden invisibles.
+          const today = todayLocalKey();
+          result[reg] = list
+            .filter((m) => m.register_type === reg && !isCierre(m) && localDateKey(new Date(m.date)) === today)
+            .reduce((s, m) => s + (m.type === "Entrada" ? m.amount || 0 : -(m.amount || 0)), 0);
+          return;
+        }
         const movs = turnoWindow(list, reg, turno.apertura.date, null);
         const apertura = turno.base || 0;
         const entradas = movs
