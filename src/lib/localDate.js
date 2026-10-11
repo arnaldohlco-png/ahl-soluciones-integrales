@@ -26,15 +26,6 @@ export function localDateKey(date = new Date()) {
   return `${y}-${mo}-${d}`;
 }
 
-// Formatea un instante en hora de Bogotá como "DD/MM/YYYY HH:mm".
-export function formatBogota(value) {
-  if (!value) return "—";
-  const shifted = new Date(new Date(value).getTime() + BOGOTA_OFFSET_MIN * 60 * 1000);
-  if (isNaN(shifted.getTime())) return "—";
-  const p = (n) => String(n).padStart(2, "0");
-  return `${p(shifted.getUTCDate())}/${p(shifted.getUTCMonth() + 1)}/${shifted.getUTCFullYear()} ${p(shifted.getUTCHours())}:${p(shifted.getUTCMinutes())}`;
-}
-
 export function todayLocalKey() {
   return localDateKey(new Date());
 }
