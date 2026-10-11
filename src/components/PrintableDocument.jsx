@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import { momentBogota, fmtBogota } from "@/lib/localDate";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import PrintToolbar from "@/components/PrintToolbar";
@@ -7,7 +8,7 @@ import { Image } from "@/components/ui/image";
 import { parseAnticipos, sumAnticipos } from "@/lib/anticipos";
 
 const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 });
-const fmtDate = (d) => (d ? moment(d).format("DD/MM/YYYY") : "—");
+const fmtDate = (d) => fmtBogota(d, "DD/MM/YYYY");
 const parseItems = (s) => { try { return JSON.parse(s || "[]"); } catch { return []; } };
 const parsePhotos = (s) => { try { const v = JSON.parse(s || "[]"); return Array.isArray(v) ? v.filter(Boolean) : []; } catch { return []; } };
 const has = (v) => v != null && String(v).trim() !== "" && !(typeof v === "number" && isNaN(v));
@@ -514,7 +515,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           <div className="mt-6 pt-3 border-t border-slate-200 text-[11px] text-slate-600 text-center space-y-1">
             {type === "order" && company?.footer_text && <p className="whitespace-pre-wrap">{company.footer_text}</p>}
             {type === "order" && has(doc.admin_footer) && <p className="whitespace-pre-wrap">{doc.admin_footer}</p>}
-            <p>Documento generado el {moment().format("DD/MM/YYYY")}.</p>
+            <p>Documento generado el {momentBogota().format("DD/MM/YYYY")}.</p>
           </div>
         </div>
       </div>

@@ -7,6 +7,8 @@ import { parseAnticipos, sumAnticipos } from "@/lib/anticipos";
 
 const METHODS = ["Efectivo", "Transferencia"];
 
+import { todayLocalKey } from "@/lib/localDate";
+
 const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO");
 
 // value: JSON string de [{date, amount, method}]
@@ -14,7 +16,7 @@ export default function AnticiposEditor({ value, onChange }) {
   const items = parseAnticipos(value);
   const total = sumAnticipos(value);
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocalKey();
 
   const add = () => {
     onChange(JSON.stringify([...items, { date: today, amount: 0, method: "Efectivo" }]));

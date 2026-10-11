@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import { momentBogota } from "@/lib/localDate";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import PrintToolbar from "@/components/PrintToolbar";
@@ -22,7 +23,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
   const whatsappPhone = customer?.whatsapp || customer?.phone;
   const whatsappMessage = `Hola, adjunto su Factura de Venta N° ${sale.number || ""}${company?.name ? " de " + company.name : ""}. Puede ver el documento en PDF aquí: {{link}}`;
 
-  const dt = sale.created_date ? moment(sale.created_date) : moment();
+  const dt = sale.created_date ? momentBogota(sale.created_date) : momentBogota();
   const resolutionLine = company && company.dian_resolution
     ? `Resolución DIAN N° ${company.dian_resolution}${company.dian_resolution_date ? " del " + moment(company.dian_resolution_date).format("DD/MM/YYYY") : ""}${(company.dian_range_from || company.dian_range_to) ? " · Rango " + (company.dian_range_from || 0) + " al " + (company.dian_range_to || 0) : ""}`
     : "";

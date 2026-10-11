@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Wallet, Plus, Pencil, Trash2, Search, TrendingDown } from "lucide-react";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -27,7 +28,7 @@ export default function Expenses() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    date: moment().format("YYYY-MM-DD"), category: "Otros", description: "",
+    date: momentBogota().format("YYYY-MM-DD"), category: "Otros", description: "",
     amount: 0, responsible: "", payment_method: "Efectivo", support_photo: ""
   });
 
@@ -50,7 +51,7 @@ export default function Expenses() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ date: moment().format("YYYY-MM-DD"), category: "Otros", description: "", amount: 0, responsible: "", payment_method: "Efectivo", support_photo: "" });
+    setForm({ date: momentBogota().format("YYYY-MM-DD"), category: "Otros", description: "", amount: 0, responsible: "", payment_method: "Efectivo", support_photo: "" });
     setModalOpen(true);
   };
 
@@ -82,7 +83,7 @@ export default function Expenses() {
         const saved = await base44.entities.Expense.create(payload);
         // Registrar salida de caja por el gasto
         await base44.entities.CashMovement.create({
-          date: new Date().toISOString(),
+          date: nowLocalISO(),
           type: "Salida",
           category: "Gasto",
           amount: payload.amount,

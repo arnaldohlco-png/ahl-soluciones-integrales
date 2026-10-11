@@ -18,6 +18,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import { getNextDocNumber } from "@/lib/docNumbering";
 import { matchAny } from "@/lib/search";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 const PAY_METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
@@ -42,7 +43,7 @@ export default function ReturnsModule() {
   const [printRet, setPrintRet] = useState(null);
 
   const [form, setForm] = useState({
-    number: "", date: moment().format("YYYY-MM-DD"), customer_id: "", customer_name: "",
+    number: "", date: momentBogota().format("YYYY-MM-DD"), customer_id: "", customer_name: "",
     source_type: "Factura", source_id: "", source_number: "",
     reason: "", items: "[]", subtotal: 0, total: 0,
     payment_method: "Efectivo", status: "Aplicada", notes: "",
@@ -127,7 +128,7 @@ export default function ReturnsModule() {
   };
 
   const openNew = () => {
-    setForm({ number: "", date: moment().format("YYYY-MM-DD"), customer_id: "", customer_name: "", source_type: "Factura", source_id: "", source_number: "", reason: "", items: "[]", subtotal: 0, total: 0, payment_method: "Efectivo", status: "Aplicada", notes: "" });
+    setForm({ number: "", date: momentBogota().format("YYYY-MM-DD"), customer_id: "", customer_name: "", source_type: "Factura", source_id: "", source_number: "", reason: "", items: "[]", subtotal: 0, total: 0, payment_method: "Efectivo", status: "Aplicada", notes: "" });
     setRetItems([]);
     setModalOpen(true);
   };
@@ -165,7 +166,7 @@ export default function ReturnsModule() {
 
       // Movimiento de caja (salida) por el reembolso
       await base44.entities.CashMovement.create({
-        date: new Date().toISOString(), type: "Salida", category: "Otro egreso",
+        date: nowLocalISO(), type: "Salida", category: "Otro egreso",
         amount: form.total,
         description: `Devolución ${number} - ${form.source_type} ${form.source_number} - ${form.customer_name || ""}`.trim(),
         payment_method: form.payment_method, register_type: registerForPayment(form.payment_method, "Caja principal"), reference_id: created.id,

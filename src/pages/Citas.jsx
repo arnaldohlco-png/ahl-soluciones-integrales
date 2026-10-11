@@ -17,6 +17,7 @@ import {
   Calendar, Clock, User, Bike, Loader2
 } from "lucide-react";
 import moment from "moment";
+import { nowLocalISO } from "@/lib/localDate";
 import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { wrapWhatsApp } from "@/lib/whatsappTemplate";
@@ -337,7 +338,7 @@ export default function Citas() {
                       <MessageCircle className="w-4 h-4" />
                     </button>
                     {a.status === "Pendiente" && (
-                      <button onClick={() => setStatus(a, "Confirmada", { confirmed_at: new Date().toISOString() })} title="Confirmar" className="p-1.5 rounded-md hover:bg-emerald-50 text-emerald-600">
+                      <button onClick={() => setStatus(a, "Confirmada", { confirmed_at: nowLocalISO() })} title="Confirmar" className="p-1.5 rounded-md hover:bg-emerald-50 text-emerald-600">
                         <Check className="w-4 h-4" />
                       </button>
                     )}

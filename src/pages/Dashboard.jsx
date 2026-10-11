@@ -8,6 +8,7 @@ import {
   CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3, ClipboardList } from
 "lucide-react";
 import moment from "moment";
+import { momentBogota } from "@/lib/localDate";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
@@ -33,9 +34,9 @@ export default function Dashboard() {
         fetchAll("Appointment", "-date")]
         );
         setCompany(companies[0] || null);
-const today = moment().utcOffset(-5).format("YYYY-MM-DD");
-const startWeek = moment().utcOffset(-5).startOf("isoWeek").format("YYYY-MM-DD");
-const startMonth = moment().utcOffset(-5).startOf("month").format("YYYY-MM-DD");
+const today = momentBogota().format("YYYY-MM-DD");
+const startWeek = momentBogota().startOf("isoWeek").format("YYYY-MM-DD");
+const startMonth = momentBogota().startOf("month").format("YYYY-MM-DD");
 
         // Órdenes ya convertidas en cotización/factura/venta no cuentan en el dashboard (igual que en el módulo Órdenes)
         const convertedOrderIds = new Set([
@@ -207,8 +208,8 @@ const startMonth = moment().utcOffset(-5).startOf("month").format("YYYY-MM-DD");
             </p>
           </div>
           <div className="text-right shrink-0 hidden sm:block">
-            <p className="text-xs text-slate-400 capitalize">{moment().format("dddd")}</p>
-            <p className="text-sm font-semibold">{moment().format("DD/MM/YYYY")}</p>
+            <p className="text-xs text-slate-400 capitalize">{momentBogota().format("dddd")}</p>
+            <p className="text-sm font-semibold">{momentBogota().format("DD/MM/YYYY")}</p>
           </div>
         </div>
       </div>
@@ -344,7 +345,7 @@ const startMonth = moment().utcOffset(-5).startOf("month").format("YYYY-MM-DD");
         <p className="text-slate-400 text-sm py-4 text-center">No hay citas programadas</p> :
         <div className="space-y-2">
             {d.upcomingAppointments?.map((a) => {
-            const isToday = (a.date || "") === moment().utcOffset(-5).format("YYYY-MM-DD");
+            const isToday = (a.date || "") === momentBogota().format("YYYY-MM-DD");
             return (
               <div key={a.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                   <div className="flex items-center gap-3 min-w-0">

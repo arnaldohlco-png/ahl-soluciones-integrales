@@ -4,14 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TrendingUp, TrendingDown, DollarSign, BarChart3 } from "lucide-react";
 import moment from "moment";
+import { momentBogota } from "@/lib/localDate";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
 export default function IncomeStatement() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [from, setFrom] = useState(moment().startOf("month").format("YYYY-MM-DD"));
-  const [to, setTo] = useState(moment().format("YYYY-MM-DD"));
+  const [from, setFrom] = useState(momentBogota().startOf("month").format("YYYY-MM-DD"));
+  const [to, setTo] = useState(momentBogota().format("YYYY-MM-DD"));
 
   useEffect(() => {
     (async () => {

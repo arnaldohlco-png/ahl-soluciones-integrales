@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Truck, Plus, Search, Trash2, Pencil, CheckCircle, Printer, ChevronDown, ChevronRight } from "lucide-react";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
@@ -33,7 +34,7 @@ export default function Purchases() {
 
   const [supplierId, setSupplierId] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [date, setDate] = useState(moment().format("YYYY-MM-DD"));
+  const [date, setDate] = useState(momentBogota().format("YYYY-MM-DD"));
   const [items, setItems] = useState([]);
   const [transportCost, setTransportCost] = useState(0);
   const [discount, setDiscount] = useState(0);
@@ -110,7 +111,7 @@ export default function Purchases() {
 
   const openNew = () => {
     setEditingId(null);
-    setSupplierId(""); setInvoiceNumber(""); setDate(moment().format("YYYY-MM-DD"));
+    setSupplierId(""); setInvoiceNumber(""); setDate(momentBogota().format("YYYY-MM-DD"));
     setItems([]); setTransportCost(0); setDiscount(0);
     setPaymentMethod("Efectivo"); setPaymentType("Contado");
     setModalOpen(true);
@@ -120,7 +121,7 @@ export default function Purchases() {
     setEditingId(p.id);
     setSupplierId(p.supplier_id || "");
     setInvoiceNumber(p.invoice_number || "");
-    setDate(p.date || moment().format("YYYY-MM-DD"));
+    setDate(p.date || momentBogota().format("YYYY-MM-DD"));
     setItems(p.items ? (typeof p.items === "string" ? JSON.parse(p.items) : p.items) : []);
     setTransportCost(p.transport_cost || 0);
     setDiscount(p.discount || 0);
@@ -201,7 +202,7 @@ export default function Purchases() {
         ));
         if (paymentType === "Contado") {
           await base44.entities.CashMovement.create({
-            date: new Date().toISOString(),
+            date: nowLocalISO(),
             type: "Salida",
             category: "Compra",
             amount: totals.total,

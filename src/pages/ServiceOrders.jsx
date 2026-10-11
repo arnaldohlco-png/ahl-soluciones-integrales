@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, AlertTriangle, Phone, PackageCheck } from "lucide-react";
+import { nowLocalISO, todayLocalKey, nowLocalTime } from "@/lib/localDate";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import OrderPhotosUploader from "@/components/OrderPhotosUploader";
@@ -134,8 +135,8 @@ export default function ServiceOrders() {
   };
 
   const openNew = () => {
-    const today = new Date().toISOString().split("T")[0];
-    const now = new Date().toTimeString().slice(0, 5);
+    const today = todayLocalKey();
+    const now = nowLocalTime();
     setForm({ ...empty, entry_date: today, entry_time: now, admin_footer: company?.footer_text || "" });
     setServiceItems([]); setEditing(null); setOpen(true);
   };
@@ -185,7 +186,7 @@ export default function ServiceOrders() {
     setSaving(true);
     const nextOil = (Number(form.current_mileage) || 0) + (Number(form.oil_change_interval) || 0);
     const payload = { ...form, service_items: JSON.stringify(serviceItems), next_oil_change: nextOil };
-    if (payload.status === "Entregado" && !payload.delivery_date) payload.delivery_date = new Date().toISOString().split("T")[0];
+    if (payload.status === "Entregado" && !payload.delivery_date) payload.delivery_date = todayLocalKey();
     numFields.forEach((f) => { payload[f] = Number(payload[f]) || 0; });
     try {
       let orderId = editing?.id || null;
@@ -203,7 +204,7 @@ export default function ServiceOrders() {
       const nuevos = parseAnticipos(payload.anticipos).filter((a) => !previos.has(prevKey(a)) && (Number(a.amount) || 0) > 0);
       await Promise.all(nuevos.map((a) =>
         base44.entities.CashMovement.create({
-          date: new Date().toISOString(),
+          date: nowLocalISO(),
           type: "Entrada",
           category: "Abono",
           amount: Number(a.amount) || 0,
@@ -235,7 +236,7 @@ export default function ServiceOrders() {
 
   const entregar = async (o) => {
     if (!(await confirm({ title: "¿Marcar esta orden como entregada?", description: "Confirma que la motocicleta fue entregada al cliente.", confirmText: "Sí, entregar", cancelText: "No" }))) return;
-    await base44.entities.ServiceOrder.update(o.id, { status: "Entregado", delivery_date: new Date().toISOString().split("T")[0] });
+    await base44.entities.ServiceOrder.update(o.id, { status: "Entregado", delivery_date: todayLocalKey() });
     await load();
   };
 
@@ -249,7 +250,7 @@ export default function ServiceOrders() {
       await base44.entities.Invoice.create({
         customer_id: o.customer_id, customer_name: customerName(o.customer_id),
         type: "Cotización", number: await getNextDocNumber("Invoice", getPrefix(company, "quote")),
-        date: new Date().toISOString().slice(0, 10),
+        date: todayLocalKey(),
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
         subtotal, iva, total: subtotal + iva, anticipo: sumAnticipos(o.anticipos), status: "Pendiente", related_order_id: o.id,
       });

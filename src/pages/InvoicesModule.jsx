@@ -19,6 +19,7 @@ import PrintableDocument from "@/components/PrintableDocument";
 import CobroDialog from "@/components/CobroDialog";
 import { buildDocMessage } from "@/lib/docMessages";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { getNextDocNumber, prefixForInvoiceType } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
@@ -47,7 +48,7 @@ export default function Invoices() {
   const [company, setCompany] = useState(null);
   const [form, setForm] = useState({
     customer_id: "", customer_name: "", type: "Factura de venta", number: "",
-    date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente",
+    date: momentBogota().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente",
     payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "",
     amount_paid: 0, change: 0,
   });
@@ -116,7 +117,7 @@ export default function Invoices() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ customer_id: "", customer_name: "", type: "Factura de venta", number: "", date: moment().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente", payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "", amount_paid: 0, change: 0 });
+    setForm({ customer_id: "", customer_name: "", type: "Factura de venta", number: "", date: momentBogota().format("YYYY-MM-DD"), items: "", subtotal: 0, iva: 0, discount: 0, total: 0, status: "Pendiente", payment_terms: "Contado", credit_days: 0, installments: 1, installment_amount: 0, payment_due_date: "", amount_paid: 0, change: 0 });
     setItems([]);
     setModalOpen(true);
   };
@@ -191,7 +192,7 @@ export default function Invoices() {
       await base44.entities.Invoice.update(inv.id, payload);
       if (meta.paymentTerms === "Contado") {
         await base44.entities.CashMovement.create({
-          date: new Date().toISOString(), type: "Entrada", category: "Abono",
+          date: nowLocalISO(), type: "Entrada", category: "Abono",
           amount: meta.amountPaid || meta.total,
           description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
           payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
@@ -199,7 +200,7 @@ export default function Invoices() {
       } else {
         const initialAbono = Number(meta.amountPaid) || 0;
         const arBalance = Math.max(0, meta.total - initialAbono);
-        const payments = initialAbono > 0 ? JSON.stringify([{ date: new Date().toISOString(), amount: initialAbono, method: meta.paymentMethod }]) : "[]";
+        const payments = initialAbono > 0 ? JSON.stringify([{ date: nowLocalISO(), amount: initialAbono, method: meta.paymentMethod }]) : "[]";
         await base44.entities.AccountReceivable.create({
           customer_id: inv.customer_id, customer_name: inv.customer_name || "",
           invoice_id: inv.id, invoice_number: inv.number || "",
@@ -208,7 +209,7 @@ export default function Invoices() {
         });
         if (initialAbono > 0) {
           await base44.entities.CashMovement.create({
-            date: new Date().toISOString(), type: "Entrada", category: "Abono",
+            date: nowLocalISO(), type: "Entrada", category: "Abono",
             amount: initialAbono, description: `Abono inicial ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
             payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
           });

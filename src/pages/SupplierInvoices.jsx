@@ -9,7 +9,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Upload, FileText, Loader2, Trash2, Plus, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import { chargesIva, calcIvaFlat } from "@/lib/iva";
-import { addDays } from "date-fns";
+import { addDaysLocalKey, todayLocalKey } from "@/lib/localDate";
+import moment from "moment";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const DEFAULT_MARGIN = 30;
@@ -32,7 +33,7 @@ export default function SupplierInvoices() {
   const [supplierName, setSupplierName] = useState("");
   const [supplierDoc, setSupplierDoc] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10));
+  const [invoiceDate, setInvoiceDate] = useState(todayLocalKey());
   const [lines, setLines] = useState([emptyLine()]);
   const [margin, setMargin] = useState(DEFAULT_MARGIN);
   const [paymentType, setPaymentType] = useState("Contado");
@@ -128,7 +129,7 @@ export default function SupplierInvoices() {
     setSupplierName("");
     setSupplierDoc("");
     setInvoiceNumber("");
-    setInvoiceDate(new Date().toISOString().slice(0, 10));
+    setInvoiceDate(todayLocalKey());
     setLines([emptyLine()]);
     setMargin(DEFAULT_MARGIN);
     setPaymentType("Contado");
@@ -161,7 +162,7 @@ export default function SupplierInvoices() {
     const isCredit = paymentType === "Crédito";
     const days = isCredit ? (Number(creditDays) || 0) : 0;
     const dueDate = isCredit && days > 0
-      ? addDays(new Date(invoiceDate + "T00:00:00"), days).toISOString().slice(0, 10)
+      ? moment(invoiceDate, "YYYY-MM-DD").add(days, "days").format("YYYY-MM-DD")
       : "";
 
     setStage("saving");
@@ -372,7 +373,7 @@ export default function SupplierInvoices() {
                 <div>
                   <Label>Plazo (días)</Label>
                   <Input type="number" value={creditDays} onChange={(e) => setCreditDays(e.target.value)} min={1} />
-                  <p className="text-xs text-slate-400 mt-1">Vencimiento: {invoiceDate && creditDays > 0 ? addDays(new Date(invoiceDate + "T00:00:00"), Number(creditDays) || 0).toLocaleDateString("es-CO") : "—"}</p>
+                  <p className="text-xs text-slate-400 mt-1">Vencimiento: {invoiceDate && creditDays > 0 ? moment(invoiceDate, "YYYY-MM-DD").add(Number(creditDays) || 0, "days").format("DD/MM/YYYY") : "—"}</p>
                 </div>
               )}
             </CardContent>

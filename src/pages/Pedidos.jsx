@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ClipboardList, Plus, Search, Trash2, Pencil, Send, PackageCheck, Printer, ChevronDown, ChevronRight, PackagePlus } from "lucide-react";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
@@ -38,7 +39,7 @@ export default function Pedidos() {
   const [editingId, setEditingId] = useState(null);
 
   const [supplierId, setSupplierId] = useState("");
-  const [date, setDate] = useState(moment().format("YYYY-MM-DD"));
+  const [date, setDate] = useState(momentBogota().format("YYYY-MM-DD"));
   const [items, setItems] = useState([]);
   const [notes, setNotes] = useState("");
   const [expandedId, setExpandedId] = useState(null);
@@ -120,7 +121,7 @@ export default function Pedidos() {
 
   const openNew = () => {
     setEditingId(null);
-    setSupplierId(""); setDate(moment().format("YYYY-MM-DD"));
+    setSupplierId(""); setDate(momentBogota().format("YYYY-MM-DD"));
     setItems([]); setNotes("");
     setModalOpen(true);
   };
@@ -128,7 +129,7 @@ export default function Pedidos() {
   const openEdit = (p) => {
     setEditingId(p.id);
     setSupplierId(p.supplier_id || "");
-    setDate(p.date || moment().format("YYYY-MM-DD"));
+    setDate(p.date || momentBogota().format("YYYY-MM-DD"));
     setItems(p.items ? (typeof p.items === "string" ? JSON.parse(p.items) : p.items) : []);
     setNotes(p.notes || "");
     setModalOpen(true);
@@ -211,7 +212,7 @@ export default function Pedidos() {
         supplier_name: convertOrder.supplier_name || supplier?.name || "Sin proveedor",
         invoice_number: convertInvoiceNumber,
         number: await getNextDocNumber("Purchase", getPrefix(company, "purchase")),
-        date: moment().format("YYYY-MM-DD"),
+        date: momentBogota().format("YYYY-MM-DD"),
         items: JSON.stringify(convertItems.map(i => ({ product_id: i.product_id, name: i.name, quantity: i.quantity, unit_cost: i.unit_cost, subtotal: i.subtotal }))),
         subtotal: convertTotals.subtotal,
         iva_total: convertTotals.iva,
@@ -236,7 +237,7 @@ export default function Pedidos() {
       // Egreso de caja si es contado
       if (convertPaymentType === "Contado") {
         await base44.entities.CashMovement.create({
-          date: new Date().toISOString(),
+          date: nowLocalISO(),
           type: "Salida",
           category: "Compra",
           amount: convertTotals.total,

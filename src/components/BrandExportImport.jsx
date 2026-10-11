@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { todayLocalKey } from "@/lib/localDate";
 
 function parseLines(str) {
   return (str || "").split(",").map((s) => s.trim()).filter(Boolean);
@@ -47,7 +48,7 @@ export default function BrandExportImport({ onDone }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Marcas_Lineas_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.download = `Marcas_Lineas_${todayLocalKey()}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) { console.error(e); alert("Error al exportar: " + e.message); }

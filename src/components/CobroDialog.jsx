@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import moment from "moment";
+import { momentBogota } from "@/lib/localDate";
 
 const fmt = (n) => (Number(n) || 0).toLocaleString("es-CO");
 
@@ -48,7 +49,7 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
   const received = paymentTerms === "Contado" ? (Number(amountPaid) || total) : (Number(amountPaid) || 0);
   const change = Math.max(0, received - total);
   const dueDate = paymentTerms === "Crédito" && creditDays > 0
-    ? moment(doc?.date || moment()).add(Number(creditDays), "days").format("YYYY-MM-DD")
+    ? moment(doc?.date || momentBogota().format("YYYY-MM-DD"), "YYYY-MM-DD").add(Number(creditDays), "days").format("YYYY-MM-DD")
     : "";
 
   const setItem = (idx, field, value) => {

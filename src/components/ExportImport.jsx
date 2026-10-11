@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { todayLocalKey } from "@/lib/localDate";
 
 const NUM_FIELDS = [
   "price", "cost", "stock", "min_stock", "iva_rate", "balance", "credit_limit",
@@ -161,7 +162,7 @@ export default function ExportImport({ entityName, fields, columns, itemFields =
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${entityName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.download = `${entityName}_${todayLocalKey()}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) { console.error(e); alert("Error al exportar: " + e.message); }

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { FileText, Plus, Trash2, FileCheck, Loader2, Pencil, Printer, MessageCircle, Search, Phone } from "lucide-react";
 import moment from "moment";
+import { momentBogota } from "@/lib/localDate";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
@@ -32,7 +33,7 @@ export default function Quotations() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ customer_id: "", date: moment().format("YYYY-MM-DD") });
+  const [form, setForm] = useState({ customer_id: "", date: momentBogota().format("YYYY-MM-DD") });
   const [items, setItems] = useState([]);
   const [printQ, setPrintQ] = useState(null);
   const [search, setSearch] = useState("");
@@ -69,7 +70,7 @@ export default function Quotations() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ customer_id: "", date: moment().format("YYYY-MM-DD") });
+    setForm({ customer_id: "", date: momentBogota().format("YYYY-MM-DD") });
     setItems([]);
     setModalOpen(true);
   };
@@ -79,7 +80,7 @@ export default function Quotations() {
     let parsedItems = [];
     try { parsedItems = JSON.parse(q.items || "[]"); } catch { parsedItems = []; }
     setItems(parsedItems);
-    setForm({ customer_id: q.customer_id || "", date: q.date ? moment(q.date).format("YYYY-MM-DD") : moment().format("YYYY-MM-DD") });
+    setForm({ customer_id: q.customer_id || "", date: q.date ? moment(q.date).format("YYYY-MM-DD") : momentBogota().format("YYYY-MM-DD") });
     setModalOpen(true);
   };
 

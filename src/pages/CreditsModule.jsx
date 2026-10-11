@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { CreditCard, Search, DollarSign, CheckCircle } from "lucide-react";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -41,7 +42,7 @@ export default function Credits() {
 
   const daysOverdue = (dueDate) => {
     if (!dueDate) return 0;
-    const diff = moment().diff(moment(dueDate), "days");
+    const diff = momentBogota().startOf("day").diff(moment(dueDate, "YYYY-MM-DD"), "days");
     return diff > 0 ? diff : 0;
   };
 
@@ -77,7 +78,7 @@ export default function Credits() {
     setSaving(true);
     try {
       const payments = JSON.parse(payModal.payments || "[]");
-      payments.push({ date: new Date().toISOString(), amount: payAmount, method: payMethod });
+      payments.push({ date: nowLocalISO(), amount: payAmount, method: payMethod });
       const newBalance = Math.max(0, (payModal.balance || 0) - payAmount);
       const fullyPaid = newBalance <= 0;
       await base44.entities.AccountReceivable.update(payModal.id, {
@@ -108,7 +109,7 @@ export default function Credits() {
       }
 
       await base44.entities.CashMovement.create({
-        date: new Date().toISOString(),
+        date: nowLocalISO(),
         type: "Entrada",
         category: "Abono",
         amount: payAmount,

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Wallet, Loader2, CheckCircle2, Clock, Printer, Search, Hourglass, BadgeDollarSign } from "lucide-react";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SignaturePad from "@/components/SignaturePad";
 import PrintableDocument from "@/components/PrintableDocument";
@@ -26,8 +27,8 @@ export default function CommissionPayments() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTech, setSelectedTech] = useState("");
-  const [from, setFrom] = useState(moment().startOf("month").format("YYYY-MM-DD"));
-  const [to, setTo] = useState(moment().format("YYYY-MM-DD"));
+  const [from, setFrom] = useState(momentBogota().startOf("month").format("YYYY-MM-DD"));
+  const [to, setTo] = useState(momentBogota().format("YYYY-MM-DD"));
   const [calc, setCalc] = useState(null);
   const [paying, setPaying] = useState(false);
   const [motos, setMotos] = useState([]);
@@ -192,7 +193,7 @@ export default function CommissionPayments() {
     try {
       const payment = await base44.entities.CommissionPayment.create({
         technician_id: calc.techId, technician_name: calc.techName,
-        date: moment().format("YYYY-MM-DD"), period_start: from, period_end: to,
+        date: momentBogota().format("YYYY-MM-DD"), period_start: from, period_end: to,
         orders_count: calc.orders.length, total_commission: calc.totalCommission,
         loans_deducted: calc.loansDeducted, net_amount: calc.netAmount,
         status: "Pagado",
@@ -203,7 +204,7 @@ export default function CommissionPayments() {
       // Registrar salida de caja por el pago de comisiones al técnico
       if ((calc.netAmount || 0) > 0) {
         await base44.entities.CashMovement.create({
-          date: new Date().toISOString(),
+          date: nowLocalISO(),
           type: "Salida",
           category: "Pago",
           amount: calc.netAmount,
@@ -278,8 +279,8 @@ export default function CommissionPayments() {
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1" />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => { setFrom(moment().startOf("month").format("YYYY-MM-DD")); setTo(moment().format("YYYY-MM-DD")); }} className="flex-1">Mes actual</Button>
-            <Button variant="outline" onClick={() => { setFrom(moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD")); setTo(moment().subtract(1, "month").endOf("month").format("YYYY-MM-DD")); }} className="flex-1">Mes anterior</Button>
+            <Button variant="outline" onClick={() => { setFrom(momentBogota().startOf("month").format("YYYY-MM-DD")); setTo(momentBogota().format("YYYY-MM-DD")); }} className="flex-1">Mes actual</Button>
+            <Button variant="outline" onClick={() => { setFrom(momentBogota().subtract(1, "month").startOf("month").format("YYYY-MM-DD")); setTo(momentBogota().subtract(1, "month").endOf("month").format("YYYY-MM-DD")); }} className="flex-1">Mes anterior</Button>
           </div>
         </div>
       </div>

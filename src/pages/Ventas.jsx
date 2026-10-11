@@ -11,7 +11,7 @@ import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 import { sumAnticipos } from "@/lib/anticipos";
 import { registerForPayment } from "@/lib/cashRegister";
-import { nowLocalISO, todayLocalKey } from "@/lib/localDate";
+import { nowLocalISO, todayLocalKey, addDaysLocalKey, fmtBogota } from "@/lib/localDate";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -115,7 +115,7 @@ export default function Ventas() {
       discount,
       amountPaid,
       anticipoTotal,
-      savedAt: new Date().toISOString(),
+      savedAt: nowLocalISO(),
     };
     persistParked([entry, ...parkedSales]);
     setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
@@ -349,7 +349,7 @@ export default function Ventas() {
           initial_amount: totals.saldo,
           payments: "[]",
           balance: totals.saldo,
-          due_date: new Date(Date.now() + (creditDays || 30) * 86400000).toISOString().split("T")[0],
+          due_date: addDaysLocalKey(Number(creditDays) || 30),
           status: "Al día",
         });
         if (customerId) {
@@ -679,7 +679,7 @@ export default function Ventas() {
                         <tr key={s.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
                           <td className="px-4 py-3 font-medium text-slate-800">{s.number || "—"}</td>
                           <td className="px-4 py-3 text-slate-700">{s.customer_name || "Cliente mostrador"}</td>
-                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{s.date ? new Date(s.date).toLocaleDateString("es-CO") : "—"}</td>
+                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{fmtBogota(s.date, "DD/MM/YYYY")}</td>
                           <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{s.payment_type} · {s.payment_method}</td>
                           <td className="px-4 py-3 text-right font-semibold text-slate-800">${(s.total || 0).toLocaleString("es-CO")}</td>
                           <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${s.status === "Pagada" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{s.status}</span></td>

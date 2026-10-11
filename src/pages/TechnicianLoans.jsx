@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { HandCoins, Plus, Pencil, Trash2, Loader2, Printer, Search } from "lucide-react";
 import moment from "moment";
+import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
 import { buildDocMessage } from "@/lib/docMessages";
@@ -29,12 +30,12 @@ export default function TechnicianLoans() {
   const [saving, setSaving] = useState(false);
   const [filterTech, setFilterTech] = useState("all");
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ technician_id: "", date: moment().format("YYYY-MM-DD"), amount: "", description: "" });
+  const [form, setForm] = useState({ technician_id: "", date: momentBogota().format("YYYY-MM-DD"), amount: "", description: "" });
   const [printL, setPrintL] = useState(null);
   const [payLoan, setPayLoan] = useState(null);
   const [payMode, setPayMode] = useState("abono");
   const [payAmount, setPayAmount] = useState(0);
-  const [payDate, setPayDate] = useState(moment().format("YYYY-MM-DD"));
+  const [payDate, setPayDate] = useState(momentBogota().format("YYYY-MM-DD"));
   const [payMethod, setPayMethod] = useState("Efectivo");
   const [payNote, setPayNote] = useState("");
   const [paySaving, setPaySaving] = useState(false);
@@ -71,7 +72,7 @@ export default function TechnicianLoans() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ technician_id: "", date: moment().format("YYYY-MM-DD"), amount: "", description: "" });
+    setForm({ technician_id: "", date: momentBogota().format("YYYY-MM-DD"), amount: "", description: "" });
     setModalOpen(true);
   };
 
@@ -97,7 +98,7 @@ export default function TechnicianLoans() {
         const saved = await base44.entities.TechnicianLoan.create(payload);
         // Registrar salida de caja por el préstamo entregado al técnico
         await base44.entities.CashMovement.create({
-          date: new Date().toISOString(),
+          date: nowLocalISO(),
           type: "Salida",
           category: "Pago",
           amount: amt,
@@ -130,7 +131,7 @@ export default function TechnicianLoans() {
     setPayLoan(l);
     setPayMode("abono");
     setPayAmount(0);
-    setPayDate(moment().format("YYYY-MM-DD"));
+    setPayDate(momentBogota().format("YYYY-MM-DD"));
     setPayMethod("Efectivo");
     setPayNote("");
   };
@@ -150,7 +151,7 @@ export default function TechnicianLoans() {
     setPaySaving(true);
     try {
       const payments = (() => { try { return JSON.parse(payLoan.payments || "[]"); } catch { return []; } })();
-      payments.push({ date: new Date(payDate + "T00:00:00").toISOString(), amount, method: payMethod, note: payNote });
+      payments.push({ date: payDate + "T12:00:00-05:00", amount, method: payMethod, note: payNote });
       const newDeducted = (Number(payLoan.deducted_amount) || 0) + amount;
       const newBalance = Math.max(0, balance - amount);
       const newStatus = newBalance <= 0 ? "Descontado" : payLoan.status;
@@ -161,7 +162,7 @@ export default function TechnicianLoans() {
         status: newStatus,
       });
       await base44.entities.CashMovement.create({
-        date: new Date().toISOString(),
+        date: nowLocalISO(),
         type: "Entrada",
         category: "Abono",
         amount,

@@ -1,4 +1,5 @@
 // Plantilla unificada para mensajes de WhatsApp del taller.
+import { localHour } from "@/lib/localDate";
 
 export const BRAND = "HR SOLUCIONES INTEGRALES";
 export const SLOGAN = "HR SOLUCIONES INTEGRALES, nacidos para rodar.";
@@ -6,7 +7,7 @@ export const SLOGAN = "HR SOLUCIONES INTEGRALES, nacidos para rodar.";
 // Saludo según la hora del día (hora local del dispositivo).
 // 5–12: Buenos días · 12–19: Buenas tardes · resto: Buenas noches
 export function greetingByHour(d = new Date()) {
-  const h = d.getHours();
+  const h = localHour(d);
   if (h >= 5 && h < 12) return "Buenos días";
   if (h >= 12 && h < 19) return "Buenas tardes";
   return "Buenas noches";
