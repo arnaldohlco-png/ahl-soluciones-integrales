@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock } from "lucide-react";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
-import nowLocalISO, { todayLocalKey, localDateKey } from "@/lib/localDate";
+import nowLocalISO, { todayLocalKey, localDateKey, fmtBogota } from "@/lib/localDate";
 import {
   isApertura, isCierre, nextTurnoNumber, findCurrentTurno, findOpenTurno,
   turnoWindow, turnoSummary, turnoLabel, buildAperturaDescription, parseTurnoDesc,
@@ -296,7 +296,7 @@ export default function Cash() {
               </div>
               <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
                 <Clock className="w-3.5 h-3.5 text-slate-400" />
-                <span>{moment(t.openDate).format("DD/MM/YYYY HH:mm")}</span>
+                <span>{fmtBogota(t.openDate)}</span>
               </div>
               <p className="text-xs text-slate-500 mt-2">Base inicial: <span className="font-semibold text-slate-800">{fmt(t.base)}</span></p>
             </div>
@@ -371,7 +371,7 @@ export default function Cash() {
                 <tr><td colSpan="6" className="text-center text-slate-400 py-8">Sin movimientos</td></tr>
               ) : filtered.map((m) => (
                 <tr key={m.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
-                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{m.date ? moment(m.date).format("DD/MM/YYYY HH:mm") : "—"}</td>
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{fmtBogota(m.date)}</td>
                   <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{m.register_type}</td>
                   <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600">{m.category}</span></td>
                   <td className="px-4 py-3 text-slate-800 max-w-xs truncate" title={m.description || ""}>{m.description || "—"}</td>
@@ -529,7 +529,7 @@ export default function Cash() {
                     <User className="w-3.5 h-3.5 text-slate-400" /> {currentClosingTurno.vendedor || "Sin vendedor"}
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" /> {moment(currentClosingTurno.openDate).format("DD/MM/YYYY HH:mm")}
+                    <Clock className="w-3.5 h-3.5 text-slate-400" /> {fmtBogota(currentClosingTurno.openDate)}
                   </div>
                 </div>
 

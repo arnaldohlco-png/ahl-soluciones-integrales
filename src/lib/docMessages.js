@@ -1,8 +1,9 @@
 import moment from "moment";
 import { wrapWhatsApp } from "@/lib/whatsappTemplate";
+import { fmtBogota } from "@/lib/localDate";
 
 const fmt = (n) => `$${(Number(n) || 0).toLocaleString("es-CO")}`;
-const fmtDate = (d) => (d ? moment(d).format("DD/MM/YYYY") : "—");
+const fmtDate = (d) => fmtBogota(d, "DD/MM/YYYY");
 const parseItems = (s) => { try { return JSON.parse(s || "[]"); } catch { return []; } };
 
 const motoLabel = (m) => (m ? `${m.brand || ""} ${m.model || ""}${m.plate ? ` (Placa: ${m.plate})` : ""}` : "");

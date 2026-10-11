@@ -1,5 +1,5 @@
 import moment from "moment";
-import { localDateKey } from "@/lib/localDate";
+import { localDateKey, fmtBogota } from "@/lib/localDate";
 
 const APERTURA_KEY = "Apertura de caja";
 const CIERRE_KEY = "Cierre de caja";
@@ -111,7 +111,7 @@ export function turnoSummary(list, register, turno, onlyDayKey = null) {
 
 export function turnoLabel(turno) {
   if (!turno) return "";
-  const when = moment(turno.openDate).format("DD/MM/YYYY HH:mm");
+  const when = fmtBogota(turno.openDate);
   return `Turno ${turno.turno} · ${turno.vendedor || "Sin vendedor"} · ${when}`;
 }
 
