@@ -542,7 +542,7 @@ export default function Dashboard() {
       </div>
 
       {/* Technicians and commissions */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 hidden">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-slate-900 flex items-center gap-2"><HardHat className="w-5 h-5 text-amber-600" /> Técnicos y comisiones</h3>
           <Link to="/tecnicos" className="text-sm text-amber-600 hover:underline font-medium">Ver técnicos</Link>
