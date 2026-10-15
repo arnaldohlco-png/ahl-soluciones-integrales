@@ -62,33 +62,33 @@ export default function Cash() {
     const result = {};
     REGISTERS.forEach((r) => (result[r] = 0));
     REGISTERS.forEach((reg) => {
-      if (reg === "Bancos") {
-        // Bancos: acumulado histórico (no tiene turno de efectivo)
+      // Todas las cajas (incluido Bancos): solo el neto del turno abierto
+      const turno = findOpenTurno(list, reg);
+      if (!turno) {
+        // Sin turno abierto: mostrar el neto de los movimientos de HOY (hora Bogotá)
+        // desde el último cierre, para que no queden invisibles ni arrastren saldo viejo.
+        const today = todayLocalKey();
+        const lastCierre = list
+          .filter((m) => m.register_type === reg && isCierre(m))
+          .reduce((max, m) => Math.max(max, new Date(m.date).getTime()), 0);
         result[reg] = list
-          .filter((m) => (m.register_type || "Caja principal") === "Bancos")
+          .filter((m) =>
+            m.register_type === reg && !isCierre(m) &&
+            localDateKey(new Date(m.date)) === today &&
+            new Date(m.date).getTime() > lastCierre
+          )
           .reduce((s, m) => s + (m.type === "Entrada" ? m.amount || 0 : -(m.amount || 0)), 0);
-      } else {
-        // Cajas de efectivo: solo el neto del turno abierto
-        const turno = findOpenTurno(list, reg);
-        if (!turno) {
-          // Sin turno abierto: mostrar el neto de los movimientos de HOY (hora Bogotá)
-          // para que las ventas hechas sin abrir turno no queden invisibles.
-          const today = todayLocalKey();
-          result[reg] = list
-            .filter((m) => m.register_type === reg && !isCierre(m) && localDateKey(new Date(m.date)) === today)
-            .reduce((s, m) => s + (m.type === "Entrada" ? m.amount || 0 : -(m.amount || 0)), 0);
-          return;
-        }
-        const movs = turnoWindow(list, reg, turno.apertura.date, null);
-        const apertura = turno.base || 0;
-        const entradas = movs
-          .filter((m) => !isApertura(m) && !isCierre(m) && m.type === "Entrada")
-          .reduce((s, m) => s + (m.amount || 0), 0);
-        const salidas = movs
-          .filter((m) => !isCierre(m) && m.type === "Salida")
-          .reduce((s, m) => s + (m.amount || 0), 0);
-        result[reg] = apertura + entradas - salidas;
+        return;
       }
+      const movs = turnoWindow(list, reg, turno.apertura.date, null);
+      const apertura = turno.base || 0;
+      const entradas = movs
+        .filter((m) => !isApertura(m) && !isCierre(m) && m.type === "Entrada")
+        .reduce((s, m) => s + (m.amount || 0), 0);
+      const salidas = movs
+        .filter((m) => !isCierre(m) && m.type === "Salida")
+        .reduce((s, m) => s + (m.amount || 0), 0);
+      result[reg] = apertura + entradas - salidas;
     });
     return result;
   }, [list]);
