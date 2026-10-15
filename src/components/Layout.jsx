@@ -94,13 +94,37 @@ export default function Layout() {
     return () => window.removeEventListener("open-app-menu", onOpen);
   }, []);
 
-  // Escape cierra el menú lateral abierto
+  // Escape cierra el diálogo/overlay abierto (los diálogos Radix ya se cierran solos);
+  // si no hay overlay personalizado, cierra el menú lateral.
   React.useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") setMobileOpen(false);
+      if (e.key !== "Escape") return;
+      const overlays = Array.from(document.querySelectorAll("div")).filter((d) => {
+        const cs = d.classList;
+        return (
+          cs.contains("fixed") &&
+          cs.contains("inset-0") &&
+          cs.contains("z-50") &&
+          !d.querySelector("aside") &&            // omite el drawer
+          !d.querySelector('[role="dialog"]')      // omite los diálogos Radix
+        );
+      });
+      const top = overlays[overlays.length - 1];
+      if (top) {
+        const btns = Array.from(top.querySelectorAll("button"));
+        const closeBtn =
+          btns.find((b) => /cerrar/i.test(b.textContent || "")) ||
+          btns.find((b) => b.textContent.trim() === "×");
+        if (closeBtn) {
+          e.stopPropagation();
+          closeBtn.click();
+          return;
+        }
+      }
+      setMobileOpen(false);
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, []);
 
   async function handleLogout() {
