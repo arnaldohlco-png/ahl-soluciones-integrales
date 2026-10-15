@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
+import { Outlet, Link, useLocation, Navigate, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
@@ -67,6 +67,25 @@ export default function Layout() {
   const { roles } = useRoles();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const navigate = useNavigate();
+  const pathRef = React.useRef(location.pathname);
+  pathRef.current = location.pathname;
+
+  // Atajo global Ctrl+O: nueva orden de servicio
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        if (pathRef.current === "/ordenes") {
+          window.dispatchEvent(new Event("new-service-order"));
+        } else {
+          navigate("/ordenes", { state: { newOrder: true } });
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navigate]);
 
   async function handleLogout() {
     setLeaving(true);

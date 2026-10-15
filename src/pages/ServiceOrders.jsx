@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
 import { fetchAllCustomers } from "@/lib/customersLoader";
@@ -140,6 +140,22 @@ export default function ServiceOrders() {
     setForm({ ...empty, entry_date: today, entry_time: now, admin_footer: company?.footer_text || "" });
     setServiceItems([]); setEditing(null); setOpen(true);
   };
+  // Atajo Ctrl+O: abrir formulario de nueva orden (evento global o navegación desde otra página)
+  const openNewRef = React.useRef(openNew);
+  openNewRef.current = openNew;
+  const location = useLocation();
+  useEffect(() => {
+    const h = () => openNewRef.current();
+    window.addEventListener("new-service-order", h);
+    return () => window.removeEventListener("new-service-order", h);
+  }, []);
+  useEffect(() => {
+    if (!loading && location.state?.newOrder) {
+      openNewRef.current();
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [loading, location.state]);
+
   const openEdit = (o) => {
     setForm({
       motorcycle_id: o.motorcycle_id || "", customer_id: o.customer_id || "",
