@@ -120,40 +120,13 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 flex-col bg-slate-900 fixed inset-y-0 left-0 z-30 overflow-y-auto">
-        <div className="flex items-center gap-3 px-6 py-6 border-b border-slate-800">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
-            <Bike className="w-6 h-6 text-slate-900" />
-          </div>
-          <div>
-            <h1 className="text-white font-bold text-lg leading-tight">HR MOTOCICLETAS</h1>
-            <p className="text-xs text-slate-400">Taller & Almacén</p>
-          </div>
-        </div>
-        <nav className="flex-1 px-3 py-4">
-          <NavContent />
-        </nav>
-        <div className="px-3 pb-3">
-          <BackupReminder />
-        </div>
-        <div className="px-3 py-3 border-t border-slate-800">
-          {user &&
-          <div className="mb-2 px-2 text-xs">
-              <p className="truncate font-medium text-slate-200">{user.full_name || user.email}</p>
-              <p className="capitalize text-slate-500">{user.role || "usuario"}</p>
-            </div>
-          }
-          <button
-            onClick={handleLogout}
-            disabled={leaving}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60">
-            
-            <LogOut className="w-5 h-5" />
-            Salir de la app
-          </button>
-        </div>
-      </aside>
+      {/* Desktop: solo botón de tres rayitas */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        aria-label="Abrir menú"
+        className="hidden md:flex fixed top-3 left-3 z-30 w-10 h-10 items-center justify-center rounded-lg bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
+        <Menu className="w-5 h-5" />
+      </button>
 
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 inset-x-0 z-30 bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
@@ -168,9 +141,9 @@ export default function Layout() {
         </button>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Drawer (escritorio y móvil) */}
       {mobileOpen &&
-      <div className="md:hidden fixed inset-0 z-50 flex">
+      <div className="fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <aside className="relative w-72 max-w-[80vw] bg-slate-900 flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-6 border-b border-slate-800">
@@ -214,7 +187,7 @@ export default function Layout() {
       }
 
       {/* Main content */}
-      <main className="md:ml-64 pt-14 md:pt-0 min-h-screen">
+      <main className="pt-14 md:pt-0 md:pl-16 min-h-screen">
         <Outlet />
       </main>
     </div>);
