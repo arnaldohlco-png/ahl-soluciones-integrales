@@ -523,7 +523,7 @@ export default function Dashboard() {
           }
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 hidden">
           <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2"><Wrench className="w-5 h-5 text-blue-600" /> Servicios más realizados</h3>
           {d.topServices?.length === 0 ?
           <p className="text-slate-400 text-sm py-4 text-center">Sin órdenes registradas</p> :
