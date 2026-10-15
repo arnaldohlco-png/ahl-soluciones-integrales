@@ -94,6 +94,15 @@ export default function Layout() {
     return () => window.removeEventListener("open-app-menu", onOpen);
   }, []);
 
+  // Escape cierra el menú lateral abierto
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   async function handleLogout() {
     setLeaving(true);
     try {
