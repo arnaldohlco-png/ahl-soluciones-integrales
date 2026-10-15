@@ -214,157 +214,157 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-slate-900 text-center hidden">Resumen</h2>
-        <p className="mt-1 text-[hsl(var(--background))] text-center hidden">Resumen financiero y operativo en tiempo real</p>
+        
+        
       </div>
 
       {/* Accesos directos */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-6 hidden">
-        <Link to="/ordenes" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-1 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-            <Wrench className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Orden de servicio</p>
-        </Link>
-        <Link to="/ventas" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-1 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-            <ShoppingCart className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">POS / Ventas</p>
-        </Link>
-        <Link to="/cotizaciones" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-1 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-            <FileText className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Cotización</p>
-        </Link>
-        <Link to="/citas" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-1 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-            <CalendarClock className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Citas</p>
-        </Link>
-        <Link to="/motocicletas" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-1 group-hover:bg-slate-700 group-hover:text-white transition-colors">
-            <Bike className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Motocicletas</p>
-        </Link>
-        <Link to="/clientes" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-1 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-            <Users className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Clientes</p>
-        </Link>
-        <Link to="/servicios" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center mb-1 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
-            <HardHat className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Catálogo servicios</p>
-        </Link>
-        <Link to="/inventario" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mb-1 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-            <Package className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Inventario</p>
-        </Link>
-        <Link to="/compras" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-1 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-            <ShoppingCart className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Compras</p>
-        </Link>
-        <Link to="/pedidos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-1 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-            <ClipboardList className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Pedidos a proveedores</p>
-        </Link>
-        <Link to="/gastos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-1 group-hover:bg-red-600 group-hover:text-white transition-colors">
-            <TrendingDown className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Gastos</p>
-        </Link>
-        <Link to="/creditos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center mb-1 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
-            <CreditCard className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Créditos y carteras</p>
-        </Link>
-        <Link to="/prestamos-tecnicos" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mb-1 group-hover:bg-yellow-600 group-hover:text-white transition-colors">
-            <HandCoins className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Préstamos técnicos</p>
-        </Link>
-        <Link to="/pago-comisiones" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-1 group-hover:bg-green-600 group-hover:text-white transition-colors">
-            <DollarSign className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Pago comisiones</p>
-        </Link>
-        <Link to="/facturas-proveedor" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-1 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-            <Upload className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Cargar factura proveedor</p>
-        </Link>
-        <Link to="/caja" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-1 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-            <Wallet className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Caja y bancos</p>
-        </Link>
-        <Link to="/devoluciones" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-1 group-hover:bg-rose-600 group-hover:text-white transition-colors">
-            <Undo2 className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Devoluciones</p>
-        </Link>
-        <Link to="/estado-resultados" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
-          <div className="w-7 h-7 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center mb-1 group-hover:bg-violet-600 group-hover:text-white transition-colors">
-            <BarChart3 className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-800 leading-tight">Estado de resultado</p>
-        </Link>
-      </div>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
 
       {/* Citas asignadas */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 hidden">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-            <CalendarClock className="w-5 h-5 text-amber-600" /> Citas asignadas
-            {d.appointmentsTodayCount > 0 &&
-            <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">{d.appointmentsTodayCount} hoy</span>
-            }
-          </h3>
-          <Link to="/citas" className="text-sm text-amber-600 hover:underline font-medium">Ver todas</Link>
-        </div>
-        {d.upcomingAppointments?.length === 0 ?
-        <p className="text-slate-400 text-sm py-4 text-center">No hay citas programadas</p> :
-        <div className="space-y-2">
-            {d.upcomingAppointments?.map((a) => {
-            const isToday = (a.date || "") === momentBogota().format("YYYY-MM-DD");
-            return (
-              <div key={a.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center shrink-0 ${isToday ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600"}`}>
-                      <span className="text-[10px] leading-none uppercase">{a.date ? moment(a.date).format("MMM") : "—"}</span>
-                      <span className="text-sm font-bold leading-none">{a.date ? moment(a.date).format("DD") : ""}</span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-slate-800 text-sm truncate">{a.customer_name || "Cliente"}</p>
-                      <p className="text-xs text-slate-400 truncate">{[a.time, a.service_requested].filter(Boolean).join(" · ") || "Sin servicio"}</p>
-                    </div>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${a.status === "Confirmada" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{a.status}</span>
-                </div>);
+      
 
-          })}
-          </div>
-        }
-      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
 
       {/* Sales row */}
       <div className="grid grid-cols-3 gap-3 mb-6">
