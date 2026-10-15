@@ -455,7 +455,7 @@ export default function Dashboard() {
       </div>
 
       {/* Two-column: Motos en taller + Stock bajo */}
-      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid lg:grid-cols-2 gap-6 mb-6 hidden">
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-900 flex items-center gap-2"><Bike className="w-5 h-5 text-amber-600" /> Motos en el taller</h3>
@@ -478,7 +478,7 @@ export default function Dashboard() {
           }
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 hidden">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-900 flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-red-500" /> Inventario bajo</h3>
             <Link to="/inventario" className="text-sm text-amber-600 hover:underline font-medium">Ver inventario</Link>
