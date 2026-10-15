@@ -34,9 +34,9 @@ export default function Dashboard() {
         fetchAll("Appointment", "-date")]
         );
         setCompany(companies[0] || null);
-const today = momentBogota().format("YYYY-MM-DD");
-const startWeek = momentBogota().startOf("isoWeek").format("YYYY-MM-DD");
-const startMonth = momentBogota().startOf("month").format("YYYY-MM-DD");
+        const today = momentBogota().format("YYYY-MM-DD");
+        const startWeek = momentBogota().startOf("isoWeek").format("YYYY-MM-DD");
+        const startMonth = momentBogota().startOf("month").format("YYYY-MM-DD");
 
         // Órdenes ya convertidas en cotización/factura/venta no cuentan en el dashboard (igual que en el módulo Órdenes)
         const convertedOrderIds = new Set([
@@ -503,7 +503,7 @@ const startMonth = momentBogota().startOf("month").format("YYYY-MM-DD");
 
       {/* Top products + services */}
       <div className="grid lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 hidden">
           <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2"><Package className="w-5 h-5 text-emerald-600" /> Productos más vendidos</h3>
           {d.topProducts?.length === 0 ?
           <p className="text-slate-400 text-sm py-4 text-center">Sin ventas registradas</p> :
