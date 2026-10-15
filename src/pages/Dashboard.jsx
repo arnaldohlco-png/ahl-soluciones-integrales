@@ -219,7 +219,7 @@ export default function Dashboard() {
       </div>
 
       {/* Accesos directos */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-6">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-6 hidden">
         <Link to="/ordenes" className="group bg-white rounded-lg border border-slate-200 p-2 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col items-center text-center">
           <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-1 group-hover:bg-blue-600 group-hover:text-white transition-colors">
             <Wrench className="w-4 h-4" />
@@ -331,7 +331,7 @@ export default function Dashboard() {
       </div>
 
       {/* Citas asignadas */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 hidden">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-slate-900 flex items-center gap-2">
             <CalendarClock className="w-5 h-5 text-amber-600" /> Citas asignadas
