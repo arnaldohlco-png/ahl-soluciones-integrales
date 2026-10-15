@@ -87,6 +87,13 @@ export default function Layout() {
     return () => window.removeEventListener("keydown", onKey);
   }, [navigate]);
 
+  // El botón de menú del Dashboard dispara este evento para abrir el drawer
+  React.useEffect(() => {
+    const onOpen = () => setMobileOpen(true);
+    window.addEventListener("open-app-menu", onOpen);
+    return () => window.removeEventListener("open-app-menu", onOpen);
+  }, []);
+
   async function handleLogout() {
     setLeaving(true);
     try {
@@ -137,17 +144,21 @@ export default function Layout() {
     </>;
 
 
+  const isDashboard = location.pathname === "/";
+
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Desktop: solo botón de tres rayitas */}
+      {/* Desktop: botón de tres rayitas (oculto en Dashboard, que lleva su propio menú) */}
+      {!isDashboard &&
       <button
         onClick={() => setMobileOpen(true)}
         aria-label="Abrir menú"
         className="hidden md:flex fixed top-3 left-3 z-30 w-10 h-10 items-center justify-center rounded-lg bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
         <Menu className="w-5 h-5" />
-      </button>
+      </button>}
 
-      {/* Mobile top bar */}
+      {/* Mobile top bar (oculta en Dashboard, que lleva su propio menú en el encabezado amarillo) */}
+      {!isDashboard &&
       <div className="md:hidden fixed top-0 inset-x-0 z-30 bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
@@ -158,7 +169,7 @@ export default function Layout() {
         <button onClick={() => setMobileOpen(true)} className="p-2 -mr-2">
           <Menu className="w-6 h-6" />
         </button>
-      </div>
+      </div>}
 
       {/* Drawer (escritorio y móvil) */}
       {mobileOpen &&
@@ -206,7 +217,7 @@ export default function Layout() {
       }
 
       {/* Main content */}
-      <main className="pt-14 md:pt-0 md:pl-16 min-h-screen">
+      <main className={`min-h-screen ${isDashboard ? "" : "pt-14 md:pt-0 md:pl-16"}`}>
         <Outlet />
       </main>
     </div>);

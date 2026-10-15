@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
   Package, AlertTriangle, Receipt, HardHat, ShoppingCart, Bike, CreditCard,
-  CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3, ClipboardList } from
+  CalendarClock, FileText, Users, HandCoins, Upload, Undo2, BarChart3, ClipboardList, Menu } from
 "lucide-react";
 import moment from "moment";
 import { momentBogota } from "@/lib/localDate";
@@ -148,6 +148,14 @@ export default function Dashboard() {
         sort((a, b) => `${a.date} ${a.time || ""}`.localeCompare(`${b.date} ${b.time || ""}`)).
         slice(0, 5);
 
+        // Conteo de órdenes por estado (solo visibles, no convertidas)
+        const ordersByStatus = {
+          "Ingresado": visibleOrders.filter((o) => o.status === "Ingresado").length,
+          "En proceso": visibleOrders.filter((o) => o.status === "En proceso").length,
+          "Terminado": visibleOrders.filter((o) => o.status === "Terminado").length,
+          "Entregado": visibleOrders.filter((o) => o.status === "Entregado").length
+        };
+
         setD({
           salesToday, salesWeek, salesMonth,
           workshopIncome, workshopProfit, storeIncome, storeProfit, totalExpenses, monthExpenses, estimatedProfit,
@@ -159,7 +167,8 @@ export default function Dashboard() {
           lowStockProducts: lowStock.slice(0, 5),
           completedOrders: visibleOrders.filter((o) => o.status === "Terminado" || o.status === "Entregado").length,
           appointmentsTodayCount: appointmentsToday.length,
-          upcomingAppointments
+          upcomingAppointments,
+          ordersByStatus
         });
       } catch (e) {
         console.error(e);
@@ -177,401 +186,160 @@ export default function Dashboard() {
 
   }
 
-  const statusColors = {
-    "Ingresado": "bg-blue-100 text-blue-700",
-    "En proceso": "bg-amber-100 text-amber-700",
-    "Terminado": "bg-emerald-100 text-emerald-700",
-    "Entregado": "bg-slate-200 text-slate-700"
+  const openMenu = () => window.dispatchEvent(new Event("open-app-menu"));
+
+  const statusMeta = {
+    "Ingresado": { color: "#60a5fa", icon: ClipboardList },
+    "En proceso": { color: "#EAB308", icon: Wrench },
+    "Terminado": { color: "#34d399", icon: HardHat },
+    "Entregado": { color: "#cbd5e1", icon: Bike }
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto text-[hsl(var(--background))] bg-[#f9ad15]">
-      {/* Encabezado con datos de la empresa */}
-      <div className="mb-6 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl px-4 py-3 text-white shadow-sm">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#090D16] p-4 md:p-8 flex flex-col gap-5 md:gap-6 text-white">
+      {/* Encabezado amarillo a todo lo ancho, con menú dentro */}
+      <div
+        className="bg-[#EAB308] rounded-[20px] p-4 md:p-5 flex items-center gap-4 md:gap-5 text-[#090D16] shadow-[0_10px_30px_rgba(234,179,8,0.22)] dash-rise">
+        <button
+          onClick={openMenu}
+          aria-label="Abrir menú"
+          className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#090D16] text-white border-2 border-[#1E293B] flex items-center justify-center shrink-0 cursor-pointer transition-colors hover:bg-[#1E293B] active:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white shadow-[0_4px_10px_rgba(9,13,22,0.4)]">
+          <Menu className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white flex items-center justify-center shrink-0 overflow-hidden">
           {company?.logo ?
-          <img src={company.logo} alt="Logo" className="w-11 h-11 rounded-md object-contain bg-white/95 p-0.5 shrink-0" /> :
-
-          <div className="w-11 h-11 rounded-md bg-amber-500 flex items-center justify-center shrink-0">
-              <Bike className="w-6 h-6 text-white" />
-            </div>
-          }
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base md:text-lg font-bold leading-tight truncate">{company?.name || "Mi Taller"}</h1>
-            <p className="text-xs text-slate-300 truncate mt-0.5">
-              {[
-              company?.document_number && `NIT/C.C.: ${company.document_number}`,
-              company?.phone,
-              company?.email,
-              [company?.address, company?.city].filter(Boolean).join(" · ")].
-              filter(Boolean).join("  ·  ")}
-            </p>
-          </div>
-          <div className="text-right shrink-0 hidden sm:block">
-            <p className="text-xs text-slate-400 capitalize">{momentBogota().format("dddd")}</p>
-            <p className="text-sm font-semibold">{momentBogota().format("DD/MM/YYYY")}</p>
-          </div>
+          <img src={company.logo} alt="Logo" className="w-full h-full object-contain" /> :
+          <Bike className="w-7 h-7 text-[#090D16]" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg md:text-2xl font-black uppercase tracking-[0.02em] leading-tight truncate">
+            {company?.name || "Mi Taller"}
+          </h1>
+          <p className="text-[11px] md:text-[13px] font-semibold mt-1 leading-tight truncate">
+            {[
+            company?.document_number && `NIT/C.C.: ${company.document_number}`,
+            company?.phone,
+            company?.email,
+            [company?.address, company?.city].filter(Boolean).join(" · ")].
+            filter(Boolean).join("  ·  ")}
+          </p>
+        </div>
+        <div className="text-right shrink-0 hidden sm:block">
+          <span className="block text-[13px] font-semibold opacity-80 capitalize">{momentBogota().format("dddd")}</span>
+          <b className="block text-lg md:text-xl font-black mt-0.5">{momentBogota().format("DD/MM/YYYY")}</b>
         </div>
       </div>
-      <div className="mb-6">
-        
-        
+
+      {/* Recuadro: Órdenes por estado */}
+      <div className="dash-rise" style={{ animationDelay: "0.05s" }}>
+        <p className="text-[11px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-1">Órdenes por estado</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+          {Object.entries(statusMeta).map(([status, meta]) => {
+            const Icon = meta.icon;
+            const count = d.ordersByStatus?.[status] || 0;
+            return (
+              <Link
+                key={status}
+                to="/ordenes"
+                className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] flex flex-col gap-2 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308]">
+                <div className="flex items-center gap-3">
+                  <Icon className="w-7 h-7 md:w-8 md:h-8 shrink-0" style={{ color: meta.color }} />
+                  <span className="text-4xl md:text-5xl font-black leading-none">{count}</span>
+                </div>
+                <p className="text-sm md:text-[15px] font-medium text-slate-300 mt-1">{status}</p>
+              </Link>
+            );
+          })}
+        </div>
       </div>
-
-      {/* Accesos directos */}
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-
-      {/* Citas asignadas */}
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
 
       {/* Sales row */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-3 text-white">
-          <div className="flex items-center gap-2 mb-1">
-            <ShoppingCart className="w-4 h-4 opacity-80" />
-            <p className="text-xs text-amber-100">Ventas del día</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
+        <div className="bg-[#EAB308] text-[#090D16] rounded-[18px] p-5 md:p-6 border border-[#EAB308] flex flex-col gap-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.35)] dash-rise" style={{ animationDelay: "0.1s" }}>
+          <div className="flex items-center gap-2 text-sm font-semibold opacity-85">
+            <ShoppingCart className="w-5 h-5" />
+            Ventas del día
           </div>
-          <p className="text-lg font-bold leading-tight">{fmt(d.salesToday)}</p>
+          <div className="text-3xl md:text-[44px] font-black leading-tight tracking-tight">{fmt(d.salesToday)}</div>
         </div>
-        <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-xl p-3 text-white">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 opacity-80" />
-            <p className="text-xs text-slate-300">Ventas de la semana</p>
+        <div className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] flex flex-col gap-1.5 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] dash-rise" style={{ animationDelay: "0.2s" }}>
+          <div className="flex items-center gap-2 text-sm font-semibold opacity-85">
+            <TrendingUp className="w-5 h-5" />
+            Ventas de la semana
           </div>
-          <p className="text-lg font-bold leading-tight">{fmt(d.salesWeek)}</p>
+          <div className="text-3xl md:text-[44px] font-black leading-tight tracking-tight">{fmt(d.salesWeek)}</div>
         </div>
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-3 text-white">
-          <div className="flex items-center gap-2 mb-1">
-            <DollarSign className="w-4 h-4 opacity-80" />
-            <p className="text-xs text-slate-400">Ventas del mes</p>
+        <div className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] flex flex-col gap-1.5 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] dash-rise" style={{ animationDelay: "0.3s" }}>
+          <div className="flex items-center gap-2 text-sm font-semibold opacity-85">
+            <DollarSign className="w-5 h-5" />
+            Ventas del mes
           </div>
-          <p className="text-lg font-bold leading-tight">{fmt(d.salesMonth)}</p>
+          <div className="text-3xl md:text-[44px] font-black leading-tight tracking-tight">{fmt(d.salesMonth)}</div>
         </div>
       </div>
 
       {/* Financial summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-        <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <Wrench className="w-5 h-5 text-blue-600 mb-2" />
-          <p className="text-xl font-bold text-slate-900">{fmt(d.workshopIncome)}</p>
-          <p className="text-xs text-slate-500">Ingresos taller (servicios)</p>
-          <p className={`text-xs font-semibold mt-1 ${(d.workshopProfit || 0) >= 0 ? "text-emerald-600" : "text-red-600"}`}>Utilidad: {fmt(d.workshopProfit)}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+        <Link to="/ordenes" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] flex flex-col gap-1.5 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.1s" }}>
+          <Wrench className="w-5 h-5" style={{ color: "#60a5fa" }} />
+          <div className="text-2xl md:text-[30px] font-black leading-tight mt-2">{fmt(d.workshopIncome)}</div>
+          <p className="text-[13px] font-medium opacity-80">Ingresos taller (servicios)</p>
+          <p className="text-[13px] font-extrabold text-[#EAB308] mt-1">Utilidad: {fmt(d.workshopProfit)}</p>
         </Link>
-        <Link to="/ventas" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <ShoppingCart className="w-5 h-5 text-emerald-600 mb-2" />
-          <p className="text-xl font-bold text-slate-900">{fmt(d.storeIncome)}</p>
-          <p className="text-xs text-slate-500">Ingresos almacén (productos)</p>
-          <p className={`text-xs font-semibold mt-1 ${(d.storeProfit || 0) >= 0 ? "text-emerald-600" : "text-red-600"}`}>Utilidad: {fmt(d.storeProfit)}</p>
+        <Link to="/ventas" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] flex flex-col gap-1.5 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.2s" }}>
+          <ShoppingCart className="w-5 h-5" style={{ color: "#34d399" }} />
+          <div className="text-2xl md:text-[30px] font-black leading-tight mt-2">{fmt(d.storeIncome)}</div>
+          <p className="text-[13px] font-medium opacity-80">Ingresos almacén (productos)</p>
+          <p className="text-[13px] font-extrabold text-[#EAB308] mt-1">Utilidad: {fmt(d.storeProfit)}</p>
         </Link>
-        <Link to="/creditos" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <CreditCard className="w-5 h-5 text-purple-600 mb-2" />
-          <p className="text-xl font-bold text-slate-900">{fmt(d.totalReceivables)}</p>
-          <p className="text-xs text-slate-500">Cuentas por cobrar</p>
+        <Link to="/creditos" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] flex flex-col gap-1.5 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.3s" }}>
+          <CreditCard className="w-5 h-5" style={{ color: "#c084fc" }} />
+          <div className="text-2xl md:text-[30px] font-black leading-tight mt-2">{fmt(d.totalReceivables)}</div>
+          <p className="text-[13px] font-medium opacity-80">Cuentas por cobrar</p>
         </Link>
-        <Link to="/gastos" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <TrendingDown className="w-5 h-5 text-red-600 mb-2" />
-          <p className="text-xl font-bold text-slate-900">{fmt(d.totalExpenses)}</p>
-          <p className="text-xs text-slate-500">Gastos totales</p>
+        <Link to="/gastos" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] flex flex-col gap-1.5 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.4s" }}>
+          <TrendingDown className="w-5 h-5" style={{ color: "#f87171" }} />
+          <div className="text-2xl md:text-[30px] font-black leading-tight mt-2">{fmt(d.totalExpenses)}</div>
+          <p className="text-[13px] font-medium opacity-80">Gastos totales</p>
         </Link>
-        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-4 text-white">
-          <DollarSign className="w-5 h-5 mb-2 opacity-80" />
-          <p className="text-xl font-bold">{fmt(d.estimatedProfit)}</p>
-          <p className="text-xs text-emerald-100">Utilidad estimada</p>
+        <div className="bg-[#EAB308] text-[#090D16] rounded-[18px] p-5 md:p-6 border border-[#EAB308] flex flex-col gap-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.35)] dash-rise" style={{ animationDelay: "0.5s" }}>
+          <DollarSign className="w-5 h-5" />
+          <div className="text-2xl md:text-[30px] font-black leading-tight mt-2">{fmt(d.estimatedProfit)}</div>
+          <p className="text-[13px] font-bold opacity-90">Utilidad estimada</p>
         </div>
       </div>
 
       {/* Operational stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <Bike className="w-5 h-5 text-amber-600" />
-            <p className="text-2xl font-bold text-slate-900">{d.motosInWorkshopCount}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <Link to="/ordenes" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] min-h-[160px] justify-between flex flex-col text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.1s" }}>
+          <div className="flex items-center gap-3">
+            <Bike className="w-7 h-7 md:w-8 md:h-8" style={{ color: "#EAB308" }} />
+            <span className="text-4xl md:text-[56px] font-black leading-none">{d.motosInWorkshopCount}</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Motos en taller</p>
+          <p className="text-sm md:text-[15px] font-medium text-slate-300">Motos en taller</p>
         </Link>
-        <Link to="/ordenes" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-600" />
-            <p className="text-2xl font-bold text-slate-900">{d.pendingOrders}</p>
+        <Link to="/ordenes" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] min-h-[160px] justify-between flex flex-col text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.2s" }}>
+          <div className="flex items-center gap-3">
+            <Clock className="w-7 h-7 md:w-8 md:h-8" style={{ color: "#60a5fa" }} />
+            <span className="text-4xl md:text-[56px] font-black leading-none">{d.pendingOrders}</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Órdenes pendientes</p>
+          <p className="text-sm md:text-[15px] font-medium text-slate-300">Órdenes pendientes</p>
         </Link>
-        <Link to="/facturacion" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <Receipt className="w-5 h-5 text-purple-600" />
-            <p className="text-2xl font-bold text-slate-900">{d.pendingInvoices}</p>
+        <Link to="/facturacion" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] min-h-[160px] justify-between flex flex-col text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.3s" }}>
+          <div className="flex items-center gap-3">
+            <Receipt className="w-7 h-7 md:w-8 md:h-8" style={{ color: "#c084fc" }} />
+            <span className="text-4xl md:text-[56px] font-black leading-none">{d.pendingInvoices}</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Facturas pendientes</p>
+          <p className="text-sm md:text-[15px] font-medium text-slate-300">Facturas pendientes</p>
         </Link>
-        <Link to="/inventario" className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            <p className="text-2xl font-bold text-slate-900">{d.lowStock?.length || 0}</p>
+        <Link to="/inventario" className="bg-[#1E293B] rounded-[18px] p-5 md:p-6 border border-[#2b3a52] min-h-[160px] justify-between flex flex-col text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition-colors hover:border-[#EAB308] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#EAB308] dash-rise" style={{ animationDelay: "0.4s" }}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-7 h-7 md:w-8 md:h-8" style={{ color: "#f87171" }} />
+            <span className="text-4xl md:text-[56px] font-black leading-none">{d.lowStock?.length || 0}</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Productos stock bajo</p>
+          <p className="text-sm md:text-[15px] font-medium text-slate-300">Productos stock bajo</p>
         </Link>
       </div>
-
-      {/* Two-column: Motos en taller + Stock bajo */}
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-
-      {/* Top products + services */}
-      <div className="grid lg:grid-cols-2 gap-6 mb-6">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-      </div>
-
-      {/* Technicians and commissions */}
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
     </div>);
 
 }
