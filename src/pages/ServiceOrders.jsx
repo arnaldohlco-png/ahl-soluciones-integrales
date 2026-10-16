@@ -41,7 +41,7 @@ const empty = {
   warranty: "", delivery_date: "", cost: "", parts_used: "",
   previous_mileage: "", current_mileage: "", kms_traveled: 0, oil_change_interval: 1000, next_oil_change: "",
   photos: "[]", anticipos: "[]", admin_footer: "",
-  customer_signature: "", technician_signature: "",
+  customer_signature: "", technician_signature: ""
 };
 
 export default function ServiceOrders() {
@@ -71,26 +71,26 @@ export default function ServiceOrders() {
     setLoading(true);
     try {
       const [o, m, c, t, p, sv, comp, inv, sal] = await Promise.all([
-        fetchAll("ServiceOrder"),
-        fetchAll("Motorcycle"),
-        fetchAllCustomers(),
-        fetchAll("Technician"),
-        fetchAllProducts(),
-        fetchAll("Service"),
-        base44.entities.Company.list("-created_date", 10),
-        fetchAll("Invoice"),
-        fetchAll("Sale"),
-      ]);
-      setOrders(o); setMotos(m); setCustomers(c); setTechnicians(t);
-      setProducts(p); setServices(sv); if (comp.length > 0) setCompany(comp[0]);
-      setInvoices(inv); setSales(sal);
+      fetchAll("ServiceOrder"),
+      fetchAll("Motorcycle"),
+      fetchAllCustomers(),
+      fetchAll("Technician"),
+      fetchAllProducts(),
+      fetchAll("Service"),
+      base44.entities.Company.list("-created_date", 10),
+      fetchAll("Invoice"),
+      fetchAll("Sale")]
+      );
+      setOrders(o);setMotos(m);setCustomers(c);setTechnicians(t);
+      setProducts(p);setServices(sv);if (comp.length > 0) setCompany(comp[0]);
+      setInvoices(inv);setSales(sal);
       const custom = [...new Set(o.map((x) => x.service_type).filter(Boolean))].filter((t) => !serviceTypes.includes(t));
       setExtraTypes(custom);
-    } catch (e) { console.error(e); }
+    } catch (e) {console.error(e);}
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {load();}, []);
 
   // Auto-fill cost from selected products/services
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function ServiceOrders() {
     return m ? `${m.brand} ${m.model} (${m.plate || "sin placa"})` : "—";
   };
   const customerName = (id) => customers.find((c) => c.id === id)?.name || "—";
-  const customerPhone = (id) => { const c = customers.find((x) => x.id === id); return c?.whatsapp || c?.phone || ""; };
+  const customerPhone = (id) => {const c = customers.find((x) => x.id === id);return c?.whatsapp || c?.phone || "";};
   const buildOrderMsg = (o) => {
     const moto = motos.find((m) => m.id === o.motorcycle_id);
     const motoInfo = moto ? `${moto.brand} ${moto.model}${moto.plate ? ` (Placa: ${moto.plate})` : ""}` : "";
@@ -122,7 +122,7 @@ export default function ServiceOrders() {
     return { id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") };
   };
   const createServiceType = async (name) => {
-    setExtraTypes((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    setExtraTypes((prev) => prev.includes(name) ? prev : [...prev, name]);
     return { id: name, label: name };
   };
 
@@ -130,15 +130,15 @@ export default function ServiceOrders() {
     try {
       const items = JSON.parse(o.service_items || "[]");
       const t = items.reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
-      return t > 0 ? t : (o.cost || 0);
-    } catch { return o.cost || 0; }
+      return t > 0 ? t : o.cost || 0;
+    } catch {return o.cost || 0;}
   };
 
   const openNew = () => {
     const today = todayLocalKey();
     const now = nowLocalTime();
     setForm({ ...empty, entry_date: today, entry_time: now, admin_footer: company?.footer_text || "" });
-    setServiceItems([]); setEditing(null); setOpen(true);
+    setServiceItems([]);setEditing(null);setOpen(true);
   };
   // Atajo Ctrl+O: abrir formulario de nueva orden (evento global o navegación desde otra página)
   const openNewRef = React.useRef(openNew);
@@ -174,10 +174,10 @@ export default function ServiceOrders() {
       previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "", kms_traveled: o.kms_traveled ?? 0,
       oil_change_interval: o.oil_change_interval || 1000, next_oil_change: o.next_oil_change ?? "",
       photos: o.photos || "[]", anticipos: o.anticipos || "[]", admin_footer: o.admin_footer || company?.footer_text || "",
-      customer_signature: o.customer_signature || "", technician_signature: o.technician_signature || "",
+      customer_signature: o.customer_signature || "", technician_signature: o.technician_signature || ""
     });
-    try { setServiceItems(JSON.parse(o.service_items || "[]")); } catch { setServiceItems([]); }
-    setEditing(o); setOpen(true);
+    try {setServiceItems(JSON.parse(o.service_items || "[]"));} catch {setServiceItems([]);}
+    setEditing(o);setOpen(true);
   };
 
   const onMotoChange = (motoId) => {
@@ -203,7 +203,7 @@ export default function ServiceOrders() {
     const nextOil = (Number(form.current_mileage) || 0) + (Number(form.oil_change_interval) || 0);
     const payload = { ...form, service_items: JSON.stringify(serviceItems), next_oil_change: nextOil };
     if (payload.status === "Entregado" && !payload.delivery_date) payload.delivery_date = todayLocalKey();
-    numFields.forEach((f) => { payload[f] = Number(payload[f]) || 0; });
+    numFields.forEach((f) => {payload[f] = Number(payload[f]) || 0;});
     try {
       let orderId = editing?.id || null;
       let orderNumber = editing?.number || "";
@@ -219,19 +219,19 @@ export default function ServiceOrders() {
       const previos = new Set(parseAnticipos(editing?.anticipos).map(prevKey));
       const nuevos = parseAnticipos(payload.anticipos).filter((a) => !previos.has(prevKey(a)) && (Number(a.amount) || 0) > 0);
       await Promise.all(nuevos.map((a) =>
-        base44.entities.CashMovement.create({
-          date: nowLocalISO(),
-          type: "Entrada",
-          category: "Abono",
-          amount: Number(a.amount) || 0,
-          description: `Anticipo orden N° ${orderNumber} - ${customerName(form.customer_id)}`,
-          payment_method: a.method || "Efectivo",
-          register_type: registerForPayment(a.method || "Efectivo", "Caja almacén"),
-          reference_id: orderId,
-        })
+      base44.entities.CashMovement.create({
+        date: nowLocalISO(),
+        type: "Entrada",
+        category: "Abono",
+        amount: Number(a.amount) || 0,
+        description: `Anticipo orden N° ${orderNumber} - ${customerName(form.customer_id)}`,
+        payment_method: a.method || "Efectivo",
+        register_type: registerForPayment(a.method || "Efectivo", "Caja almacén"),
+        reference_id: orderId
+      })
       ));
-      setOpen(false); await load();
-    } catch (e) { console.error(e); alert("Error al guardar"); }
+      setOpen(false);await load();
+    } catch (e) {console.error(e);alert("Error al guardar");}
     setSaving(false);
   };
 
@@ -260,25 +260,25 @@ export default function ServiceOrders() {
     if (!(await confirm({ title: "¿Convertir esta orden en cotización?", confirmText: "Sí", cancelText: "No" }))) return;
     try {
       const items = JSON.parse(o.service_items || "[]");
-      const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || (o.cost || 0);
-      const chargesIva = company ? (company.charges_iva ?? (company.document_type === "Persona jurídica")) : true;
+      const subtotal = items.reduce((s, i) => s + (i.subtotal || 0), 0) || o.cost || 0;
+      const chargesIva = company ? company.charges_iva ?? company.document_type === "Persona jurídica" : true;
       const iva = chargesIva ? Math.round(subtotal * 0.19) : 0;
       await base44.entities.Invoice.create({
         customer_id: o.customer_id, customer_name: customerName(o.customer_id),
         type: "Cotización", number: await getNextDocNumber("Invoice", getPrefix(company, "quote")),
         date: todayLocalKey(),
         items: o.service_items || JSON.stringify([{ name: o.service_type, quantity: 1, unit_price: o.cost, subtotal: o.cost }]),
-        subtotal, iva, total: subtotal + iva, anticipo: sumAnticipos(o.anticipos), status: "Pendiente", related_order_id: o.id,
+        subtotal, iva, total: subtotal + iva, anticipo: sumAnticipos(o.anticipos), status: "Pendiente", related_order_id: o.id
       });
       await load();
       alert("Cotización creada correctamente");
-    } catch (e) { console.error(e); alert("Error al crear cotización"); }
+    } catch (e) {console.error(e);alert("Error al crear cotización");}
   };
 
   const cobrar = async (o) => {
     if (!(await confirm({ title: "¿Cobrar esta orden de servicio?", description: "Se enviará al POS para registrar el cobro.", confirmText: "Sí, cobrar", cancelText: "No" }))) return;
     let items = [];
-    try { items = JSON.parse(o.service_items || "[]"); } catch { items = []; }
+    try {items = JSON.parse(o.service_items || "[]");} catch {items = [];}
     navigate("/ventas", {
       state: {
         fromQuote: {
@@ -287,17 +287,17 @@ export default function ServiceOrders() {
           items,
           customer_id: o.customer_id,
           customer_name: customerName(o.customer_id),
-          anticipos: o.anticipos || "[]",
-        },
-      },
+          anticipos: o.anticipos || "[]"
+        }
+      }
     });
   };
 
   // Órdenes con venta/factura vinculada (habilita el botón Entregar)
   const convertedOrderIds = new Set([
-    ...invoices.map((i) => i.related_order_id).filter(Boolean),
-    ...sales.map((s) => s.related_order_id).filter(Boolean),
-  ]);
+  ...invoices.map((i) => i.related_order_id).filter(Boolean),
+  ...sales.map((s) => s.related_order_id).filter(Boolean)]
+  );
   const filtered = orders.filter((o) => {
     const matchSearch = matchAny(search, o.service_type, motoLabel(o.motorcycle_id), customerName(o.customer_id), o.number, o.description);
     // Las entregadas solo aparecen bajo el filtro "Entregado"; no en la lista general
@@ -314,7 +314,7 @@ export default function ServiceOrders() {
     "Ingresado": "bg-blue-100 text-blue-700 border-blue-200",
     "En proceso": "bg-amber-100 text-amber-700 border-amber-200",
     "Terminado": "bg-emerald-100 text-emerald-700 border-emerald-200",
-    "Entregado": "bg-slate-200 text-slate-700 border-slate-300",
+    "Entregado": "bg-slate-200 text-slate-700 border-slate-300"
   };
 
   return (
@@ -340,26 +340,26 @@ export default function ServiceOrders() {
           <Input placeholder="Buscar orden..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <div className="flex gap-1 bg-white border border-slate-200 rounded-lg p-1 overflow-x-auto -mx-1 px-1">
-          {["all", ...statuses].map((s) => (
-            <button key={s} onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${filterStatus === s ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900"}`}>
+          {["all", ...statuses].map((s) =>
+          <button key={s} onClick={() => setFilterStatus(s)}
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${filterStatus === s ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900"}`}>
               {s === "all" ? "Todas" : s}
             </button>
-          ))}
+          )}
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" /></div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-slate-400">
+      {loading ?
+      <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" /></div> :
+      filtered.length === 0 ?
+      <div className="text-center py-20 text-slate-400">
           <Wrench className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>No hay órdenes de servicio</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((o) => (
-            <div key={o.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
+        </div> :
+
+      <div className="space-y-3">
+          {filtered.map((o) =>
+        <div key={o.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex items-start gap-3 flex-1 min-w-[240px]">
                   <div className="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
@@ -369,8 +369,8 @@ export default function ServiceOrders() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-slate-900">{o.service_type}</h3>
                       <button onClick={() => cycleStatus(o)}
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 ${statusColors[o.status] || "bg-slate-100"}`}
-                        title="Click para cambiar estado">{o.status}</button>
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 ${statusColors[o.status] || "bg-slate-100"}`}
+                  title="Click para cambiar estado">{o.status}</button>
                     </div>
                     <p className="text-sm text-slate-600 mt-0.5">{motoLabel(o.motorcycle_id)}</p>
                     <p className="text-xs text-slate-400">Cliente: {customerName(o.customer_id)}</p>
@@ -387,35 +387,35 @@ export default function ServiceOrders() {
                     {o.delivery_date && <p className="text-xs text-slate-400">Entrega: {o.delivery_date}</p>}
                   </div>
                   <div className="flex gap-1">
-                    {customerPhone(o.customer_id) && (
-                      <a href={`tel:${customerPhone(o.customer_id).replace(/\s+/g, "")}`} title="Llamar al cliente" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Phone className="w-4 h-4" /></a>
-                    )}
+                    {customerPhone(o.customer_id) &&
+                <a href={`tel:${customerPhone(o.customer_id).replace(/\s+/g, "")}`} title="Llamar al cliente" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Phone className="w-4 h-4" /></a>
+                }
                     <WhatsAppButton phone={customerPhone(o.customer_id)} message={buildDocMessage("order", o, company, { motorcycle: motos.find((m) => m.id === o.motorcycle_id), customer: customers.find((c) => c.id === o.customer_id) })} label="Enviar por WhatsApp" />
                     <button onClick={() => setPrintOrder(o)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"><Printer className="w-4 h-4" /></button>
-                    {o.status === "Terminado" && (
-                      <>
+                    {o.status === "Terminado" &&
+                <>
                         <button onClick={() => convertToQuotation(o)} title="Convertir a cotización" className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"><FileText className="w-4 h-4" /></button>
-                        {!convertedOrderIds.has(o.id) && (
-                          <button onClick={() => cobrar(o)} title="Cobrar en POS" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
-                        )}
-                        {convertedOrderIds.has(o.id) && (
-                          <button onClick={() => entregar(o)} title="Marcar como entregada" className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"><PackageCheck className="w-4 h-4" /></button>
-                        )}
+                        {!convertedOrderIds.has(o.id) &&
+                  <button onClick={() => cobrar(o)} title="Cobrar en POS" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ShoppingCart className="w-4 h-4" /></button>
+                  }
+                        {convertedOrderIds.has(o.id) &&
+                  <button onClick={() => entregar(o)} title="Marcar como entregada" className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"><PackageCheck className="w-4 h-4" /></button>
+                  }
                       </>
-                    )}
-                    {o.status !== "Entregado" && (
-                      <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                    )}
-                    {o.status !== "Entregado" && (
-                      <button onClick={() => remove(o)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-                    )}
+                }
+                    {o.status !== "Entregado" &&
+                <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                }
+                    {o.status !== "Entregado" &&
+                <button onClick={() => remove(o)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                }
                   </div>
                 </div>
               </div>
             </div>
-          ))}
+        )}
         </div>
-      )}
+      }
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-2xl">
@@ -428,8 +428,8 @@ export default function ServiceOrders() {
                 value={form.motorcycle_id}
                 onValueChange={(id) => onMotoChange(id)}
                 required
-                items={motos.map((m) => ({ id: m.id, label: `${m.brand} ${m.model}`, sublabel: m.plate ? `Placa: ${m.plate}` : "Sin placa" }))}
-              />
+                items={motos.map((m) => ({ id: m.id, label: `${m.brand} ${m.model}`, sublabel: m.plate ? `Placa: ${m.plate}` : "Sin placa" }))} />
+              
               <SearchableSelect
                 label="Cliente"
                 placeholder="Buscar cliente..."
@@ -438,8 +438,8 @@ export default function ServiceOrders() {
                 onCreate={createCustomer}
                 createLabel="Crear cliente"
                 required
-                items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: c.document_number || c.phone }))}
-              />
+                items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: c.document_number || c.phone }))} />
+              
             </div>
             <div className="grid grid-cols-3 gap-3">
               <SearchableSelect
@@ -449,8 +449,8 @@ export default function ServiceOrders() {
                 onValueChange={(v) => setForm({ ...form, service_type: v })}
                 onCreate={createServiceType}
                 createLabel="Crear tipo"
-                items={[...serviceTypes, ...extraTypes].map((t) => ({ id: t, label: t }))}
-              />
+                items={[...serviceTypes, ...extraTypes].map((t) => ({ id: t, label: t }))} />
+              
               <div>
                 <Label>Estado</Label>
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
@@ -465,8 +465,8 @@ export default function ServiceOrders() {
                 onValueChange={(v) => setForm({ ...form, technician_id: v })}
                 onCreate={createTechnician}
                 createLabel="Crear técnico"
-                items={technicians.filter(t => t.status === "Activo").map((t) => ({ id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") }))}
-              />
+                items={technicians.filter((t) => t.status === "Activo").map((t) => ({ id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") }))} />
+              
             </div>
             <div><Label>Descripción del trabajo</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1" rows={2} /></div>
 
@@ -515,9 +515,9 @@ export default function ServiceOrders() {
                 </div>
                 <div><Label>Próx. cambio</Label><Input type="number" value={form.current_mileage && form.oil_change_interval ? Number(form.current_mileage) + Number(form.oil_change_interval) : ""} readOnly className="mt-1 bg-slate-50" placeholder="Auto" /></div>
               </div>
-              {form.current_mileage && form.oil_change_interval && (
-                <p className="text-xs text-amber-600 mt-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Próximo cambio de aceite: {(Number(form.current_mileage) + Number(form.oil_change_interval)).toLocaleString()} km</p>
-              )}
+              {form.current_mileage && form.oil_change_interval &&
+              <p className="text-xs text-amber-600 mt-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Próximo cambio de aceite: {(Number(form.current_mileage) + Number(form.oil_change_interval)).toLocaleString()} km</p>
+              }
             </div>
 
             <div className="border-t border-slate-100 pt-3">
@@ -542,7 +542,7 @@ export default function ServiceOrders() {
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Mano de obra y costos</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div><Label>Horas trabajadas</Label><Input type="number" value={form.hours_worked} onChange={(e) => setForm({ ...form, hours_worked: e.target.value })} className="mt-1" /></div>
+                <div><Label className="hidden">Horas trabajadas</Label><Input type="number" value={form.hours_worked} onChange={(e) => setForm({ ...form, hours_worked: e.target.value })} className="mt-1" /></div>
                 <div><Label>Costo mano de obra</Label><Input type="number" value={form.labor_cost} onChange={(e) => setForm({ ...form, labor_cost: e.target.value })} className="mt-1" /></div>
                 <div><Label>Comisión técnico</Label><Input type="number" value={form.technician_commission} onChange={(e) => setForm({ ...form, technician_commission: e.target.value })} className="mt-1" /></div>
                 <div><Label>Costo repuestos</Label><Input type="number" value={form.parts_cost} onChange={(e) => setForm({ ...form, parts_cost: e.target.value })} className="mt-1" /></div>
@@ -581,15 +581,15 @@ export default function ServiceOrders() {
         </DialogContent>
       </Dialog>
 
-      {printOrder && (
-        <PrintableDocument
-          type="order"
-          doc={printOrder}
-          company={company}
-          extras={{ motorcycle: motos.find((m) => m.id === printOrder.motorcycle_id), customer: customers.find((c) => c.id === printOrder.customer_id), technician: technicians.find((t) => t.id === printOrder.technician_id) }}
-          onClose={() => setPrintOrder(null)}
-        />
-      )}
-    </div>
-  );
+      {printOrder &&
+      <PrintableDocument
+        type="order"
+        doc={printOrder}
+        company={company}
+        extras={{ motorcycle: motos.find((m) => m.id === printOrder.motorcycle_id), customer: customers.find((c) => c.id === printOrder.customer_id), technician: technicians.find((t) => t.id === printOrder.technician_id) }}
+        onClose={() => setPrintOrder(null)} />
+
+      }
+    </div>);
+
 }
