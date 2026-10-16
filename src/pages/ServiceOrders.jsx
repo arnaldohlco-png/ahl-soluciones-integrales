@@ -540,7 +540,7 @@ export default function ServiceOrders() {
             </div>
 
             <div className="border-t border-slate-100 pt-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 hidden">Mano de obra y costos</p>
+              
               
 
 
@@ -549,7 +549,7 @@ export default function ServiceOrders() {
 
 
               
-              <div className="mt-3 hidden"><Label>Descripción de mano de obra</Label><Textarea value={form.labor_description} onChange={(e) => setForm({ ...form, labor_description: e.target.value })} className="mt-1" rows={2} /></div>
+              
               <div className="mt-3"><Label>Repuestos utilizados</Label><Input value={form.parts_used} onChange={(e) => setForm({ ...form, parts_used: e.target.value })} className="mt-1" placeholder="Ej: aceite, filtro, pastillas..." /></div>
             </div>
 
@@ -557,14 +557,14 @@ export default function ServiceOrders() {
               <AnticiposEditor value={form.anticipos} onChange={(v) => setForm({ ...form, anticipos: v })} />
             </div>
 
-            <div className="border-t border-slate-100 pt-3 hidden">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Entrega</p>
-              <div><Label>Trabajo realizado</Label><Textarea value={form.work_done} onChange={(e) => setForm({ ...form, work_done: e.target.value })} className="mt-1" rows={2} /></div>
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                <div><Label>Recomendaciones de entrega</Label><Textarea value={form.delivery_recommendations} onChange={(e) => setForm({ ...form, delivery_recommendations: e.target.value })} className="mt-1" rows={2} /></div>
-                <div><Label>Garantía</Label><Input value={form.warranty} onChange={(e) => setForm({ ...form, warranty: e.target.value })} className="mt-1" placeholder="Ej: 3 meses / 5000 km" /></div>
-              </div>
-              </div>
+            
+
+
+
+
+
+
+            
 
               <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Firmas digitales</p>
