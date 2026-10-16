@@ -70,6 +70,8 @@ export default function Layout() {
   const navigate = useNavigate();
   const pathRef = React.useRef(location.pathname);
   pathRef.current = location.pathname;
+  const mobileOpenRef = React.useRef(false);
+  mobileOpenRef.current = mobileOpen;
 
   // Atajo global Ctrl+O: nueva orden de servicio
   React.useEffect(() => {
@@ -110,11 +112,12 @@ export default function Layout() {
     return () => window.removeEventListener("open-app-menu", onOpen);
   }, []);
 
-  // Escape cierra el diálogo/overlay abierto (los diálogos Radix ya se cierran solos);
-  // si no hay overlay personalizado, cierra el menú lateral.
+  // Escape: cierra overlay personalizado; si no, deja que un diálogo Radix se cierre;
+  // si no, cierra el menú lateral; si no, reinicia la venta abierta y vuelve a la página anterior.
   React.useEffect(() => {
     const onKey = (e) => {
       if (e.key !== "Escape") return;
+      // 1. Overlay personalizado (vista de impresión, comisiones, etc.)
       const overlays = Array.from(document.querySelectorAll("div")).filter((d) => {
         const cs = d.classList;
         return (
@@ -134,14 +137,29 @@ export default function Layout() {
         if (closeBtn) {
           e.stopPropagation();
           closeBtn.click();
-          return;
         }
+        return; // hay un overlay abierto, no navegar
       }
-      setMobileOpen(false);
+      // 2. Diálogo/popover de Radix abierto: deja que se cierre solo
+      if (document.querySelector('[role="dialog"]')) return;
+      // 3. Si el foco está en un campo de entrada, libera el foco (no navega)
+      const ae = document.activeElement;
+      if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.tagName === "SELECT" || ae.isContentEditable)) {
+        ae.blur();
+        return;
+      }
+      // 4. Menú lateral abierto: solo ciérralo
+      if (mobileOpenRef.current) {
+        setMobileOpen(false);
+        return;
+      }
+      // 5. Reinicia la venta abierta y vuelve a la página anterior
+      window.dispatchEvent(new Event("reset-sale"));
+      if (window.history.length > 1) navigate(-1);
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, []);
+  }, [navigate]);
 
   async function handleLogout() {
     setLeaving(true);

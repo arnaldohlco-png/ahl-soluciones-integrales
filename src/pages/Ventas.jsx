@@ -192,7 +192,11 @@ export default function Ventas() {
   useEffect(() => {
     const h = () => startNewSaleRef.current();
     window.addEventListener("new-sale", h);
-    return () => window.removeEventListener("new-sale", h);
+    window.addEventListener("reset-sale", h);
+    return () => {
+      window.removeEventListener("new-sale", h);
+      window.removeEventListener("reset-sale", h);
+    };
   }, []);
 
   useEffect(() => {
