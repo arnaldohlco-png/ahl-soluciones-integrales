@@ -82,6 +82,14 @@ export default function Layout() {
           navigate("/ordenes", { state: { newOrder: true } });
         }
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "i") {
+        e.preventDefault();
+        if (pathRef.current === "/inventario") {
+          window.dispatchEvent(new Event("new-product"));
+        } else {
+          navigate("/inventario", { state: { newProduct: true } });
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,23 @@ export default function Products() {
   const supplierName = (id) => suppliers.find((s) => s.id === id)?.name || "";
 
   const openNew = () => { setForm(empty); setEditing(null); setOpen(true); };
+
+  // Atajo Ctrl+I: abrir formulario de nuevo producto (evento global o navegación)
+  const openNewRef = useRef(openNew);
+  openNewRef.current = openNew;
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const h = () => openNewRef.current();
+    window.addEventListener("new-product", h);
+    return () => window.removeEventListener("new-product", h);
+  }, []);
+  useEffect(() => {
+    if (location.state?.newProduct) {
+      openNewRef.current();
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.state]);
   const openEdit = (p) => {
     setForm({
       name: p.name || "", category: p.category || "Repuestos", brand: p.brand || "",
