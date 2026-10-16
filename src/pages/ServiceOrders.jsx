@@ -541,7 +541,7 @@ export default function ServiceOrders() {
 
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Mano de obra y costos</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 hidden">
                 <div><Label className="hidden">Horas trabajadas</Label><Input type="number" value={form.hours_worked} onChange={(e) => setForm({ ...form, hours_worked: e.target.value })} className="mt-1" /></div>
                 <div><Label>Costo mano de obra</Label><Input type="number" value={form.labor_cost} onChange={(e) => setForm({ ...form, labor_cost: e.target.value })} className="mt-1" /></div>
                 <div><Label>Comisión técnico</Label><Input type="number" value={form.technician_commission} onChange={(e) => setForm({ ...form, technician_commission: e.target.value })} className="mt-1" /></div>
