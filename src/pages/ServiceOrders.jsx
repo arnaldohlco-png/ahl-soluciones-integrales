@@ -541,14 +541,14 @@ export default function ServiceOrders() {
 
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Mano de obra y costos</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 hidden">
-                <div><Label className="hidden">Horas trabajadas</Label><Input type="number" value={form.hours_worked} onChange={(e) => setForm({ ...form, hours_worked: e.target.value })} className="mt-1" /></div>
-                <div><Label>Costo mano de obra</Label><Input type="number" value={form.labor_cost} onChange={(e) => setForm({ ...form, labor_cost: e.target.value })} className="mt-1" /></div>
-                <div><Label>Comisión técnico</Label><Input type="number" value={form.technician_commission} onChange={(e) => setForm({ ...form, technician_commission: e.target.value })} className="mt-1" /></div>
-                <div><Label>Costo repuestos</Label><Input type="number" value={form.parts_cost} onChange={(e) => setForm({ ...form, parts_cost: e.target.value })} className="mt-1" /></div>
-                <div><Label>Costo lubricantes</Label><Input type="number" value={form.lubricants_cost} onChange={(e) => setForm({ ...form, lubricants_cost: e.target.value })} className="mt-1" /></div>
-                <div><Label>Costo total</Label><Input type="number" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} className="mt-1" /></div>
-              </div>
+              
+
+
+
+
+
+
+              
               <div className="mt-3"><Label>Descripción de mano de obra</Label><Textarea value={form.labor_description} onChange={(e) => setForm({ ...form, labor_description: e.target.value })} className="mt-1" rows={2} /></div>
               <div className="mt-3"><Label>Repuestos utilizados</Label><Input value={form.parts_used} onChange={(e) => setForm({ ...form, parts_used: e.target.value })} className="mt-1" placeholder="Ej: aceite, filtro, pastillas..." /></div>
             </div>
