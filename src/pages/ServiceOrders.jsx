@@ -557,7 +557,7 @@ export default function ServiceOrders() {
               <AnticiposEditor value={form.anticipos} onChange={(v) => setForm({ ...form, anticipos: v })} />
             </div>
 
-            <div className="border-t border-slate-100 pt-3">
+            <div className="border-t border-slate-100 pt-3 hidden">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Entrega</p>
               <div><Label>Trabajo realizado</Label><Textarea value={form.work_done} onChange={(e) => setForm({ ...form, work_done: e.target.value })} className="mt-1" rows={2} /></div>
               <div className="grid grid-cols-2 gap-3 mt-3">
