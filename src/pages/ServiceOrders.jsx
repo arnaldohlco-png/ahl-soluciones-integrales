@@ -532,8 +532,8 @@ export default function ServiceOrders() {
                 
                 <div><Label>Falla reportada</Label><Textarea value={form.reported_fault} onChange={(e) => setForm({ ...form, reported_fault: e.target.value })} className="mt-1" rows={2} /></div>
                 <div><Label>Diagnóstico técnico</Label><Textarea value={form.technical_diagnosis} onChange={(e) => setForm({ ...form, technical_diagnosis: e.target.value })} className="mt-1" rows={2} /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Pruebas realizadas</Label><Textarea value={form.tests_performed} onChange={(e) => setForm({ ...form, tests_performed: e.target.value })} className="mt-1" rows={2} /></div>
+                <div className="grid grid-cols-2 gap-3 hidden">
+                  <div className="hidden"><Label>Pruebas realizadas</Label><Textarea value={form.tests_performed} onChange={(e) => setForm({ ...form, tests_performed: e.target.value })} className="mt-1" rows={2} /></div>
                   <div><Label>Recomendaciones</Label><Textarea value={form.recommendations} onChange={(e) => setForm({ ...form, recommendations: e.target.value })} className="mt-1" rows={2} /></div>
                 </div>
               </div>
