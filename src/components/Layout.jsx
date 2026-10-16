@@ -90,6 +90,14 @@ export default function Layout() {
           navigate("/inventario", { state: { newProduct: true } });
         }
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        if (pathRef.current === "/ventas") {
+          window.dispatchEvent(new Event("new-sale"));
+        } else {
+          navigate("/ventas", { state: { newSale: true } });
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

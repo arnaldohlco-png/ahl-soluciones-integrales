@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShoppingCart, Search, Trash2, Plus, Minus, CheckCircle, Pause, Play, FilePlus2, History, Printer } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import ColombianInvoice from "@/components/ColombianInvoice";
 import { sumAnticipos } from "@/lib/anticipos";
@@ -40,6 +40,7 @@ export default function Ventas() {
   const [historySearch, setHistorySearch] = useState("");
   const searchRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const [pendingQuote, setPendingQuote] = useState(null);
   const [anticipoTotal, setAnticipoTotal] = useState(0);
   const quoteIdRef = useRef(null);
@@ -61,6 +62,10 @@ export default function Ventas() {
       quoteIdRef.current = st.fromQuote.id || null;
       quoteOrderIdRef.current = st.fromQuote.related_order_id || null;
       setFromOrder(!!st.fromQuote.related_order_id);
+    }
+    if (st && st.newSale) {
+      startNewSaleRef.current();
+      navigate(location.pathname, { replace: true, state: null });
     }
   }, [location]);
 
@@ -171,6 +176,7 @@ export default function Ventas() {
   }, [sales, historySearch]);
 
   const startNewSale = () => {
+    setView("pos");
     setCart([]); setCustomerId(""); setCustomerName("Cliente mostrador");
     setDiscount(0); setAmountPaid(0); setPaymentMethod("Efectivo"); setPaymentType("Contado");
     setAnticipoTotal(0);
@@ -181,6 +187,13 @@ export default function Ventas() {
     setFromOrder(false);
     searchRef.current?.focus();
   };
+  const startNewSaleRef = useRef(startNewSale);
+  startNewSaleRef.current = startNewSale;
+  useEffect(() => {
+    const h = () => startNewSaleRef.current();
+    window.addEventListener("new-sale", h);
+    return () => window.removeEventListener("new-sale", h);
+  }, []);
 
   useEffect(() => {
     (async () => {
