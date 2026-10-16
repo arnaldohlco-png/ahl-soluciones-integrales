@@ -540,7 +540,7 @@ export default function ServiceOrders() {
             </div>
 
             <div className="border-t border-slate-100 pt-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Mano de obra y costos</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 hidden">Mano de obra y costos</p>
               
 
 
@@ -549,7 +549,7 @@ export default function ServiceOrders() {
 
 
               
-              <div className="mt-3"><Label>Descripción de mano de obra</Label><Textarea value={form.labor_description} onChange={(e) => setForm({ ...form, labor_description: e.target.value })} className="mt-1" rows={2} /></div>
+              <div className="mt-3 hidden"><Label>Descripción de mano de obra</Label><Textarea value={form.labor_description} onChange={(e) => setForm({ ...form, labor_description: e.target.value })} className="mt-1" rows={2} /></div>
               <div className="mt-3"><Label>Repuestos utilizados</Label><Input value={form.parts_used} onChange={(e) => setForm({ ...form, parts_used: e.target.value })} className="mt-1" placeholder="Ej: aceite, filtro, pastillas..." /></div>
             </div>
 
