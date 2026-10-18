@@ -36,34 +36,24 @@ export default function ServiceItemsEditor({ items, setItems, products, services
     setNewItem({ type: "Servicio", name: s.name, quantity: 1, unit_price: s.price || 0, service_id: s.id });
   };
 
+  const allOptions = [
+    ...(services || []).map((s) => ({ ...s, _type: "Servicio" })),
+    ...(products || []).map((p) => ({ ...p, _type: "Producto" })),
+  ];
+
   const total = items.reduce((s, i) => s + (i.subtotal || 0), 0);
 
   return (
     <div className="space-y-3">
       {/* Add new item row */}
       <div className="flex flex-wrap gap-2 items-end">
-        <div className="w-28">
-          <Select value={newItem.type} onValueChange={(v) => setNewItem({ ...newItem, type: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Servicio">Servicio</SelectItem>
-              <SelectItem value="Producto">Producto</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex-1 min-w-[200px] flex items-center">
+          <LiveItemSearch
+            options={allOptions}
+            onSelect={(o) => (o._type === "Producto" ? onProductSelect(o) : onServiceSelect(o))}
+            placeholder={newItem.name ? `${newItem.type}: ${newItem.name}` : "Buscar repuesto o servicio..."}
+          />
         </div>
-        {newItem.type === "Producto" && products?.length > 0 ? (
-          <div className="flex-1 min-w-[150px] flex items-center">
-            <LiveItemSearch options={products} onSelect={onProductSelect} placeholder={newItem.name && newItem.product_id ? newItem.name : "Buscar producto..."} />
-          </div>
-        ) : newItem.type === "Servicio" && services?.length > 0 ? (
-          <div className="flex-1 min-w-[150px] flex items-center">
-            <LiveItemSearch options={services} onSelect={onServiceSelect} placeholder={newItem.name && newItem.service_id ? newItem.name : "Buscar servicio..."} />
-          </div>
-        ) : (
-          <div className="flex-1 min-w-[150px]">
-            <Input placeholder="Descripción del item" value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} />
-          </div>
-        )}
         <Input type="number" className="w-20" placeholder="Cant." value={newItem.quantity} onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })} />
         <Input type="number" className="w-28" placeholder="Precio unit." value={newItem.unit_price} onChange={(e) => setNewItem({ ...newItem, unit_price: e.target.value })} />
         <Button type="button" variant="outline" size="sm" onClick={addItem} className="shrink-0"><Plus className="w-4 h-4" /></Button>
