@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
@@ -29,15 +29,18 @@ export default function InlineProductSearch({ options = [], onSelect, placeholde
     ).slice(0, 12);
   }, [options, q]);
 
+  const inputRef = useRef(null);
   const handleSelect = (item) => {
     onSelect(item);
     setQ("");
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   return (
     <div className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
       <Input
+        ref={inputRef}
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={placeholder}

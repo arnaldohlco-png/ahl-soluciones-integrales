@@ -28,12 +28,14 @@ export default function LiveItemSearch({ options = [], onSelect, placeholder = "
       .slice(0, 8);
   }, [options, q]);
 
-  const pick = (o) => { onSelect(o); setQ(""); setOpen(false); };
+  const inputRef = useRef(null);
+  const pick = (o) => { onSelect(o); setQ(""); setOpen(false); setTimeout(() => inputRef.current?.focus(), 0); };
 
   return (
     <div className="relative w-full" ref={ref}>
       <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
       <Input
+        ref={inputRef}
         value={q}
         placeholder={placeholder}
         className="pl-9"
