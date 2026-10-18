@@ -20,14 +20,12 @@ export default function PdfWhatsAppButton({ phone, message, format = "a4", label
   const disabled = !phone || busy;
 
   const withPdf = async () => {
-    const win = window.open("about:blank", "_blank");
     setAsk(false);
     setBusy(true);
     try {
-      await generateAndSendPdf({ phone, message, format, win });
+      await generateAndSendPdf({ phone, message, format });
     } catch (e) {
       console.error(e);
-      if (win && !win.closed) win.close();
       alert("No se pudo generar/enviar el PDF: " + (e?.message || e));
     } finally {
       setBusy(false);

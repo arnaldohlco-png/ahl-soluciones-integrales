@@ -41,7 +41,7 @@ const loadLibs = async () => {
  * @param {("a4"|"80mm")} opts.format - formato del PDF
  * @returns {Promise<string>} file_url del PDF subido
  */
-export async function generateAndSendPdf({ phone, message, format = "a4", win }) {
+export async function generateAndSendPdf({ phone, message, format = "a4" }) {
   const printArea = document.querySelector(".print-area");
   if (!printArea) throw new Error("No hay documento para enviar");
 
@@ -105,8 +105,7 @@ export async function generateAndSendPdf({ phone, message, format = "a4", win })
     const fullPhone = cleanPhone.length === 10 ? `57${cleanPhone}` : cleanPhone;
     const text = (message || "").replace("{{link}}", file_url);
     const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(text)}`;
-    if (win && !win.closed) win.location.href = url;
-    else window.open(url, "_blank");
+    window.open(url, "_blank");
 
     return file_url;
   } finally {
