@@ -54,20 +54,6 @@ export default function Quotations() {
 
   useEffect(() => { load(); }, []);
 
-  useEffect(() => {
-    const h = (e) => {
-      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "c" || e.shiftKey || e.altKey) return;
-      const t = e.target;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
-      if (window.getSelection()?.toString()) return;
-      if (document.querySelector('[role="dialog"]')) return;
-      e.preventDefault();
-      openNew();
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  });
-
   const load = async () => {
     try {
       const [q, c, p, s, comps] = await Promise.all([
