@@ -91,6 +91,18 @@ export default function Layout() {
           navigate("/inventario", { state: { newProduct: true } });
         }
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "c") {
+        // No interferir con copiar: campos de texto o texto seleccionado
+        const t = e.target;
+        if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
+        if (window.getSelection()?.toString()) return;
+        e.preventDefault();
+        if (pathRef.current === "/cotizaciones") {
+          window.dispatchEvent(new Event("new-quotation"));
+        } else {
+          navigate("/cotizaciones", { state: { newQuote: true } });
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
         e.preventDefault();
         if (pathRef.current === "/ventas") {

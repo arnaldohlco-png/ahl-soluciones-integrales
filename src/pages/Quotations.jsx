@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
 import { fetchAllCustomers } from "@/lib/customersLoader";
@@ -25,6 +26,8 @@ const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
 export default function Quotations() {
   const confirm = useConfirm();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [quotes, setQuotes] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -76,20 +79,20 @@ export default function Quotations() {
     setModalOpen(true);
   };
 
-  // Atajo Ctrl+C: nueva cotización (no actúa al escribir en campos, con texto seleccionado ni con diálogos abiertos)
+  // Atajo global Ctrl+C (lo dispara el Layout): evento si ya estamos aquí, o estado de navegación si venimos de otra página
+  const openNewRef = useRef(openNew);
+  openNewRef.current = openNew;
   useEffect(() => {
-    const onKey = (e) => {
-      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== "c") return;
-      const t = e.target;
-      if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
-      if (window.getSelection()?.toString()) return;
-      if (modalOpen || printQ) return;
-      e.preventDefault();
-      openNew();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
+    const h = () => openNewRef.current();
+    window.addEventListener("new-quotation", h);
+    return () => window.removeEventListener("new-quotation", h);
+  }, []);
+  useEffect(() => {
+    if (!loading && location.state?.newQuote) {
+      openNewRef.current();
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [loading, location.state]);
 
   const openEdit = (q) => {
     setEditing(q);
