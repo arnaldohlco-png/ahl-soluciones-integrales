@@ -190,30 +190,34 @@ export default function Invoices() {
     if (!inv) return;
     try {
       await base44.entities.Invoice.update(inv.id, payload);
+      const lines = meta.lines || [];
+      const netPaid = lines.reduce((s, l) => s + l.amount, 0);
       if (meta.paymentTerms === "Contado") {
-        await base44.entities.CashMovement.create({
-          date: nowLocalISO(), type: "Entrada", category: "Abono",
-          amount: meta.amountPaid || meta.total,
-          description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
-          payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
-          bank_account: meta.bankAccount || undefined,
-        });
+        for (const l of lines) {
+          await base44.entities.CashMovement.create({
+            date: nowLocalISO(), type: "Entrada", category: "Abono",
+            amount: l.amount,
+            description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
+            payment_method: l.method, register_type: registerForPayment(l.method, "Caja principal"), reference_id: inv.id,
+            bank_account: l.bank_account || undefined,
+          });
+        }
       } else {
-        const initialAbono = Number(meta.amountPaid) || 0;
+        const initialAbono = netPaid;
         const arBalance = Math.max(0, meta.total - initialAbono);
-        const payments = initialAbono > 0 ? JSON.stringify([{ date: nowLocalISO(), amount: initialAbono, method: meta.paymentMethod }]) : "[]";
+        const payments = JSON.stringify(lines.map((l) => ({ date: nowLocalISO(), amount: l.amount, method: l.method })));
         await base44.entities.AccountReceivable.create({
           customer_id: inv.customer_id, customer_name: inv.customer_name || "",
           invoice_id: inv.id, invoice_number: inv.number || "",
           initial_amount: meta.total, payments, balance: arBalance,
           due_date: payload.payment_due_date || "", status: "Al día",
         });
-        if (initialAbono > 0) {
+        for (const l of lines) {
           await base44.entities.CashMovement.create({
             date: nowLocalISO(), type: "Entrada", category: "Abono",
-            amount: initialAbono, description: `Abono inicial ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
-            payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
-            bank_account: meta.bankAccount || undefined,
+            amount: l.amount, description: `Abono inicial ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
+            payment_method: l.method, register_type: registerForPayment(l.method, "Caja principal"), reference_id: inv.id,
+            bank_account: l.bank_account || undefined,
           });
         }
         if (arBalance <= 0) {

@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import moment from "moment";
-import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
+import MixedPaymentLines from "@/components/MixedPaymentLines";
+import { newLine, resolveLines, summaryMethod } from "@/lib/mixedPayments";
 import { momentBogota } from "@/lib/localDate";
 
 const fmt = (n) => (Number(n) || 0).toLocaleString("es-CO");
@@ -16,8 +17,7 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
   const [items, setItems] = useState([]);
   const [paymentTerms, setPaymentTerms] = useState("Contado");
   const [creditDays, setCreditDays] = useState(30);
-  const [paymentMethod, setPaymentMethod] = useState("Efectivo");
-  const [bankAccount, setBankAccount] = useState("");
+  const [payLines, setPayLines] = useState([newLine()]);
   const [discMode, setDiscMode] = useState("pesos");
   const [discValue, setDiscValue] = useState(0);
   const [amountPaid, setAmountPaid] = useState("");
@@ -29,7 +29,7 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
     setItems(parsed.map((i) => ({ ...i, item_disc_mode: i.item_disc_mode || "pesos", item_disc: Number(i.item_disc) || 0 })));
     setPaymentTerms(doc.payment_terms || "Contado");
     setCreditDays(doc.credit_days || 30);
-    setPaymentMethod("Efectivo");
+    setPayLines([newLine()]);
     setDiscMode("pesos");
     setDiscValue(0);
     setAmountPaid("");
@@ -48,9 +48,11 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
     ? Math.round((subtotal * (Number(discValue) || 0)) / 100)
     : Math.min(Number(discValue) || 0, subtotal);
   const total = Math.max(0, subtotal + iva - globalDisc);
-  const received = paymentTerms === "Contado" ? (Number(amountPaid) || total) : (Number(amountPaid) || 0);
-  const change = Math.max(0, received - total);
-  const dueDate = paymentTerms === "Crédito" && creditDays > 0
+  const pay = resolveLines(payLines, total, paymentTerms === "Contado");
+  const received = pay.paid;
+  const change = pay.change;
+  const effTerms = paymentTerms === "Contado" && pay.remaining > 0 ? "Crédito" : paymentTerms;
+  const dueDate = effTerms === "Crédito" && creditDays > 0
     ? moment(doc?.date || momentBogota().format("YYYY-MM-DD"), "YYYY-MM-DD").add(Number(creditDays), "days").format("YYYY-MM-DD")
     : "";
 
@@ -68,17 +70,18 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
     const payload = {
       items: JSON.stringify(updatedItems),
       subtotal, iva, discount: globalDisc, total,
-      payment_terms: paymentTerms,
-      credit_days: paymentTerms === "Crédito" ? Number(creditDays) || 0 : 0,
+      payment_terms: effTerms,
+      credit_days: effTerms === "Crédito" ? Number(creditDays) || 0 : 0,
       payment_due_date: dueDate,
       installments: 1,
       installment_amount: 0,
       amount_paid: received,
-      change: paymentTerms === "Contado" ? change : 0,
-      status: paymentTerms === "Contado" ? "Pagada" : "Pendiente",
+      change: effTerms === "Contado" ? change : 0,
+      status: effTerms === "Contado" ? "Pagada" : "Pendiente",
     };
-    if (needsBank(paymentMethod) && !bankAccount && received > 0) { alert("Selecciona la cuenta bancaria receptora."); return; }
-    onConfirm(payload, { paymentTerms, paymentMethod, bankAccount, total, amountPaid: received });
+    if (pay.error) { alert(pay.error); return; }
+    if (effTerms === "Crédito" && !doc.customer_id) { alert("Para dejar saldo a crédito el documento debe tener un cliente."); return; }
+    onConfirm(payload, { paymentTerms: effTerms, paymentMethod: summaryMethod(pay.used), lines: pay.net, total, amountPaid: received });
   };
 
   if (!doc) return null;
@@ -186,29 +189,22 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <Label>Forma de pago</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Efectivo">Efectivo</SelectItem>
-                  <SelectItem value="Transferencia">Transferencia</SelectItem>
-                  <SelectItem value="Tarjeta">Tarjeta</SelectItem>
-                  <SelectItem value="Otros">Otros</SelectItem>
-                </SelectContent>
-              </Select>
-              <BankAccountSelect method={paymentMethod} value={bankAccount} onChange={setBankAccount} />
-            </div>
-            <div>
-              <Label>Recibido {paymentTerms === "Crédito" && <span className="text-xs text-slate-400 normal-case">(abono)</span>}</Label>
-              <Input type="number" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} placeholder={paymentTerms === "Contado" ? String(total) : "0"} />
-            </div>
-            <div>
-              <Label>Cambio/Vueltas</Label>
-              <Input value={paymentTerms === "Contado" ? fmt(change) : 0} readOnly className="bg-slate-50" />
-            </div>
+          <div>
+            <Label className="mb-1 block">Formas de pago {paymentTerms === "Crédito" ? "(abono inicial, opcional)" : "(puedes combinar; el saldo queda a crédito)"}</Label>
+            <MixedPaymentLines lines={payLines} setLines={setPayLines} total={total} emptyMeansFull={paymentTerms === "Contado"} />
           </div>
+          {paymentTerms === "Contado" && pay.remaining > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Días de crédito del saldo</Label>
+                <Input type="number" value={creditDays} onChange={(e) => setCreditDays(e.target.value)} />
+              </div>
+              <div>
+                <Label>Vencimiento</Label>
+                <Input value={dueDate} readOnly className="bg-slate-50" />
+              </div>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>

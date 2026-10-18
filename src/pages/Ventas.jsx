@@ -15,6 +15,8 @@ import { registerForPayment } from "@/lib/cashRegister";
 import { nowLocalISO, todayLocalKey, addDaysLocalKey, fmtBogota } from "@/lib/localDate";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import MixedPaymentLines from "@/components/MixedPaymentLines";
+import { newLine, resolveLines, summaryMethod } from "@/lib/mixedPayments";
 import { Image } from "@/components/ui/image";
 
 export default function Ventas() {
@@ -29,6 +31,7 @@ export default function Ventas() {
   const [customerName, setCustomerName] = useState("Cliente mostrador");
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
   const [bankAccount, setBankAccount] = useState("");
+  const [payLines, setPayLines] = useState([newLine()]);
   const [paymentType, setPaymentType] = useState("Contado");
   const [creditDays, setCreditDays] = useState(30);
   const [discount, setDiscount] = useState(0);
@@ -321,10 +324,17 @@ export default function Ventas() {
         console.error(e);
       }
     }
-    if (needsBank(paymentMethod) && !bankAccount) {
-      alert("Selecciona la cuenta bancaria receptora.");
-      return;
+    const pay = resolveLines(payLines, totals.saldo, true);
+    if (paymentType === "Contado") {
+      if (pay.error) { alert(pay.error); return; }
+      if (pay.remaining > 0 && !customerId) {
+        alert("Para dejar saldo a crédito debes seleccionar un cliente.");
+        return;
+      }
     }
+    const isMixedCredit = paymentType === "Contado" && pay.remaining > 0;
+    const saleCredit = paymentType === "Crédito" || isMixedCredit;
+    const creditBalance = paymentType === "Crédito" ? totals.saldo : pay.remaining;
     setProcessing(true);
     try {
       const cust = customers.find(c => c.id === customerId);
@@ -340,12 +350,12 @@ export default function Ventas() {
         discount: discount || 0,
         total: totals.saldo,
         anticipo: totals.anticipo || 0,
-        payment_method: paymentMethod,
-        payment_type: paymentType,
-        status: paymentType === "Contado" ? "Pagada" : "Pendiente",
-        balance: paymentType === "Crédito" ? totals.saldo : 0,
-        amount_paid: paymentMethod === "Efectivo" && paymentType === "Contado" ? amountPaid : 0,
-        change: paymentMethod === "Efectivo" && paymentType === "Contado" ? Math.max(0, amountPaid - totals.saldo) : 0,
+        payment_method: paymentType === "Contado" ? summaryMethod(pay.used) : paymentMethod,
+        payment_type: saleCredit ? "Crédito" : "Contado",
+        status: saleCredit ? "Pendiente" : "Pagada",
+        balance: saleCredit ? creditBalance : 0,
+        amount_paid: paymentType === "Contado" ? pay.paid : 0,
+        change: paymentType === "Contado" ? pay.change : 0,
         related_order_id: quoteOrderIdRef.current || undefined,
       });
 
@@ -356,31 +366,37 @@ export default function Ventas() {
       ));
 
       if (paymentType === "Contado") {
-        await base44.entities.CashMovement.create({
-          date: nowLocalISO(),
-          type: "Entrada",
-          category: "Venta",
-          amount: totals.saldo,
-          description: `Venta POS - ${sale.customer_name}`,
-          payment_method: paymentMethod,
-          register_type: registerForPayment(paymentMethod, "Caja almacén"),
-          bank_account: bankAccount || undefined,
-          reference_id: sale.id,
-        });
-      } else {
+        for (const l of pay.net) {
+          await base44.entities.CashMovement.create({
+            date: nowLocalISO(),
+            type: "Entrada",
+            category: "Venta",
+            amount: l.amount,
+            description: `Venta POS - ${sale.customer_name}`,
+            payment_method: l.method,
+            register_type: registerForPayment(l.method, "Caja almacén"),
+            bank_account: l.bank_account || undefined,
+            reference_id: sale.id,
+          });
+        }
+      }
+      if (saleCredit) {
+        const paymentsJson = paymentType === "Contado"
+          ? JSON.stringify(pay.net.map((l) => ({ date: nowLocalISO(), amount: l.amount, method: l.method })))
+          : "[]";
         await base44.entities.AccountReceivable.create({
           customer_id: customerId || "",
           customer_name: cust?.name || customerName,
           initial_amount: totals.saldo,
-          payments: "[]",
-          balance: totals.saldo,
+          payments: paymentsJson,
+          balance: creditBalance,
           due_date: addDaysLocalKey(Number(creditDays) || 30),
           status: "Al día",
         });
         if (customerId) {
           try {
             const c = await base44.entities.Customer.get(customerId);
-            if (c)             await base44.entities.Customer.update(customerId, { balance: (c.balance || 0) + totals.saldo });
+            if (c) await base44.entities.Customer.update(customerId, { balance: (c.balance || 0) + creditBalance });
           } catch (e) { console.error(e); }
         }
       }
@@ -400,6 +416,7 @@ export default function Ventas() {
       setCustomerName("Cliente mostrador");
       setDiscount(0);
       setAmountPaid(0);
+      setPayLines([newLine()]);
       setAnticipoTotal(0);
       setCheckoutMsg("¡Venta registrada! Stock actualizado.");
       if (quoteIdRef.current) {
@@ -512,19 +529,18 @@ export default function Ventas() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label className="text-xs uppercase text-slate-500">Medio de pago</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Efectivo">Efectivo</SelectItem>
-                  <SelectItem value="Transferencia">Transferencia</SelectItem>
-                  <SelectItem value="Tarjeta">Tarjeta</SelectItem>
-                  <SelectItem value="Otros">Otros</SelectItem>
-                </SelectContent>
-              </Select>
-              <BankAccountSelect method={paymentMethod} value={bankAccount} onChange={setBankAccount} />
-            </div>
+            {paymentType === "Contado" && (
+              <div className="sm:col-span-2">
+                <Label className="text-xs uppercase text-slate-500">Medios de pago (puedes combinar; el saldo queda a crédito)</Label>
+                <MixedPaymentLines lines={payLines} setLines={setPayLines} total={totals.saldo} />
+              </div>
+            )}
+            {paymentType === "Contado" && resolveLines(payLines, totals.saldo, true).remaining > 0 && (
+              <div className="sm:col-span-2">
+                <Label className="text-xs uppercase text-slate-500">Días de plazo del saldo</Label>
+                <Input type="number" min={1} value={creditDays} onChange={(e) => setCreditDays(parseInt(e.target.value) || 0)} className="h-8 text-sm w-32" />
+              </div>
+            )}
             {paymentType === "Crédito" && (
               <div>
                 <Label className="text-xs uppercase text-slate-500">Días de plazo</Label>
@@ -632,20 +648,7 @@ export default function Ventas() {
                   <div className="flex justify-between font-bold text-slate-900 text-base border-t border-slate-200 pt-1"><span>Saldo a cobrar</span><span>${totals.saldo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
                 </>
               )}
-              {paymentMethod === "Efectivo" && paymentType === "Contado" && (
-                <>
-                  <div className="flex justify-between items-center text-slate-600 pt-1">
-                    <span>Recibido</span>
-                    <Input type="number" value={amountPaid || ""} onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)} className="w-28 h-7 text-right text-sm" placeholder="0" />
-                  </div>
-                  {amountPaid > 0 && (
-                    <div className="flex justify-between font-semibold text-emerald-700">
-                      <span>Cambio/Vueltas</span>
-                      <span>${Math.max(0, amountPaid - totals.saldo).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
-                    </div>
-                  )}
-                </>
-              )}
+
             </div>
           </div>
 
