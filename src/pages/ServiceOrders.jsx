@@ -241,7 +241,37 @@ export default function ServiceOrders() {
   };
 
   const remove = async (o) => {
-    if (!(await confirm({ title: "¿Eliminar esta orden de servicio?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
+    const hasAnticipos = sumAnticipos(o.anticipos) > 0;
+    if (!(await confirm({
+      title: "¿Eliminar esta orden de servicio?",
+      description: hasAnticipos ? `Se devolverán al cliente los anticipos registrados ($${sumAnticipos(o.anticipos).toLocaleString("es-CO")}) y saldrán de la caja o banco que los recibió.` : undefined,
+      confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive"
+    }))) return;
+    if (hasAnticipos) {
+      const movs = await fetchAll("CashMovement");
+      const linked = movs.filter((m) => m.reference_id === o.id);
+      const entradas = linked.filter((m) => m.type === "Entrada" && m.category === "Abono" && (m.description || "").startsWith("Anticipo orden"));
+      const devueltas = linked.filter((m) => m.type === "Salida" && (m.description || "").startsWith("Devolución anticipo"));
+      const usadas = new Set();
+      const porDevolver = entradas.filter((e) => {
+        const d = devueltas.find((x) => !usadas.has(x.id) && x.amount === e.amount && x.payment_method === e.payment_method && x.bank_account === e.bank_account);
+        if (d) { usadas.add(d.id); return false; }
+        return true;
+      });
+      if (porDevolver.length) {
+        await base44.entities.CashMovement.bulkCreate(porDevolver.map((e) => ({
+          date: nowLocalISO(),
+          type: "Salida",
+          category: "Otro egreso",
+          amount: e.amount,
+          description: `Devolución anticipo orden N° ${o.number || ""} - ${customerName(o.customer_id)}`,
+          payment_method: e.payment_method,
+          register_type: e.register_type,
+          bank_account: e.bank_account || undefined,
+          reference_id: o.id
+        })));
+      }
+    }
     await base44.entities.ServiceOrder.delete(o.id);
     await load();
   };
