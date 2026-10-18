@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrendingUp, TrendingDown, DollarSign, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, BarChart3, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import moment from "moment";
 import { momentBogota } from "@/lib/localDate";
 
@@ -151,8 +152,18 @@ export default function IncomeStatement() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900 mb-3">Detalle del período</h3>
+      <div className="no-print flex justify-end mb-3">
+        <Button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800">
+          <Printer className="w-4 h-4" /> Imprimir informe
+        </Button>
+      </div>
+
+      <div className="print-area bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="hidden print:block text-center mb-4">
+          <h2 className="text-xl font-bold text-slate-900">Informe de ganancias y pérdidas</h2>
+          <p className="text-sm text-slate-600">Período: {from} al {to}</p>
+        </div>
+        <h3 className="font-semibold text-slate-900 mb-3 print:hidden">Detalle del período</h3>
 
         <Row label="Ventas POS (almacén)" value={posRevenue} bold />
         <Row label="Facturas cobradas (Facturación)" value={invoiceRevenue} bold />
