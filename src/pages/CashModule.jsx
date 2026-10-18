@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock } from "lucide-react";
+import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock, Printer } from "lucide-react";
+import TurnoPrintReport from "@/components/TurnoPrintReport";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
 import nowLocalISO, { todayLocalKey, localDateKey, fmtBogota } from "@/lib/localDate";
@@ -42,6 +43,7 @@ export default function Cash() {
   const [openingForm, setOpeningForm] = useState({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo", vendedor: "" });
   const [closingOpen, setClosingOpen] = useState(false);
   const [closingForm, setClosingForm] = useState({ register_type: "Caja principal", counted: 0 });
+  const [printData, setPrintData] = useState(null);
 
   useEffect(() => { load(); }, []);
 
@@ -350,6 +352,19 @@ export default function Cash() {
             ))}
           </SelectContent>
         </Select>
+        {filterTurnoId !== "all" && (
+          <Button variant="outline" onClick={() => {
+            const t = turnos.find((x) => x.id === filterTurnoId);
+            const ap = list.find((m) => m.id === filterTurnoId);
+            if (!t || !ap) return;
+            setPrintData({
+              register: t.register,
+              turno: { turno: t.turno, vendedor: t.vendedor, openDate: t.openDate, base: ap.amount || 0, closeDate: t.closeDate },
+            });
+          }}>
+            <Printer className="w-4 h-4" /> Imprimir turno
+          </Button>
+        )}
       </div>
 
       {/* Movements */}
@@ -385,6 +400,11 @@ export default function Cash() {
           </table>
         </div>
       </div>
+
+      {printData && (
+        <TurnoPrintReport list={list} register={printData.register} turno={printData.turno}
+          counted={printData.counted} onClose={() => setPrintData(null)} />
+      )}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
@@ -563,6 +583,20 @@ export default function Cash() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setClosingOpen(false)}>Cancelar</Button>
+            <Button
+              variant="outline"
+              disabled={!currentClosingTurno}
+              onClick={() => setPrintData({
+                register: closingForm.register_type,
+                turno: {
+                  turno: currentClosingTurno.turno, vendedor: currentClosingTurno.vendedor,
+                  openDate: currentClosingTurno.openDate, base: currentClosingTurno.base,
+                  closeDate: currentClosingTurno.closeDate,
+                },
+                counted: Number(closingForm.counted) || 0,
+              })}>
+              <Printer className="w-4 h-4" /> Imprimir
+            </Button>
             <Button onClick={saveClosing} disabled={saving || !currentClosingTurno} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
               {saving ? "Guardando..." : closingSummary?.alreadyClosed ? "Re-cerrar turno" : "Confirmar Cierre"}
             </Button>
