@@ -152,7 +152,7 @@ export default function Customers() {
           <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
             <div>
               <Label>Nombre / Razón social *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1" />
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })} className="mt-1" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
