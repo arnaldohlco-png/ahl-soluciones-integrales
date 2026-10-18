@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, Navigate, useNavigate } from "react-router-d
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
-  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote, CalendarClock, LogOut, Undo2, ClipboardList } from
+  Truck, HardHat, Building2, Menu, X, Tag, BarChart3, Store, FileText, HandCoins, Banknote, CalendarClock, LogOut, Undo2, ClipboardList, ChevronDown } from
 "lucide-react";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
@@ -65,6 +65,7 @@ export default function Layout() {
   const { roles } = useRoles();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [openGroups, setOpenGroups] = useState({});
   const navigate = useNavigate();
   const pathRef = React.useRef(location.pathname);
   pathRef.current = location.pathname;
@@ -179,11 +180,21 @@ export default function Layout() {
     return <Navigate to="/" replace />;
   }
 
+  const isGroupOpen = (g) => openGroups[g.title] ?? g.items.some((it) => it.to === location.pathname);
+
   const NavContent = () =>
   <>
       {visibleGroups.map((group) =>
-    <div key={group.title} className="mb-4">
-          <p className="px-3 mb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{group.title}</p>
+    <div key={group.title} className="mb-2">
+          {group.title === "Principal" ?
+      <p className="px-3 mb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{group.title}</p> :
+      <button
+        onClick={() => setOpenGroups((s) => ({ ...s, [group.title]: !isGroupOpen(group) }))}
+        className="flex w-full items-center justify-between px-3 py-2 mb-1 rounded-lg text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800 hover:text-white transition-colors">
+              {group.title}
+              <ChevronDown className={cn("w-4 h-4 transition-transform", isGroupOpen(group) ? "" : "-rotate-90")} />
+            </button>}
+          <div className={group.title === "Principal" || isGroupOpen(group) ? "" : "hidden"}>
           {group.items.map((item) => {
         const Icon = item.icon;
         const active = location.pathname === item.to;
@@ -204,6 +215,7 @@ export default function Layout() {
               </Link>);
 
       })}
+          </div>
           {group.title === "Principal" &&
       <button
         onClick={() => {setMobileOpen(false);window.dispatchEvent(new Event("open-price-viewer"));}}
