@@ -8,12 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, Save, Loader2, Cloud, Upload, RotateCcw, FileDown, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import RolesManager from "@/components/RolesManager";
+import AdminSignatureDialog from "@/components/AdminSignatureDialog";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { useAuth } from "@/lib/AuthContext";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
-  email: "", address: "", city: "", logo: "", footer_text: "", receipt_footer_text: "", warranty_terms: "", warranty_coverage: "", warranty_exclusions: "", credit_default_days: 30,
+  email: "", address: "", city: "", logo: "", admin_signature: "", footer_text: "", receipt_footer_text: "", warranty_terms: "", warranty_coverage: "", warranty_exclusions: "", credit_default_days: 30,
   charges_iva: true,
   dian_resolution: "", dian_resolution_date: "", dian_range_from: 0, dian_range_to: 0,
   pos_prefix: "VTA", quote_prefix: "COT", purchase_prefix: "COMP", order_prefix: "ORD", invoice_prefix: "FAC",
@@ -29,6 +30,7 @@ export default function Company() {
   const [saving, setSaving] = useState(false);
   const [backing, setBacking] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [sigOpen, setSigOpen] = useState(false);
   const [restoreOpen, setRestoreOpen] = useState(false);
   const [loadingBackups, setLoadingBackups] = useState(false);
   const [backups, setBackups] = useState([]);
@@ -46,7 +48,7 @@ export default function Company() {
             name: data[0].name || "", document_type: data[0].document_type || "Persona jurídica",
             document_number: data[0].document_number || "", phone: data[0].phone || "",
             email: data[0].email || "", address: data[0].address || "", city: data[0].city || "",
-            logo: data[0].logo || "", footer_text: data[0].footer_text || "",
+            logo: data[0].logo || "", admin_signature: data[0].admin_signature || "", footer_text: data[0].footer_text || "",
             receipt_footer_text: data[0].receipt_footer_text || "",
             warranty_terms: data[0].warranty_terms || "", warranty_coverage: data[0].warranty_coverage || "", warranty_exclusions: data[0].warranty_exclusions || "",
             credit_default_days: data[0].credit_default_days ?? 30,
@@ -131,6 +133,11 @@ export default function Company() {
       alert("Error: " + e.message);
     }
     setRestoring(false);
+  };
+
+  const saveSignature = async (url) => {
+    setForm((f) => ({ ...f, admin_signature: url }));
+    if (company) await base44.entities.Company.update(company.id, { admin_signature: url });
   };
 
   const handleLogoUpload = async (e) => {
@@ -236,6 +243,27 @@ export default function Company() {
           </div>
         </div>
         <div>
+          <Label>Firma digital del administrador</Label>
+          <div className="mt-1 flex items-center gap-3">
+            {form.admin_signature ? (
+              <img src={form.admin_signature} alt="Firma" className="h-14 object-contain border border-slate-200 rounded bg-white p-1" />
+            ) : (
+              <span className="text-xs text-slate-400">Sin firma registrada</span>
+            )}
+            {isAdmin && (
+              <>
+                <Button type="button" variant="outline" size="sm" onClick={() => setSigOpen(true)}>
+                  {form.admin_signature ? "Reemplazar firma" : "Capturar firma"}
+                </Button>
+                {form.admin_signature && (
+                  <button type="button" onClick={() => saveSignature("")} className="text-xs text-red-500 hover:underline">Quitar</button>
+                )}
+              </>
+            )}
+          </div>
+          <p className="text-xs text-slate-400 mt-1">Se muestra en todos los documentos impresos</p>
+        </div>
+        <div>
           <Label>Pie de página para órdenes de servicio</Label>
           <Textarea value={form.footer_text} onChange={(e) => setForm({ ...form, footer_text: e.target.value })} className="mt-1 py-1 resize-y" rows={1}
             placeholder="Ej: Garantía de 3 meses en repuestos. No nos hacemos responsables por objetos dejados en la motocicleta..." />
@@ -319,6 +347,7 @@ export default function Company() {
         </div>
       </div>
 
+      <AdminSignatureDialog open={sigOpen} onOpenChange={setSigOpen} current={form.admin_signature} onSaved={saveSignature} />
       <RolesManager />
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-4">

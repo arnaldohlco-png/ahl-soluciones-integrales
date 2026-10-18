@@ -5,6 +5,7 @@ import { wrapWhatsApp } from "@/lib/whatsappTemplate";
 import { DEFAULT_WARRANTY } from "@/lib/warrantyDefaults";
 import PrintToolbar from "@/components/PrintToolbar";
 import VerseBox from "@/components/VerseBox";
+import AdminSignatureStamp from "@/components/AdminSignatureStamp";
 
 const parse = (s) => { try { return JSON.parse(s || "[]"); } catch { return []; } };
 
@@ -97,6 +98,7 @@ export default function WarrantyDocument({ order, company, motorcycle, customer,
             <div className="border-t border-slate-800 pt-1">Firma del Cliente<br />{customer?.name}</div>
             <div className="border-t border-slate-800 pt-1">Firma del Taller<br />{company?.name}</div>
           </div>
+          <AdminSignatureStamp company={company} />
           <VerseBox />
         </div>
       </div>

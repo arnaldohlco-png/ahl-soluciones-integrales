@@ -1,4 +1,5 @@
 import VerseBox from "@/components/VerseBox";
+import AdminSignatureStamp from "@/components/AdminSignatureStamp";
 import React from "react";
 import moment from "moment";
 import { momentBogota } from "@/lib/localDate";
@@ -134,6 +135,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
             {resolutionLine && <p>Esta factura electrónica se expide de acuerdo con la {resolutionLine}.</p>}
             <p>Formato de factura imprimible conforme a la Ley 1231 de 2008 y normativa DIAN vigente.</p>
           </div>
+          <AdminSignatureStamp company={company} />
           <VerseBox />
           {company?.receipt_footer_text && <p className="mt-4 text-[11px] text-slate-600 text-center whitespace-pre-wrap">{company.receipt_footer_text}</p>}
         </div>

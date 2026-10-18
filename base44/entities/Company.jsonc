@@ -40,6 +40,10 @@
       "type": "string",
       "title": "Logo (URL)"
     },
+    "admin_signature": {
+      "type": "string",
+      "title": "Firma del administrador (URL)"
+    },
     "footer_text": {
       "type": "string",
       "title": "Pie de p\u00e1gina para \u00f3rdenes de servicio",
