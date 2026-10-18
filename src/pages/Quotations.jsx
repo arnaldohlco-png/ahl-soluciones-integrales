@@ -76,6 +76,21 @@ export default function Quotations() {
     setModalOpen(true);
   };
 
+  // Atajo Ctrl+C: nueva cotización (no actúa al escribir en campos, con texto seleccionado ni con diálogos abiertos)
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== "c") return;
+      const t = e.target;
+      if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
+      if (window.getSelection()?.toString()) return;
+      if (modalOpen || printQ) return;
+      e.preventDefault();
+      openNew();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const openEdit = (q) => {
     setEditing(q);
     let parsedItems = [];
@@ -165,7 +180,7 @@ export default function Quotations() {
           </div>
         </div>
         <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4 mr-1" /> Nueva Cotización
+          <Plus className="w-4 h-4 mr-1" /> Nueva Cotización <span className="ml-2 text-[10px] opacity-60 hidden md:inline">Ctrl+C</span>
         </Button>
       </div>
 
