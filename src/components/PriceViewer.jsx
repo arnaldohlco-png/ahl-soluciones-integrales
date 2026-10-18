@@ -32,12 +32,9 @@ export default function PriceViewer() {
     if (!name.trim() && !line.trim()) { setItems([]); return; }
     setLoading(true);
     const t = setTimeout(async () => {
-      const words = (s) => s.trim().split(/\s+/).filter(Boolean);
-      const conds = [
-        ...words(name).map((w) => ({ name: { $regex: esc(w), $options: "i" } })),
-        ...words(line).map((w) => ({ compatibility: { $regex: esc(w), $options: "i" } })),
-      ];
-      const q = { $and: conds };
+      const q = {};
+      if (name.trim()) q.name = { $regex: esc(name), $options: "i" };
+      if (line.trim()) q.compatibility = { $regex: esc(line), $options: "i" };
       const page = await base44.entities.Product.filter(q, { sort: "name", limit: 60 });
       setItems(page.items || []);
       setLoading(false);
