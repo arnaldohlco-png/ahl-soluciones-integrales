@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/AuthContext";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
-  email: "", address: "", city: "", logo: "", footer_text: "", receipt_footer_text: "", credit_default_days: 30,
+  email: "", address: "", city: "", logo: "", footer_text: "", receipt_footer_text: "", warranty_terms: "", warranty_coverage: "", warranty_exclusions: "", credit_default_days: 30,
   charges_iva: true,
   dian_resolution: "", dian_resolution_date: "", dian_range_from: 0, dian_range_to: 0,
   pos_prefix: "VTA", quote_prefix: "COT", purchase_prefix: "COMP", order_prefix: "ORD", invoice_prefix: "FAC",
@@ -48,6 +48,7 @@ export default function Company() {
             email: data[0].email || "", address: data[0].address || "", city: data[0].city || "",
             logo: data[0].logo || "", footer_text: data[0].footer_text || "",
             receipt_footer_text: data[0].receipt_footer_text || "",
+            warranty_terms: data[0].warranty_terms || "", warranty_coverage: data[0].warranty_coverage || "", warranty_exclusions: data[0].warranty_exclusions || "",
             credit_default_days: data[0].credit_default_days ?? 30,
             charges_iva: data[0].charges_iva ?? (data[0].document_type === "Persona jurídica"),
             dian_resolution: data[0].dian_resolution || "", dian_resolution_date: data[0].dian_resolution_date || "",
@@ -245,6 +246,18 @@ export default function Company() {
           <Textarea value={form.receipt_footer_text} onChange={(e) => setForm({ ...form, receipt_footer_text: e.target.value })} className="mt-1 py-1 resize-y" rows={2}
             disabled={!isAdmin} placeholder="Ej: Gracias por su compra. Cambios dentro de 8 días con factura." />
           <p className="text-xs text-slate-400 mt-1">{isAdmin ? "Aparece al final de los comprobantes del POS y de las facturas" : "Solo un administrador puede editar este texto"}</p>
+        </div>
+
+        <div className="border-t border-slate-100 pt-4 space-y-3">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Garantía de servicios (plantilla)</p>
+          {[["warranty_terms", "Términos y condiciones"], ["warranty_coverage", "Cobertura"], ["warranty_exclusions", "Exclusiones"]].map(([k, label]) => (
+            <div key={k}>
+              <Label>{label}</Label>
+              <Textarea value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} className="mt-1 resize-y" rows={3} disabled={!isAdmin}
+                placeholder="Si lo dejas vacío se usa un texto por defecto" />
+            </div>
+          ))}
+          <p className="text-xs text-slate-400">{isAdmin ? "Cada orden guarda una copia del texto usado; cambiar la plantilla no altera garantías ya emitidas." : "Solo un administrador puede editar la plantilla."}</p>
         </div>
 
         <div className="border-t border-slate-100 pt-4">

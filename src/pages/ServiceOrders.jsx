@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, Receipt, AlertTriangle, Phone, PackageCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, Receipt, AlertTriangle, Phone, PackageCheck, ShieldCheck } from "lucide-react";
 import { nowLocalISO, todayLocalKey, nowLocalTime } from "@/lib/localDate";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
@@ -20,6 +20,7 @@ import SearchableSelect from "@/components/SearchableSelect";
 import PrintableDocument from "@/components/PrintableDocument";
 import AnticiposEditor from "@/components/AnticiposEditor";
 import AnticipoReceipt from "@/components/AnticipoReceipt";
+import WarrantyDocument from "@/components/WarrantyDocument";
 import { sumAnticipos, parseAnticipos } from "@/lib/anticipos";
 import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
@@ -63,6 +64,7 @@ export default function ServiceOrders() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [printOrder, setPrintOrder] = useState(null);
   const [receiptOrder, setReceiptOrder] = useState(null);
+  const [warrantyOrder, setWarrantyOrder] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [sales, setSales] = useState([]);
   const [extraTypes, setExtraTypes] = useState([]);
@@ -396,6 +398,7 @@ export default function ServiceOrders() {
                     {sumAnticipos(o.anticipos) > 0 &&
                 <button onClick={() => setReceiptOrder(o)} title="Recibo de anticipos" className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Receipt className="w-4 h-4" /></button>
                 }
+                    <button onClick={() => setWarrantyOrder(o)} title="Términos y Condiciones de Garantía" className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><ShieldCheck className="w-4 h-4" /></button>
                     <button onClick={() => setPrintOrder(o)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"><Printer className="w-4 h-4" /></button>
                     {o.status === "Terminado" &&
                 <>
@@ -593,6 +596,15 @@ export default function ServiceOrders() {
         motorcycle={motos.find((m) => m.id === receiptOrder.motorcycle_id)}
         customer={customers.find((c) => c.id === receiptOrder.customer_id)}
         onClose={() => setReceiptOrder(null)} />
+      }
+
+      {warrantyOrder &&
+      <WarrantyDocument
+        order={warrantyOrder}
+        company={company}
+        motorcycle={motos.find((m) => m.id === warrantyOrder.motorcycle_id)}
+        customer={customers.find((c) => c.id === warrantyOrder.customer_id)}
+        onClose={() => {setWarrantyOrder(null);load();}} />
       }
 
       {printOrder &&

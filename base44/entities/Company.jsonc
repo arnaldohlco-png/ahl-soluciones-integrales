@@ -50,6 +50,18 @@
       "title": "Pie de p\u00e1gina POS y facturas",
       "description": "Texto editable por admin al final de comprobantes POS y facturas"
     },
+    "warranty_terms": {
+      "type": "string",
+      "title": "Garant\u00eda: t\u00e9rminos y condiciones"
+    },
+    "warranty_coverage": {
+      "type": "string",
+      "title": "Garant\u00eda: cobertura"
+    },
+    "warranty_exclusions": {
+      "type": "string",
+      "title": "Garant\u00eda: exclusiones"
+    },
     "credit_default_days": {
       "type": "number",
       "title": "D\u00edas de cr\u00e9dito por defecto",

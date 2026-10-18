@@ -200,6 +200,11 @@
       "type": "boolean",
       "title": "Comisi\u00f3n pagada",
       "default": false
+    },
+    "warranty_snapshot": {
+      "type": "string",
+      "title": "Garant\u00eda: copia de t\u00e9rminos (JSON)",
+      "description": "JSON {terms, coverage, exclusions, date} usado en esta orden"
     }
   },
   "required": [
