@@ -201,9 +201,9 @@ export default function Dashboard() {
   };
 
   const cardBase =
-    "flex flex-col gap-2 bg-[#18212B] border border-[#34475a] border-l-4 border-l-[#F0B429] rounded-md p-5 text-[#EAF0F4] no-underline cursor-pointer min-h-[150px] justify-between transition-colors hover:bg-[#1f2b37] hover:border-[#F0B429] active:bg-[#141c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0B429]";
+  "flex flex-col gap-2 bg-[#18212B] border border-[#34475a] border-l-4 border-l-[#F0B429] rounded-md p-5 text-[#EAF0F4] no-underline cursor-pointer min-h-[150px] justify-between transition-colors hover:bg-[#1f2b37] hover:border-[#F0B429] active:bg-[#141c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0B429]";
   const cardHL =
-    "flex flex-col gap-2 bg-[#F0B429] text-[#18212B] border border-[#F0B429] border-l-4 border-l-[#18212B] rounded-md p-5 cursor-pointer min-h-[150px] justify-between transition-colors hover:bg-[#f5c04a] hover:border-[#f5c04a] active:bg-[#d99f1f]";
+  "flex flex-col gap-2 bg-[#F0B429] text-[#18212B] border border-[#F0B429] border-l-4 border-l-[#18212B] rounded-md p-5 cursor-pointer min-h-[150px] justify-between transition-colors hover:bg-[#f5c04a] hover:border-[#f5c04a] active:bg-[#d99f1f]";
   const grid3 = "grid grid-cols-1 sm:grid-cols-3 gap-4";
   const big = "text-[34px] font-black leading-[1.1] tracking-[-0.01em] mt-1.5";
   const bigXl = "text-[44px] md:text-[52px] font-black leading-none";
@@ -219,36 +219,36 @@ export default function Dashboard() {
         </div>
         <div
           className="absolute inset-0 z-[1]"
-          style={{ background: "linear-gradient(180deg,rgba(24,33,43,.78) 0%,rgba(24,33,43,.9) 70%,#18212B 100%)" }}
-        />
+          style={{ background: "linear-gradient(180deg,rgba(24,33,43,.78) 0%,rgba(24,33,43,.9) 70%,#18212B 100%)" }} />
+        
         <div className="relative z-[2] flex flex-col gap-6 md:gap-9">
           {/* Barra de navegación */}
           <div className="flex items-center gap-3 md:gap-4 bg-[#F0B429] text-[#18212B] rounded-md p-3 md:px-5 md:py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] border-b-4 border-[#18212B] dash-rise">
             <button
               onClick={openMenu}
               aria-label="Abrir menú"
-              className="w-11 h-11 rounded-md bg-[#18212B] text-[#EAF0F4] border-2 border-[#263442] flex items-center justify-center shrink-0 cursor-pointer transition-colors hover:bg-[#263442] active:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
+              className="w-11 h-11 rounded-md bg-[#18212B] text-[#EAF0F4] border-2 border-[#263442] flex items-center justify-center shrink-0 cursor-pointer transition-colors hover:bg-[#263442] active:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              
               <Menu className="w-5 h-5" />
             </button>
             <div className="w-12 h-12 md:w-[52px] md:h-[52px] rounded-md bg-[#EAF0F4] flex items-center justify-center shrink-0 overflow-hidden">
-              {company?.logo ? (
-                <img src={company.logo} alt="Logo" className="w-full h-full object-contain" />
-              ) : (
-                <Bike className="w-7 h-7 text-[#18212B]" />
-              )}
+              {company?.logo ?
+              <img src={company.logo} alt="Logo" className="w-full h-full object-contain" /> :
+
+              <Bike className="w-7 h-7 text-[#18212B]" />
+              }
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-base md:text-[22px] font-black uppercase tracking-[0.14em] leading-tight truncate">
+              <h1 className="text-base md:text-[22px] font-black uppercase tracking-[0.14em] leading-tight truncate text-center">
                 {company?.name || "Mi Taller"}
               </h1>
-              <p className="text-[11px] md:text-xs font-semibold mt-1 leading-tight truncate">
+              <p className="text-[11px] md:text-xs font-semibold mt-1 leading-tight truncate text-center">
                 {[
-                  company?.document_number && `NIT/C.C.: ${company.document_number}`,
-                  company?.phone,
-                  company?.email,
-                  [company?.address, company?.city].filter(Boolean).join(" · "),
-                ].filter(Boolean).join("  ·  ")}
+                company?.document_number && `NIT/C.C.: ${company.document_number}`,
+                company?.phone,
+                company?.email,
+                [company?.address, company?.city].filter(Boolean).join(" · ")].
+                filter(Boolean).join("  ·  ")}
               </p>
             </div>
             <div className="text-right shrink-0 hidden sm:block">
@@ -274,15 +274,15 @@ export default function Dashboard() {
                     key={status}
                     to="/ordenes"
                     className="flex flex-col gap-2.5 bg-[#263442]/[0.88] border border-[#34475a] rounded-md p-4 md:p-5 text-[#EAF0F4] no-underline shadow-[0_10px_24px_rgba(0,0,0,0.4)] transition-colors hover:bg-[#2d3d4e] hover:shadow-[0_14px_30px_rgba(0,0,0,0.5)] active:bg-[#223040] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0B429]"
-                    style={{ borderTop: `4px solid ${meta.color}` }}
-                  >
+                    style={{ borderTop: `4px solid ${meta.color}` }}>
+                    
                     <div className="flex items-center gap-3 md:gap-3.5">
                       <Icon className="w-7 h-7 md:w-8 md:h-8 shrink-0" style={{ color: meta.color }} />
                       <span className="text-4xl md:text-[52px] font-black leading-none">{count}</span>
                     </div>
                     <p className="text-[13px] font-bold tracking-[0.16em] uppercase text-[#b9c6d1]">{status}</p>
-                  </Link>
-                );
+                  </Link>);
+
               })}
             </div>
           </div>
@@ -389,6 +389,6 @@ export default function Dashboard() {
           </div>
         </AreaPanel>
       </div>
-    </div>
-  );
+    </div>);
+
 }
