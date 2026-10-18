@@ -172,7 +172,7 @@ export default function ReturnsModule() {
         date: nowLocalISO(), type: "Salida", category: "Otro egreso",
         amount: form.total,
         description: `Devolución ${number} - ${form.source_type} ${form.source_number} - ${form.customer_name || ""}`.trim(),
-        payment_method: form.payment_method, register_type: registerForPayment(form.payment_method, "Caja principal"), reference_id: created.id,
+        payment_method: form.payment_method, register_type: registerForPayment(form.payment_method), reference_id: created.id,
         bank_account: bankAccount || undefined,
       });
 
@@ -350,7 +350,7 @@ export default function ReturnsModule() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Medio de devolución</Label>
+                <Label>Medio y destino del reembolso</Label>
                 <Select value={form.payment_method} onValueChange={(v) => setForm({ ...form, payment_method: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -358,6 +358,9 @@ export default function ReturnsModule() {
                   </SelectContent>
                 </Select>
                 <BankAccountSelect method={form.payment_method} value={bankAccount} onChange={setBankAccount} label="Cuenta bancaria de origen *" />
+                <p className="text-xs text-slate-500 mt-1">
+                  El dinero saldrá de: <strong>{registerForPayment(form.payment_method)}</strong>
+                </p>
               </div>
               <div>
                 <Label>Total devolución</Label>
