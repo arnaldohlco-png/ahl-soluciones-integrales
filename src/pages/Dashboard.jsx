@@ -201,12 +201,12 @@ export default function Dashboard() {
   };
 
   const cardBase =
-  "flex flex-col gap-2 bg-[#18212B] border border-[#34475a] border-l-4 border-l-[#F0B429] rounded-md p-5 text-[#EAF0F4] no-underline cursor-pointer min-h-[150px] justify-between transition-colors hover:bg-[#1f2b37] hover:border-[#F0B429] active:bg-[#141c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0B429]";
+  "flex flex-col gap-2 bg-[#18212B] border border-[#34475a] border-l-4 border-l-[#F0B429] rounded-md p-4 md:p-5 text-[#EAF0F4] no-underline cursor-pointer min-h-0 justify-between transition-colors hover:bg-[#1f2b37] hover:border-[#F0B429] active:bg-[#141c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0B429]";
   const cardHL =
-  "flex flex-col gap-2 bg-[#F0B429] text-[#18212B] border border-[#F0B429] border-l-4 border-l-[#18212B] rounded-md p-5 cursor-pointer min-h-[150px] justify-between transition-colors hover:bg-[#f5c04a] hover:border-[#f5c04a] active:bg-[#d99f1f]";
-  const grid3 = "grid grid-cols-1 sm:grid-cols-3 gap-4";
-  const big = "text-[34px] font-black leading-[1.1] tracking-[-0.01em] mt-1.5";
-  const bigXl = "text-[44px] md:text-[52px] font-black leading-none";
+  "flex flex-col gap-2 bg-[#F0B429] text-[#18212B] border border-[#F0B429] border-l-4 border-l-[#18212B] rounded-md p-4 md:p-5 cursor-pointer min-h-0 justify-between transition-colors hover:bg-[#f5c04a] hover:border-[#f5c04a] active:bg-[#d99f1f]";
+  const grid3 = "grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4";
+  const big = "text-xl md:text-[34px] font-black leading-[1.1] tracking-[-0.01em] mt-1.5";
+  const bigXl = "text-4xl md:text-[52px] font-black leading-none";
   const lb = "text-xs font-bold tracking-[0.16em] uppercase text-[#b9c6d1]";
   const ut = "text-[13px] font-extrabold text-[#F0B429] tracking-[0.04em]";
 
@@ -353,21 +353,21 @@ export default function Dashboard() {
                 <ShoppingCart className="w-5 h-5" />
                 <span className="text-xs font-bold tracking-[0.16em] uppercase">Ventas del día</span>
               </div>
-              <span className="text-[34px] md:text-[42px] font-black leading-tight">{fmt(d.salesToday)}</span>
+              <span className="text-xl md:text-[42px] font-black leading-tight">{fmt(d.salesToday)}</span>
             </div>
             <div className={cardBase}>
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-5 h-5" style={{ color: "#EAF0F4" }} />
                 <span className="text-xs font-bold tracking-[0.16em] uppercase text-[#b9c6d1]">Ventas de la semana</span>
               </div>
-              <span className="text-[34px] md:text-[42px] font-black leading-tight">{fmt(d.salesWeek)}</span>
+              <span className="text-xl md:text-[42px] font-black leading-tight">{fmt(d.salesWeek)}</span>
             </div>
             <div className={cardBase}>
               <div className="flex items-center gap-3">
                 <DollarSign className="w-5 h-5" style={{ color: "#EAF0F4" }} />
                 <span className="text-xs font-bold tracking-[0.16em] uppercase text-[#b9c6d1]">Ventas del mes</span>
               </div>
-              <span className="text-[34px] md:text-[42px] font-black leading-tight">{fmt(d.salesMonth)}</span>
+              <span className="text-xl md:text-[42px] font-black leading-tight">{fmt(d.salesMonth)}</span>
             </div>
           </div>
           <div className={grid3}>
