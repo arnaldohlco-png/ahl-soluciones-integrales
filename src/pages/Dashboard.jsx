@@ -223,23 +223,23 @@ export default function Dashboard() {
         
         <div className="relative z-[2] flex flex-col gap-6 md:gap-9">
           {/* Barra de navegación */}
-          <div className="flex items-center gap-3 md:gap-4 bg-[#F0B429] text-[#18212B] rounded-md p-3 md:px-5 md:py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] border-b-4 border-[#18212B] dash-rise">
+          <div className="relative flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-[#F0B429] text-[#18212B] rounded-md px-3 pt-3 pb-3 md:px-5 md:py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] border-b-4 border-[#18212B] dash-rise">
             <button
               onClick={openMenu}
               aria-label="Abrir menú"
-              className="w-11 h-11 rounded-md bg-[#18212B] text-[#EAF0F4] border-2 border-[#263442] flex items-center justify-center shrink-0 cursor-pointer transition-colors hover:bg-[#263442] active:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              className="absolute top-3 left-3 md:static w-11 h-11 rounded-md bg-[#18212B] text-[#EAF0F4] border-2 border-[#263442] flex items-center justify-center shrink-0 cursor-pointer transition-colors hover:bg-[#263442] active:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
               
               <Menu className="w-5 h-5" />
             </button>
-            <div className={`w-12 h-12 md:w-[52px] md:h-[52px] rounded-md ${company?.logo ? "" : "bg-[#EAF0F4]"} flex items-center justify-center shrink-0 overflow-hidden`}>
+            <div className={`w-16 h-16 md:w-[52px] md:h-[52px] rounded-md ${company?.logo ? "" : "bg-[#EAF0F4]"} flex items-center justify-center shrink-0 overflow-hidden`}>
               {company?.logo ?
               <img src={company.logo} alt="Logo" className="w-full h-full object-contain" /> :
 
               <Bike className="w-7 h-7 text-[#18212B]" />
               }
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-base md:text-[22px] font-black uppercase tracking-[0.14em] leading-tight truncate text-center">
+            <div className="w-full md:flex-1 min-w-0">
+              <h1 className="text-[15px] md:text-[22px] font-black uppercase tracking-[0.08em] md:tracking-[0.14em] leading-tight text-center md:truncate">
                 {company?.name || "Mi Taller"}
               </h1>
               <p className="text-[11px] md:text-xs font-semibold mt-1 leading-tight truncate text-center">
