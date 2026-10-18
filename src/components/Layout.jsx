@@ -19,25 +19,28 @@ const navGroups = [
   items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard }]
 },
 {
-  title: "Gestión",
+  title: "Taller",
   items: [
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/motocicletas", label: "Motocicletas", icon: Bike },
   { to: "/ordenes", label: "Órdenes de Servicio", icon: Wrench },
   { to: "/citas", label: "Citas y Recordatorios", icon: CalendarClock },
-  { to: "/servicios", label: "Catálogo de Servicios", icon: Wrench }]
-
+  { to: "/servicios", label: "Catálogo de Servicios", icon: Wrench },
+  { to: "/tecnicos", label: "Técnicos", icon: HardHat },
+  { to: "/prestamos-tecnicos", label: "Préstamos Técnicos", icon: HandCoins },
+  { to: "/pago-comisiones", label: "Pago Comisiones", icon: Banknote }]
 },
 {
-  title: "Almacén",
+  title: "Inventario y Ventas",
   items: [
+  { to: "/ventas", label: "Ventas / POS", icon: ShoppingCart },
   { to: "/inventario", label: "Inventario", icon: Package },
+  { to: "/devoluciones", label: "Devoluciones", icon: Undo2 },
   { to: "/compras", label: "Compras", icon: Truck },
   { to: "/pedidos", label: "Pedidos a Proveedor", icon: ClipboardList },
   { to: "/facturas-proveedor", label: "Cargar Factura Proveedor", icon: FileText },
-  { to: "/ventas", label: "Ventas / POS", icon: ShoppingCart },
-  { to: "/devoluciones", label: "Devoluciones", icon: Undo2 }]
-
+  { to: "/proveedores", label: "Proveedores", icon: Building2 },
+  { to: "/marcas", label: "Marcas y Líneas", icon: Tag }]
 },
 {
   title: "Finanzas",
@@ -48,17 +51,11 @@ const navGroups = [
   { to: "/gastos", label: "Gastos", icon: Wallet },
   { to: "/caja", label: "Caja y Bancos", icon: Landmark },
   { to: "/estado-resultados", label: "Estado de Resultados", icon: BarChart3 }]
-
 },
 {
   title: "Administración",
   items: [
-  { to: "/tecnicos", label: "Técnicos", icon: HardHat },
-  { to: "/proveedores", label: "Proveedores", icon: Building2 },
-  { to: "/marcas", label: "Marcas y Líneas", icon: Tag },
-  { to: "/empresa", label: "Mi Empresa", icon: Store },
-  { to: "/prestamos-tecnicos", label: "Préstamos Técnicos", icon: HandCoins },
-  { to: "/pago-comisiones", label: "Pago Comisiones", icon: Banknote }]
+  { to: "/empresa", label: "Mi Empresa", icon: Store }]
 }];
 
 
