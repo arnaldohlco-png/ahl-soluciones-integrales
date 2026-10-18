@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock, Printer } from "lucide-react";
 import TurnoPrintReport from "@/components/TurnoPrintReport";
 import CreditPaymentDialog from "@/components/CreditPaymentDialog";
+import CreditSalesPanel from "@/components/CreditSalesPanel";
+import { creditSalesInTurno } from "@/lib/creditSales";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
 import nowLocalISO, { todayLocalKey, localDateKey, fmtBogota } from "@/lib/localDate";
@@ -47,16 +49,20 @@ export default function Cash() {
   const [closingForm, setClosingForm] = useState({ register_type: "Caja almacén", counted: 0 });
   const [printData, setPrintData] = useState(null);
   const [creditOpen, setCreditOpen] = useState(false);
+  const [sales, setSales] = useState([]);
+  const [view, setView] = useState("movs");
 
   useEffect(() => { load(); }, []);
 
   const load = async () => {
     try {
-      const [data, me] = await Promise.all([
+      const [data, me, salesData] = await Promise.all([
         fetchAll("CashMovement", "-date"),
         base44.auth.me().catch(() => null),
+        fetchAll("Sale", "-date").catch(() => []),
       ]);
       setList(data);
+      setSales(salesData);
       if (me?.full_name) setCurrentUser(me.full_name);
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
@@ -328,7 +334,15 @@ export default function Cash() {
         ))}
       </div>
 
+      <div className="flex gap-2 mb-4">
+        <Button size="sm" variant={view === "movs" ? "default" : "outline"} onClick={() => setView("movs")}>Movimientos</Button>
+        <Button size="sm" variant={view === "credit" ? "default" : "outline"} onClick={() => setView("credit")}>Ventas a crédito</Button>
+      </div>
+
+      {view === "credit" && <CreditSalesPanel sales={sales} />}
+
       {/* Filters */}
+      {view === "movs" && <>
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -407,11 +421,12 @@ export default function Cash() {
           </table>
         </div>
       </div>
+      </>}
 
       <CreditPaymentDialog open={creditOpen} onOpenChange={setCreditOpen} onSaved={load} />
 
       {printData && (
-        <TurnoPrintReport list={list} register={printData.register} turno={printData.turno}
+        <TurnoPrintReport sales={sales} list={list} register={printData.register} turno={printData.turno}
           counted={printData.counted} onClose={() => setPrintData(null)} />
       )}
 
@@ -581,6 +596,10 @@ export default function Cash() {
                       <span>{(() => { const d = Number(closingForm.counted) - closingSummary.esperado; return d === 0 ? "Cuadre exacto" : `${d > 0 ? "Sobrante" : "Faltante"}: ${fmt(Math.abs(d))}`; })()}</span>
                     </div>
                     <p className="text-xs text-slate-400 pt-0.5">{closingSummary.count} movimientos en el turno</p>
+                    <div className="flex justify-between border border-dashed border-slate-300 rounded p-2 mt-1 text-slate-700">
+                      <span>Ventas a crédito del turno <span className="text-xs text-slate-400">(no es dinero recibido)</span></span>
+                      <span className="font-semibold">{fmt(creditSalesInTurno(sales, currentClosingTurno.openDate, currentClosingTurno.closeDate).total)}</span>
+                    </div>
                   </div>
                 )}
 

@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import { isApertura, isCierre, turnoWindow } from "@/lib/turnos";
 import { fmtBogota } from "@/lib/localDate";
+import { creditSalesInTurno } from "@/lib/creditSales";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
 // Informe imprimible del cierre de turno con todos los movimientos de caja del turno.
 // turno: { turno, vendedor, openDate, base, closeDate }
-export default function TurnoPrintReport({ list, register, turno, counted, onClose }) {
+export default function TurnoPrintReport({ list, register, turno, counted, onClose, sales }) {
+  const credit = creditSalesInTurno(sales, turno.openDate, turno.closeDate);
   const movs = turnoWindow(list, register, turno.openDate, turno.closeDate)
     .slice()
     .sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -90,6 +92,10 @@ export default function TurnoPrintReport({ list, register, turno, counted, onClo
               </div>
             </>
           )}
+        </div>
+        <div className="ml-auto w-72 mt-3 border border-dashed border-slate-400 rounded p-2 text-xs">
+          <div className="flex justify-between font-semibold"><span>Ventas a crédito del turno ({credit.rows.length})</span><span>{fmt(credit.total)}</span></div>
+          <p className="text-slate-500 mt-0.5">Informativo: no es dinero recibido ni afecta el cuadre.</p>
         </div>
         <div className="grid grid-cols-2 gap-8 mt-12 text-center text-xs">
           <div className="border-t border-slate-500 pt-1">Vendedor</div>
