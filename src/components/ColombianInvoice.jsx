@@ -137,6 +137,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
           </div>
           <AdminSignatureStamp company={company} />
           <VerseBox />
+          <p className="mt-4 text-[11px] font-semibold text-slate-700 text-center">Después de 5 días no se aceptan cambios ni devoluciones.</p>
           {company?.receipt_footer_text && <p className="mt-4 text-[11px] text-slate-600 text-center whitespace-pre-wrap">{company.receipt_footer_text}</p>}
         </div>
       </div>

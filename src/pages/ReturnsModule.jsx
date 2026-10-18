@@ -108,9 +108,13 @@ export default function ReturnsModule() {
     setForm((f) => ({ ...f, items: JSON.stringify(items), subtotal, total: subtotal }));
   };
 
+  const daysSince = (date) => momentBogota().startOf("day").diff(moment(date).startOf("day"), "days");
+  const expiredMsg = (src) => `Plazo vencido: ${src.type} ${src.number} se vendió hace más de 5 días. Después de 5 días no se aceptan cambios ni devoluciones.`;
+
   const selectSource = (id, type) => {
     const src = sources.find((s) => s.id === id && s.type === type);
     if (!src) return;
+    if (src.date && daysSince(src.date) > 5) { alert(expiredMsg(src)); return; }
     const parsed = parseItems(src.itemsRaw);
     const items = parsed.map((it) => ({
       product_id: it.product_id || "",
@@ -148,6 +152,8 @@ export default function ReturnsModule() {
     const returned = retItems.filter((i) => i.quantity > 0);
     if (!form.source_id) { alert("Selecciona un documento cobrado de origen"); return; }
     if (returned.length === 0) { alert("Indica la cantidad a devolver de al menos un producto"); return; }
+    const srcDoc = sources.find((s) => s.id === form.source_id && s.type === form.source_type);
+    if (srcDoc?.date && daysSince(srcDoc.date) > 5) { alert(expiredMsg(srcDoc)); return; }
     if (!form.reason.trim()) { alert("Indica el motivo de la devolución"); return; }
     if (needsBank(form.payment_method) && !bankAccount) { alert("Selecciona la cuenta bancaria."); return; }
     setSaving(true);

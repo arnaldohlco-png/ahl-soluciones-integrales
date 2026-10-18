@@ -525,6 +525,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           </div>
           {!(type === "commission" && doc.admin_signature) && <AdminSignatureStamp company={company} />}
           <VerseBox />
+          {type === "invoice" && doc.type !== "Nota crédito" && <p className="mt-4 text-[11px] font-semibold text-slate-700 text-center">Después de 5 días no se aceptan cambios ni devoluciones.</p>}
           {type === "invoice" && company?.receipt_footer_text && <p className="mt-4 text-[11px] text-slate-600 text-center whitespace-pre-wrap">{company.receipt_footer_text}</p>}
         </div>
       </div>
