@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, AlertTriangle, Phone, PackageCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Wrench, Search, FileText, ShoppingCart, Printer, Receipt, AlertTriangle, Phone, PackageCheck } from "lucide-react";
 import { nowLocalISO, todayLocalKey, nowLocalTime } from "@/lib/localDate";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
@@ -19,6 +19,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import SearchableSelect from "@/components/SearchableSelect";
 import PrintableDocument from "@/components/PrintableDocument";
 import AnticiposEditor from "@/components/AnticiposEditor";
+import AnticipoReceipt from "@/components/AnticipoReceipt";
 import { sumAnticipos, parseAnticipos } from "@/lib/anticipos";
 import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
@@ -61,6 +62,7 @@ export default function ServiceOrders() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [printOrder, setPrintOrder] = useState(null);
+  const [receiptOrder, setReceiptOrder] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [sales, setSales] = useState([]);
   const [extraTypes, setExtraTypes] = useState([]);
@@ -391,6 +393,9 @@ export default function ServiceOrders() {
                 <a href={`tel:${customerPhone(o.customer_id).replace(/\s+/g, "")}`} title="Llamar al cliente" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Phone className="w-4 h-4" /></a>
                 }
                     <WhatsAppButton phone={customerPhone(o.customer_id)} message={buildDocMessage("order", o, company, { motorcycle: motos.find((m) => m.id === o.motorcycle_id), customer: customers.find((c) => c.id === o.customer_id) })} label="Enviar por WhatsApp" />
+                    {sumAnticipos(o.anticipos) > 0 &&
+                <button onClick={() => setReceiptOrder(o)} title="Recibo de anticipos" className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Receipt className="w-4 h-4" /></button>
+                }
                     <button onClick={() => setPrintOrder(o)} title="Imprimir" className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"><Printer className="w-4 h-4" /></button>
                     {o.status === "Terminado" &&
                 <>
@@ -580,6 +585,15 @@ export default function ServiceOrders() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {receiptOrder &&
+      <AnticipoReceipt
+        order={receiptOrder}
+        company={company}
+        motorcycle={motos.find((m) => m.id === receiptOrder.motorcycle_id)}
+        customer={customers.find((c) => c.id === receiptOrder.customer_id)}
+        onClose={() => setReceiptOrder(null)} />
+      }
 
       {printOrder &&
       <PrintableDocument
