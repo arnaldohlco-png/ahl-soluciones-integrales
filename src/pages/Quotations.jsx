@@ -19,6 +19,7 @@ import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { Image } from "@/components/ui/image";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -228,10 +229,22 @@ export default function Quotations() {
       )}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader><DialogTitle>{editing ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-2 max-h-[70vh] overflow-y-auto">
-            <div className="grid grid-cols-2 gap-4">
+        <DialogContent className="max-w-4xl p-0 gap-0">
+          <DialogHeader className="sr-only"><DialogTitle>{editing ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle></DialogHeader>
+          <div className="max-h-[80vh] overflow-y-auto">
+            {/* Encabezado del documento */}
+            <div className="text-center px-5 pt-6 pb-4 border-b border-slate-300">
+              {company?.logo && <Image src={company.logo} alt="Logo" fittingType="fit" className="h-16 w-40 mx-auto mb-2" />}
+              <p className="text-lg font-bold text-slate-900 uppercase">{company?.name || "Mi empresa"}</p>
+              {company?.document_number && <p className="text-xs text-slate-500">NIT/CC: {company.document_number}</p>}
+              <p className="text-xs text-slate-500">{[company?.address, company?.city, company?.phone].filter(Boolean).join(" · ")}</p>
+              <div className="mt-3 inline-block border border-slate-300 px-4 py-1.5">
+                <p className="text-sm font-bold text-slate-900 tracking-wide">{editing ? `COTIZACIÓN ${editing.number || ""}` : "COTIZACIÓN"}</p>
+              </div>
+            </div>
+
+            {/* Datos del cliente */}
+            <div className="px-5 py-4 border-b border-slate-300 grid sm:grid-cols-2 gap-3">
               <SearchableSelect
                 label="Cliente"
                 required
@@ -248,65 +261,68 @@ export default function Quotations() {
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label>Items</Label>
-                <div className="flex gap-2">
-                  <CatalogPicker options={products} onSelect={addItem} label="+ Producto" placeholder="Buscar producto..." />
-                  <CatalogPicker options={services} onSelect={addService} label="+ Servicio" placeholder="Buscar servicio..." />
-                </div>
+            {/* Agregar items */}
+            <div className="px-5 py-3 border-b border-slate-300 flex items-center justify-between gap-2 flex-wrap">
+              <Label className="text-xs uppercase text-slate-500">Items</Label>
+              <div className="flex gap-2">
+                <CatalogPicker options={products} onSelect={addItem} label="+ Producto" placeholder="Buscar producto..." />
+                <CatalogPicker options={services} onSelect={addService} label="+ Servicio" placeholder="Buscar servicio..." />
               </div>
-              {items.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-lg">Agregue productos o servicios</p>
-              ) : (
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-500">
-                      <tr>
-                        <th className="px-2 py-2 text-left font-medium">Descripción</th>
-                        <th className="px-2 py-2 text-center font-medium">Cant.</th>
-                        <th className="px-2 py-2 text-right font-medium">Precio</th>
-                        <th className="px-2 py-2 text-right font-medium">Subtotal</th>
-                        <th className="px-2 py-2"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((it, i) => (
-                        <tr key={i} className="border-t border-slate-100">
-                          <td className="px-2 py-1">
-                            <input value={it.name} onChange={(e) => updateItem(i, "name", e.target.value)} className="w-full border-0 px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-300 rounded" />
-                            {(() => {
-                              const prod = it.product_id ? products.find((p) => p.id === it.product_id) : null;
-                              if (!prod) return null;
-                              const det = [
-                                prod.sku && `SKU: ${prod.sku}`,
-                                prod.reference && `Ref: ${prod.reference}`,
-                                prod.brand && `Marca: ${prod.brand}`,
-                                prod.category,
-                                prod.stock != null && `Stock: ${prod.stock}`,
-                                prod.compatibility && `Compat.: ${prod.compatibility}`,
-                              ].filter(Boolean);
-                              return det.length ? <p className="text-xs text-slate-400 mt-0.5 px-1">{det.join(" · ")}</p> : null;
-                            })()}
-                          </td>
-                          <td className="px-2 py-1"><input type="number" value={it.quantity} onChange={(e) => updateItem(i, "quantity", Number(e.target.value))} className="w-14 text-center border border-slate-200 rounded px-1 py-0.5" /></td>
-                          <td className="px-2 py-1"><input type="number" value={it.unit_price} onChange={(e) => updateItem(i, "unit_price", Number(e.target.value))} className="w-24 text-right border border-slate-200 rounded px-1 py-0.5" /></td>
-                          <td className="px-2 py-2 text-right font-semibold">{fmt(it.subtotal)}</td>
-                          <td className="px-2 py-1 text-right"><button onClick={() => removeItem(i)} className="p-1 text-slate-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
 
-            <div className="bg-slate-50 rounded-lg p-4 space-y-1">
-              <div className="flex justify-between text-sm"><span className="text-slate-600">Subtotal</span><span>{fmt(subtotal)}</span></div>
-              <div className="flex justify-between font-bold text-lg pt-1 border-t border-slate-200"><span className="text-slate-900">Total</span><span className="text-slate-900">{fmt(total)}</span></div>
+            {/* Renglones */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-600 text-xs uppercase border-b border-slate-300">
+                    <th className="px-3 py-2 text-left font-semibold">Descripción</th>
+                    <th className="px-3 py-2 text-center font-semibold">Cant.</th>
+                    <th className="px-3 py-2 text-right font-semibold">Vr. unit.</th>
+                    <th className="px-3 py-2 text-right font-semibold">Subtotal</th>
+                    <th className="px-2 py-2 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.length === 0 && (
+                    <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-400">Agregue productos o servicios</td></tr>
+                  )}
+                  {items.map((it, i) => (
+                    <tr key={i} className="border-b border-slate-100">
+                      <td className="px-3 py-1">
+                        <input value={it.name} onChange={(e) => updateItem(i, "name", e.target.value)} className="w-full border-0 px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-300 rounded" />
+                        {(() => {
+                          const prod = it.product_id ? products.find((p) => p.id === it.product_id) : null;
+                          if (!prod) return null;
+                          const det = [
+                            prod.sku && `SKU: ${prod.sku}`,
+                            prod.reference && `Ref: ${prod.reference}`,
+                            prod.brand && `Marca: ${prod.brand}`,
+                            prod.category,
+                            prod.stock != null && `Stock: ${prod.stock}`,
+                            prod.compatibility && `Compat.: ${prod.compatibility}`,
+                          ].filter(Boolean);
+                          return det.length ? <p className="text-xs text-slate-400 mt-0.5 px-1">{det.join(" · ")}</p> : null;
+                        })()}
+                      </td>
+                      <td className="px-3 py-1 text-center"><input type="number" value={it.quantity} onChange={(e) => updateItem(i, "quantity", Number(e.target.value))} className="w-14 text-center border border-slate-200 rounded px-1 py-0.5" /></td>
+                      <td className="px-3 py-1 text-right"><input type="number" value={it.unit_price} onChange={(e) => updateItem(i, "unit_price", Number(e.target.value))} className="w-24 text-right border border-slate-200 rounded px-1 py-0.5" /></td>
+                      <td className="px-3 py-2 text-right font-semibold whitespace-nowrap">{fmt(it.subtotal)}</td>
+                      <td className="px-2 py-1"><button onClick={() => removeItem(i)} className="p-1 text-slate-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Totales */}
+            <div className="px-5 py-4 border-t border-slate-300 flex justify-end">
+              <div className="w-full sm:w-72 space-y-1.5 text-sm">
+                <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
+                <div className="flex justify-between font-bold text-slate-900 text-base pt-1 border-t border-slate-300"><span>TOTAL</span><span>{fmt(total)}</span></div>
+              </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="px-5 py-4 border-t border-slate-300 bg-slate-50 gap-2 sm:space-x-0">
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button onClick={save} disabled={saving || !form.customer_id || items.length === 0} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
