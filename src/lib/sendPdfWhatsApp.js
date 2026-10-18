@@ -98,7 +98,7 @@ export async function generateAndSendPdf({ phone, message, format = "a4" }) {
 
     const blob = pdf.output("blob");
     const file = new File([blob], "documento.pdf", { type: "application/pdf" });
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
 
     const cleanPhone = (phone || "").replace(/\D/g, "");
     if (!cleanPhone) throw new Error("Teléfono del destinatario no válido");
