@@ -143,9 +143,14 @@ export default function Company() {
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!["image/png", "image/svg+xml"].includes(file.type)) {
+      alert("El logo debe ser PNG o SVG");
+      e.target.value = "";
+      return;
+    }
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
       setForm({ ...form, logo: file_url });
     } catch (err) {
       console.error(err);
@@ -223,7 +228,7 @@ export default function Company() {
             <Label>Logo de la empresa</Label>
             <div className="mt-1 flex items-center gap-3">
               {form.logo ? (
-                <img src={form.logo} alt="Logo" className="w-16 h-16 rounded-lg object-contain border border-slate-200 bg-white p-1" />
+                <img src={form.logo} alt="Logo" className="w-16 h-16 rounded-lg object-contain border border-slate-200 bg-[linear-gradient(45deg,#e2e8f0_25%,transparent_25%,transparent_75%,#e2e8f0_75%),linear-gradient(45deg,#e2e8f0_25%,#fff_25%,#fff_75%,#e2e8f0_75%)] bg-[length:12px_12px] bg-[position:0_0,6px_6px] p-1" />
               ) : (
                 <div className="w-16 h-16 rounded-lg border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
                   <Building2 className="w-6 h-6" />
@@ -233,7 +238,7 @@ export default function Company() {
                 <label className="inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-slate-200 rounded-md cursor-pointer hover:bg-slate-50 transition-colors">
                   {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                   {uploading ? "Subiendo..." : "Cargar logo"}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploading} />
+                  <input type="file" accept="image/png,image/svg+xml,.png,.svg" className="hidden" onChange={handleLogoUpload} disabled={uploading} />
                 </label>
                 {form.logo && (
                   <button onClick={() => setForm({ ...form, logo: "" })} className="block text-xs text-red-500 mt-1 hover:underline">Quitar logo</button>
