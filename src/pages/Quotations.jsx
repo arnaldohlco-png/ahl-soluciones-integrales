@@ -13,7 +13,7 @@ import { momentBogota } from "@/lib/localDate";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PrintableDocument from "@/components/PrintableDocument";
-import CatalogPicker from "@/components/CatalogPicker";
+import LiveItemSearch from "@/components/LiveItemSearch";
 import { buildDocMessage } from "@/lib/docMessages";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
@@ -264,9 +264,15 @@ export default function Quotations() {
             {/* Agregar items */}
             <div className="px-5 py-3 border-b border-slate-300 flex items-center justify-between gap-2 flex-wrap">
               <Label className="text-xs uppercase text-slate-500">Items</Label>
-              <div className="flex gap-2">
-                <CatalogPicker options={products} onSelect={addItem} label="+ Producto" placeholder="Buscar producto..." />
-                <CatalogPicker options={services} onSelect={addService} label="+ Servicio" placeholder="Buscar servicio..." />
+              <div className="flex-1 min-w-[220px] max-w-md">
+                <LiveItemSearch
+                  options={[
+                    ...services.map((s) => ({ ...s, _type: "Servicio" })),
+                    ...products.map((p) => ({ ...p, _type: "Producto" })),
+                  ]}
+                  onSelect={(o) => (o._type === "Producto" ? addItem(o) : addService(o))}
+                  placeholder="Buscar repuesto o servicio..."
+                />
               </div>
             </div>
 
