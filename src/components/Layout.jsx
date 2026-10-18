@@ -12,6 +12,7 @@ import { useRoles } from "@/hooks/useRoles";
 import { canAccess } from "@/lib/roles";
 import BackupReminder from "@/components/BackupReminder";
 import PriceViewer from "@/components/PriceViewer";
+import TurnoOpeningPrompt from "@/components/TurnoOpeningPrompt";
 
 const navGroups = [
 {
@@ -323,6 +324,7 @@ export default function Layout() {
       }
 
       <PriceViewer />
+      <TurnoOpeningPrompt />
 
       {/* Main content */}
       <main className={`min-h-screen ${isDashboard ? "" : "pt-14 md:pt-0 md:pl-16"}`}>
