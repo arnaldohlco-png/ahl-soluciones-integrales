@@ -231,7 +231,7 @@ export default function Dashboard() {
               
               <Menu className="w-5 h-5" />
             </button>
-            <div className="w-12 h-12 md:w-[52px] md:h-[52px] rounded-md bg-[#EAF0F4] flex items-center justify-center shrink-0 overflow-hidden">
+            <div className={`w-12 h-12 md:w-[52px] md:h-[52px] rounded-md ${company?.logo ? "" : "bg-[#EAF0F4]"} flex items-center justify-center shrink-0 overflow-hidden`}>
               {company?.logo ?
               <img src={company.logo} alt="Logo" className="w-full h-full object-contain" /> :
 
