@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { findOpenTurno, nextTurnoNumber, buildAperturaDescription } from "@/lib/turnos";
 import nowLocalISO from "@/lib/localDate";
 
-const REGISTERS = ["Caja principal", "Caja taller", "Caja almacén", "Bancos"];
+const REGISTERS = ["Caja almacén", "Bancos"];
 const READERS = ["admin", "administrador", "gerente"];
 const SESSION_KEY = "turno-prompt-dismissed";
 

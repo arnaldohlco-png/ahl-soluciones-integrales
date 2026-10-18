@@ -19,7 +19,7 @@ import {
   turnoWindow, turnoSummary, turnoLabel, buildAperturaDescription, parseTurnoDesc,
 } from "@/lib/turnos";
 
-const REGISTERS = ["Caja principal", "Caja taller", "Caja almacén", "Bancos"];
+const REGISTERS = ["Caja almacén", "Bancos"];
 const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
 const ENTRY_CATS = ["Venta", "Abono", "Otro ingreso"];
 const EXIT_CATS = ["Gasto", "Compra", "Retiro", "Pago", "Otro egreso"];
@@ -37,13 +37,13 @@ export default function Cash() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     type: "Entrada", category: "Otro ingreso", amount: 0, description: "",
-    payment_method: "Efectivo", register_type: "Caja principal",
+    payment_method: "Efectivo", register_type: "Caja almacén",
     date: nowLocalISO(),
   });
   const [openingOpen, setOpeningOpen] = useState(false);
-  const [openingForm, setOpeningForm] = useState({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo", vendedor: "" });
+  const [openingForm, setOpeningForm] = useState({ register_type: "Caja almacén", amount: 0, payment_method: "Efectivo", vendedor: "" });
   const [closingOpen, setClosingOpen] = useState(false);
-  const [closingForm, setClosingForm] = useState({ register_type: "Caja principal", counted: 0 });
+  const [closingForm, setClosingForm] = useState({ register_type: "Caja almacén", counted: 0 });
   const [printData, setPrintData] = useState(null);
 
   useEffect(() => { load(); }, []);
@@ -150,18 +150,18 @@ export default function Cash() {
   const openNew = () => {
     setForm({
       type: "Entrada", category: "Otro ingreso", amount: 0, description: "",
-      payment_method: "Efectivo", register_type: "Caja principal", date: nowLocalISO(),
+      payment_method: "Efectivo", register_type: "Caja almacén", date: nowLocalISO(),
     });
     setModalOpen(true);
   };
 
   const openOpening = () => {
-    setOpeningForm({ register_type: "Caja principal", amount: 0, payment_method: "Efectivo", vendedor: currentUser });
+    setOpeningForm({ register_type: "Caja almacén", amount: 0, payment_method: "Efectivo", vendedor: currentUser });
     setOpeningOpen(true);
   };
 
   const openClosing = () => {
-    setClosingForm({ register_type: "Caja principal", counted: 0 });
+    setClosingForm({ register_type: "Caja almacén", counted: 0 });
     setClosingOpen(true);
   };
 
