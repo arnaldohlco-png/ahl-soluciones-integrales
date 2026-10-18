@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Wallet } from "lucide-react";
 import { parseAnticipos, sumAnticipos } from "@/lib/anticipos";
+import BankAccountSelect from "@/components/BankAccountSelect";
 
 const METHODS = ["Efectivo", "Transferencia"];
 
@@ -67,6 +68,11 @@ export default function AnticiposEditor({ value, onChange }) {
                   {METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {it.method === "Transferencia" && (
+                <div className="col-span-12">
+                  <BankAccountSelect method={it.method} value={it.bank} onChange={(v) => update(i, "bank", v)} />
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => remove(i)}

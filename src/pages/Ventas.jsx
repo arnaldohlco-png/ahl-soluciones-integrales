@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAllCustomers } from "@/lib/customersLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ export default function Ventas() {
   const [customerId, setCustomerId] = useState("");
   const [customerName, setCustomerName] = useState("Cliente mostrador");
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
+  const [bankAccount, setBankAccount] = useState("");
   const [paymentType, setPaymentType] = useState("Contado");
   const [creditDays, setCreditDays] = useState(30);
   const [discount, setDiscount] = useState(0);
@@ -319,6 +321,10 @@ export default function Ventas() {
         console.error(e);
       }
     }
+    if (needsBank(paymentMethod) && !bankAccount) {
+      alert("Selecciona la cuenta bancaria receptora.");
+      return;
+    }
     setProcessing(true);
     try {
       const cust = customers.find(c => c.id === customerId);
@@ -358,6 +364,7 @@ export default function Ventas() {
           description: `Venta POS - ${sale.customer_name}`,
           payment_method: paymentMethod,
           register_type: registerForPayment(paymentMethod, "Caja almacén"),
+          bank_account: bankAccount || undefined,
           reference_id: sale.id,
         });
       } else {
@@ -516,6 +523,7 @@ export default function Ventas() {
                   <SelectItem value="Otros">Otros</SelectItem>
                 </SelectContent>
               </Select>
+              <BankAccountSelect method={paymentMethod} value={bankAccount} onChange={setBankAccount} />
             </div>
             {paymentType === "Crédito" && (
               <div>

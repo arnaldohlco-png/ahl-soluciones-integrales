@@ -50,6 +50,11 @@
       ],
       "default": "Efectivo"
     },
+    "bank_account": {
+      "type": "string",
+      "title": "Cuenta bancaria",
+      "description": "Nombre de la cuenta bancaria elegida (transferencia o tarjeta)"
+    },
     "register_type": {
       "type": "string",
       "title": "Caja",

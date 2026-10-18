@@ -196,6 +196,7 @@ export default function Invoices() {
           amount: meta.amountPaid || meta.total,
           description: `Cobro ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
           payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
+          bank_account: meta.bankAccount || undefined,
         });
       } else {
         const initialAbono = Number(meta.amountPaid) || 0;
@@ -212,6 +213,7 @@ export default function Invoices() {
             date: nowLocalISO(), type: "Entrada", category: "Abono",
             amount: initialAbono, description: `Abono inicial ${inv.type} ${inv.number || ""} - ${inv.customer_name || ""}`.trim(),
             payment_method: meta.paymentMethod, register_type: registerForPayment(meta.paymentMethod, "Caja principal"), reference_id: inv.id,
+            bank_account: meta.bankAccount || undefined,
           });
         }
         if (arBalance <= 0) {

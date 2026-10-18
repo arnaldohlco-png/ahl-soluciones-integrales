@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import moment from "moment";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { momentBogota } from "@/lib/localDate";
 
 const fmt = (n) => (Number(n) || 0).toLocaleString("es-CO");
@@ -16,6 +17,7 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
   const [paymentTerms, setPaymentTerms] = useState("Contado");
   const [creditDays, setCreditDays] = useState(30);
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
+  const [bankAccount, setBankAccount] = useState("");
   const [discMode, setDiscMode] = useState("pesos");
   const [discValue, setDiscValue] = useState(0);
   const [amountPaid, setAmountPaid] = useState("");
@@ -75,7 +77,8 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
       change: paymentTerms === "Contado" ? change : 0,
       status: paymentTerms === "Contado" ? "Pagada" : "Pendiente",
     };
-    onConfirm(payload, { paymentTerms, paymentMethod, total, amountPaid: received });
+    if (needsBank(paymentMethod) && !bankAccount && received > 0) { alert("Selecciona la cuenta bancaria receptora."); return; }
+    onConfirm(payload, { paymentTerms, paymentMethod, bankAccount, total, amountPaid: received });
   };
 
   if (!doc) return null;
@@ -195,6 +198,7 @@ export default function CobroDialog({ open, onOpenChange, doc, company, onConfir
                   <SelectItem value="Otros">Otros</SelectItem>
                 </SelectContent>
               </Select>
+              <BankAccountSelect method={paymentMethod} value={bankAccount} onChange={setBankAccount} />
             </div>
             <div>
               <Label>Recibido {paymentTerms === "Crédito" && <span className="text-xs text-slate-400 normal-case">(abono)</span>}</Label>

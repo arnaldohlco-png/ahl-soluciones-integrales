@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAll } from "@/lib/entityLoader";
 import { registerForPayment } from "@/lib/cashRegister";
 import { fetchAllCustomers } from "@/lib/customersLoader";
@@ -31,6 +32,7 @@ export default function ReturnsModule() {
   const location = useLocation();
   const confirm = useConfirm();
   const [list, setList] = useState([]);
+  const [bankAccount, setBankAccount] = useState("");
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -147,6 +149,7 @@ export default function ReturnsModule() {
     if (!form.source_id) { alert("Selecciona un documento cobrado de origen"); return; }
     if (returned.length === 0) { alert("Indica la cantidad a devolver de al menos un producto"); return; }
     if (!form.reason.trim()) { alert("Indica el motivo de la devolución"); return; }
+    if (needsBank(form.payment_method) && !bankAccount) { alert("Selecciona la cuenta bancaria."); return; }
     setSaving(true);
     try {
       const number = await getNextDocNumber("Return", "DEV");
@@ -170,6 +173,7 @@ export default function ReturnsModule() {
         amount: form.total,
         description: `Devolución ${number} - ${form.source_type} ${form.source_number} - ${form.customer_name || ""}`.trim(),
         payment_method: form.payment_method, register_type: registerForPayment(form.payment_method, "Caja principal"), reference_id: created.id,
+        bank_account: bankAccount || undefined,
       });
 
       setModalOpen(false);
@@ -353,6 +357,7 @@ export default function ReturnsModule() {
                     {PAY_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <BankAccountSelect method={form.payment_method} value={bankAccount} onChange={setBankAccount} label="Cuenta bancaria de origen *" />
               </div>
               <div>
                 <Label>Total devolución</Label>

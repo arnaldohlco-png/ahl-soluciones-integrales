@@ -1,6 +1,7 @@
 // Compras
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAll } from "@/lib/entityLoader";
 import { registerForPayment } from "@/lib/cashRegister";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ export default function Purchases() {
   const [transportCost, setTransportCost] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
+  const [bankAccount, setBankAccount] = useState("");
   const [paymentType, setPaymentType] = useState("Contado");
   const [productSearch, setProductSearch] = useState("");
   const [printP, setPrintP] = useState(null);
@@ -156,6 +158,7 @@ export default function Purchases() {
 
   const save = async () => {
     if (items.length === 0) { alert("Agrega al menos un producto"); return; }
+    if (paymentType === "Contado" && needsBank(paymentMethod) && !bankAccount) { alert("Selecciona la cuenta bancaria."); return; }
     setSaving(true);
     try {
       const supplier = suppliers.find(s => s.id === supplierId);
@@ -209,6 +212,7 @@ export default function Purchases() {
             description: "Compra - " + (supplier?.name || "Sin proveedor"),
             payment_method: paymentMethod,
             register_type: registerForPayment(paymentMethod, "Caja principal"),
+            bank_account: bankAccount || undefined,
             reference_id: purchase.id,
           });
         }
@@ -454,6 +458,7 @@ export default function Purchases() {
                   <SelectItem value="Otros">Otros</SelectItem>
                 </SelectContent>
               </Select>
+              <BankAccountSelect method={paymentMethod} value={bankAccount} onChange={setBankAccount} label="Cuenta bancaria de origen *" />
             </div>
 
             <div className="space-y-1 text-sm bg-slate-50 rounded-lg p-3">

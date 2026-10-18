@@ -1,6 +1,7 @@
 // Gastos
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAll } from "@/lib/entityLoader";
 import { registerForPayment } from "@/lib/cashRegister";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,8 @@ export default function Expenses() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [bankAccount, setBankAccount] = useState("");
+  useEffect(() => { if (modalOpen) setBankAccount(""); }, [modalOpen]);
   const [form, setForm] = useState({
     date: momentBogota().format("YYYY-MM-DD"), category: "Otros", description: "",
     amount: 0, responsible: "", payment_method: "Efectivo", support_photo: ""
@@ -63,6 +66,7 @@ export default function Expenses() {
 
   const save = async () => {
     if (!form.amount || form.amount <= 0) return;
+    if (needsBank(form.payment_method) && !bankAccount) { alert("Selecciona la cuenta bancaria."); return; }
     setSaving(true);
     try {
       const payload = { ...form, amount: Number(form.amount) };
@@ -76,6 +80,7 @@ export default function Expenses() {
               amount: payload.amount,
               description: payload.description || payload.category,
               payment_method: payload.payment_method || "Efectivo",
+              ...(bankAccount ? { bank_account: bankAccount } : {}),
             });
           }
         } catch (e) { console.error(e); }
@@ -90,6 +95,7 @@ export default function Expenses() {
           description: payload.description || payload.category,
           payment_method: payload.payment_method || "Efectivo",
           register_type: registerForPayment(payload.payment_method || "Efectivo", "Caja principal"),
+          bank_account: bankAccount || undefined,
           reference_id: saved.id,
         });
       }
@@ -228,6 +234,7 @@ export default function Expenses() {
                   {METHODS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <BankAccountSelect method={form.payment_method} value={bankAccount} onChange={setBankAccount} label="Cuenta bancaria de origen *" />
             </div>
             <div>
               <Label>Soporte / Foto (URL)</Label>

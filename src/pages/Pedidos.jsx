@@ -1,6 +1,7 @@
 // Pedidos a Proveedor
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAll } from "@/lib/entityLoader";
 import { registerForPayment } from "@/lib/cashRegister";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ export default function Pedidos() {
   const [convertItems, setConvertItems] = useState([]);
   const [convertPaymentType, setConvertPaymentType] = useState("Contado");
   const [convertPaymentMethod, setConvertPaymentMethod] = useState("Efectivo");
+  const [bankAccount, setBankAccount] = useState("");
   const [convertInvoiceNumber, setConvertInvoiceNumber] = useState("");
   const [converting, setConverting] = useState(false);
 
@@ -204,6 +206,7 @@ export default function Pedidos() {
 
   const confirmConvert = async () => {
     if (convertItems.length === 0) { alert("No hay items para convertir"); return; }
+    if (convertPaymentType === "Contado" && needsBank(convertPaymentMethod) && !bankAccount) { alert("Selecciona la cuenta bancaria."); return; }
     setConverting(true);
     try {
       const supplier = suppliers.find(s => s.id === convertOrder.supplier_id);
@@ -244,6 +247,7 @@ export default function Pedidos() {
           description: "Compra - " + (convertOrder.supplier_name || "Sin proveedor"),
           payment_method: convertPaymentMethod,
           register_type: registerForPayment(convertPaymentMethod, "Caja principal"),
+          bank_account: bankAccount || undefined,
           reference_id: purchase.id,
         });
       }
@@ -614,6 +618,7 @@ export default function Pedidos() {
                     <SelectItem value="Otros">Otros</SelectItem>
                   </SelectContent>
                 </Select>
+                <BankAccountSelect method={convertPaymentMethod} value={bankAccount} onChange={setBankAccount} />
               </div>
             </div>
             <div className="space-y-1 text-sm bg-slate-50 rounded-lg p-3">

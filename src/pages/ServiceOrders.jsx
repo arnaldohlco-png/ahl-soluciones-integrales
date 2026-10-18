@@ -231,6 +231,7 @@ export default function ServiceOrders() {
         description: `Anticipo orden N° ${orderNumber} - ${customerName(form.customer_id)}`,
         payment_method: a.method || "Efectivo",
         register_type: registerForPayment(a.method || "Efectivo", "Caja almacén"),
+        bank_account: a.bank || undefined,
         reference_id: orderId
       })
       ));

@@ -1,6 +1,7 @@
 // Créditos y Cartera
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAll } from "@/lib/entityLoader";
 import { registerForPayment } from "@/lib/cashRegister";
 import { fetchAllCustomers } from "@/lib/customersLoader";
@@ -26,6 +27,7 @@ export default function Credits() {
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState(0);
   const [payMethod, setPayMethod] = useState("Efectivo");
+  const [bankAccount, setBankAccount] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { load(); }, []);
@@ -74,6 +76,7 @@ export default function Credits() {
 
   const registerPayment = async () => {
     if (!payAmount || payAmount <= 0) return;
+    if (needsBank(payMethod) && !bankAccount) { alert("Selecciona la cuenta bancaria receptora."); return; }
     if (!(await confirm({ title: "¿Registrar este abono?", description: `Monto: $${payAmount.toLocaleString("es-CO")} · ${payMethod}`, confirmText: "Sí, registrar", cancelText: "No" }))) return;
     setSaving(true);
     try {
@@ -116,6 +119,7 @@ export default function Credits() {
         description: `Abono - ${payModal.customer_name}`,
         payment_method: payMethod,
         register_type: registerForPayment(payMethod, "Caja principal"),
+        bank_account: bankAccount || undefined,
         reference_id: payModal.id,
       });
 
@@ -247,6 +251,7 @@ export default function Credits() {
                     <SelectItem value="Otros">Otros</SelectItem>
                   </SelectContent>
                 </Select>
+                <BankAccountSelect method={payMethod} value={bankAccount} onChange={setBankAccount} />
               </div>
             </div>
             <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm flex items-center gap-2">

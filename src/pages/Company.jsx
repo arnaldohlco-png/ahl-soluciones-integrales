@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, Save, Loader2, Cloud, Upload, RotateCcw, FileDown, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import RolesManager from "@/components/RolesManager";
+import BankAccountsManager from "@/components/BankAccountsManager";
 import UsersManager from "@/components/UsersManager";
 import AdminSignatureDialog from "@/components/AdminSignatureDialog";
 import { useConfirm } from "@/components/ConfirmProvider";
@@ -355,6 +356,7 @@ export default function Company() {
 
       <AdminSignatureDialog open={sigOpen} onOpenChange={setSigOpen} current={form.admin_signature} onSaved={saveSignature} />
       {isAdmin && <UsersManager />}
+      <BankAccountsManager />
       <RolesManager />
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-4">

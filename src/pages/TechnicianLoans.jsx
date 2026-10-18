@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAll } from "@/lib/entityLoader";
 import { registerForPayment } from "@/lib/cashRegister";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export default function TechnicianLoans() {
   const [payAmount, setPayAmount] = useState(0);
   const [payDate, setPayDate] = useState(momentBogota().format("YYYY-MM-DD"));
   const [payMethod, setPayMethod] = useState("Efectivo");
+  const [bankAccount, setBankAccount] = useState("");
   const [payNote, setPayNote] = useState("");
   const [paySaving, setPaySaving] = useState(false);
 
@@ -147,6 +149,7 @@ export default function TechnicianLoans() {
     const balance = Number(payLoan.balance) || 0;
     if (amount <= 0) { alert("Ingresa un monto válido"); return; }
     if (amount > balance) { alert("El abono no puede exceder el saldo pendiente"); return; }
+    if (needsBank(payMethod) && !bankAccount) { alert("Selecciona la cuenta bancaria receptora."); return; }
     if (!(await confirm({ title: "¿Confirmar abono?", description: `${fmt(amount)} · ${payMethod}`, confirmText: "Sí, registrar", cancelText: "No" }))) return;
     setPaySaving(true);
     try {
@@ -169,6 +172,7 @@ export default function TechnicianLoans() {
         description: `Abono préstamo - ${payLoan.technician_name || techName(payLoan.technician_id)}`,
         payment_method: payMethod,
         register_type: registerForPayment(payMethod, "Caja principal"),
+        bank_account: bankAccount || undefined,
         reference_id: payLoan.id,
       });
       setPayLoan(null);
@@ -296,6 +300,7 @@ export default function TechnicianLoans() {
                   <SelectItem value="Otros">Otros</SelectItem>
                 </SelectContent>
               </Select>
+              <BankAccountSelect method={payMethod} value={bankAccount} onChange={setBankAccount} />
             </div>
             <div>
               <Label>Nota (opcional)</Label>

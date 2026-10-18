@@ -1,6 +1,7 @@
 // Caja y Bancos — Apertura y cierre por turnos
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAll } from "@/lib/entityLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -244,6 +245,7 @@ export default function Cash() {
 
   const save = async () => {
     if (!form.amount || form.amount <= 0) return;
+    if (needsBank(form.payment_method) && !form.bank_account) { alert("Selecciona la cuenta bancaria."); return; }
     setSaving(true);
     try {
       await base44.entities.CashMovement.create({ ...form, amount: Number(form.amount) });
@@ -390,7 +392,7 @@ export default function Cash() {
                   <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{m.register_type}</td>
                   <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600">{m.category}</span></td>
                   <td className="px-4 py-3 text-slate-800 max-w-xs truncate" title={m.description || ""}>{m.description || "—"}</td>
-                  <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{m.payment_method}</td>
+                  <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{m.payment_method}{m.bank_account ? ` · ${m.bank_account}` : ""}</td>
                   <td className={`px-4 py-3 text-right font-semibold whitespace-nowrap ${m.type === "Entrada" ? "text-emerald-600" : "text-red-600"}`}>
                     {m.type === "Entrada" ? "+" : "-"}${(m.amount || 0).toLocaleString("es-CO")}
                   </td>
@@ -460,6 +462,7 @@ export default function Cash() {
                   {METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <BankAccountSelect method={form.payment_method} value={form.bank_account} onChange={(v) => setForm((f) => ({ ...f, bank_account: v }))} />
             </div>
           </div>
           <DialogFooter>
