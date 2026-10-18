@@ -201,14 +201,14 @@ export default function Motorcycles() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                   <Label>Marca *</Label>
-                  <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="mt-1" placeholder="Honda, Yamaha..." list="brands-list" />
+                  <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value.toUpperCase() })} className="mt-1" placeholder="Honda, Yamaha..." list="brands-list" />
                   <datalist id="brands-list">
                     {brands.map((b) => <option key={b.id} value={b.name} />)}
                   </datalist>
                 </div>
               <div>
                 <Label>Línea</Label>
-                <Input value={form.line} onChange={(e) => setForm({ ...form, line: e.target.value })} className="mt-1" placeholder="CB, YBR..." list="lines-list" />
+                <Input value={form.line} onChange={(e) => setForm({ ...form, line: e.target.value.toUpperCase() })} className="mt-1" placeholder="CB, YBR..." list="lines-list" />
                 <datalist id="lines-list">
                   {brandLines.map((l) => <option key={l} value={l} />)}
                 </datalist>
@@ -218,20 +218,20 @@ export default function Motorcycles() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Modelo *</Label><Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="mt-1" /></div>
+              <div><Label>Modelo *</Label><Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value.toUpperCase() })} className="mt-1" /></div>
               <div><Label>Año</Label><Input type="number" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} className="mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Placa</Label><Input value={form.plate} onChange={(e) => setForm({ ...form, plate: e.target.value.toUpperCase() })} className="mt-1" /></div>
-              <div><Label>Color</Label><Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="mt-1" /></div>
+              <div><Label>Color</Label><Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value.toUpperCase() })} className="mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Cilindraje (cc)</Label><Input type="number" value={form.displacement} onChange={(e) => setForm({ ...form, displacement: e.target.value })} className="mt-1" /></div>
               <div><Label>Kilometraje</Label><Input type="number" value={form.mileage} onChange={(e) => setForm({ ...form, mileage: e.target.value })} className="mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>VIN / Chasis</Label><Input value={form.vin} onChange={(e) => setForm({ ...form, vin: e.target.value })} className="mt-1" /></div>
-              <div><Label>Número de motor</Label><Input value={form.engine_number} onChange={(e) => setForm({ ...form, engine_number: e.target.value })} className="mt-1" /></div>
+              <div><Label>VIN / Chasis</Label><Input value={form.vin} onChange={(e) => setForm({ ...form, vin: e.target.value.toUpperCase() })} className="mt-1" /></div>
+              <div><Label>Número de motor</Label><Input value={form.engine_number} onChange={(e) => setForm({ ...form, engine_number: e.target.value.toUpperCase() })} className="mt-1" /></div>
             </div>
             <div><Label>Fecha de matrícula</Label><Input type="date" value={form.registration_date} onChange={(e) => setForm({ ...form, registration_date: e.target.value })} className="mt-1" /></div>
           </div>
