@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock, Printer } from "lucide-react";
 import TurnoPrintReport from "@/components/TurnoPrintReport";
+import CreditPaymentDialog from "@/components/CreditPaymentDialog";
 import moment from "moment";
 import { matchAny } from "@/lib/search";
 import nowLocalISO, { todayLocalKey, localDateKey, fmtBogota } from "@/lib/localDate";
@@ -45,6 +46,7 @@ export default function Cash() {
   const [closingOpen, setClosingOpen] = useState(false);
   const [closingForm, setClosingForm] = useState({ register_type: "Caja almacén", counted: 0 });
   const [printData, setPrintData] = useState(null);
+  const [creditOpen, setCreditOpen] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -278,6 +280,9 @@ export default function Cash() {
           <Button onClick={openClosing} variant="outline">
             <ArrowUpCircle className="w-4 h-4" /> Cierre de Turno
           </Button>
+          <Button onClick={() => setCreditOpen(true)} variant="outline">
+            <Landmark className="w-4 h-4" /> Cobro venta a crédito
+          </Button>
           <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
             <Plus className="w-4 h-4" /> Nuevo Movimiento
           </Button>
@@ -402,6 +407,8 @@ export default function Cash() {
           </table>
         </div>
       </div>
+
+      <CreditPaymentDialog open={creditOpen} onOpenChange={setCreditOpen} onSaved={load} />
 
       {printData && (
         <TurnoPrintReport list={list} register={printData.register} turno={printData.turno}
