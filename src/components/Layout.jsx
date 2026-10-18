@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useRoles } from "@/hooks/useRoles";
 import { canAccess } from "@/lib/roles";
 import BackupReminder from "@/components/BackupReminder";
+import PriceViewer from "@/components/PriceViewer";
 
 const navGroups = [
 {
@@ -282,6 +283,8 @@ export default function Layout() {
           </aside>
         </div>
       }
+
+      <PriceViewer />
 
       {/* Main content */}
       <main className={`min-h-screen ${isDashboard ? "" : "pt-14 md:pt-0 md:pl-16"}`}>
