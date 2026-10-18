@@ -69,6 +69,20 @@ export default function Customers() {
   };
 
   const remove = async (c) => {
+    const links = await Promise.all(
+      [["Motorcycle", "motocicletas"], ["ServiceOrder", "órdenes de servicio"], ["Sale", "ventas"], ["Invoice", "facturas/cotizaciones"], ["Appointment", "citas"]].map(
+        async ([ent, label]) => [label, await base44.entities[ent].count({ customer_id: c.id })]
+      )
+    ).catch(() => []);
+    const used = links.filter(([, n]) => n > 0);
+    if (used.length > 0) {
+      await confirm({
+        title: `No se puede eliminar a "${c.name}"`,
+        description: `Tiene registros asociados: ${used.map(([l, n]) => `${n} ${l}`).join(", ")}. Elimínalos o reasígnalos primero.`,
+        confirmText: "Entendido", cancelText: "Cerrar",
+      });
+      return;
+    }
     if (!(await confirm({ title: `¿Eliminar al cliente "${c.name}"?`, confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Customer.delete(c.id);
     await load();
