@@ -104,6 +104,13 @@ export default function Layout() {
           navigate("/cotizaciones", { state: { newQuote: true } });
         }
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "x") {
+        const t = e.target;
+        if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
+        if (window.getSelection()?.toString()) return;
+        e.preventDefault();
+        if (pathRef.current !== "/creditos") navigate("/creditos");
+      }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "s") {
         e.preventDefault();
         if (pathRef.current !== "/servicios") navigate("/servicios");
