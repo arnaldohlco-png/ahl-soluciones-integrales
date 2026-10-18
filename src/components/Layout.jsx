@@ -103,6 +103,10 @@ export default function Layout() {
           navigate("/cotizaciones", { state: { newQuote: true } });
         }
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (pathRef.current !== "/servicios") navigate("/servicios");
+      }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
         e.preventDefault();
         if (pathRef.current === "/ventas") {
