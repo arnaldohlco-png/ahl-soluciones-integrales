@@ -146,7 +146,7 @@ export default function Suppliers() {
           <div className="grid gap-4 py-2">
             <div>
               <Label>Razón social *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
