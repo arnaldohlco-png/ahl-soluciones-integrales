@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Bike } from "lucide-react";
+import { Search, Bike, Tag } from "lucide-react";
 
 const esc = (s) => s.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const money = (n) => "$" + Math.round(n || 0).toLocaleString("es-CO");
@@ -47,6 +47,15 @@ export default function PriceViewer() {
   }, [name, line, open]);
 
   return (
+    <>
+    <button
+      onClick={() => setOpen(true)}
+      aria-label="Visor de precios"
+      title="Visor de precios (Ctrl+V)"
+      className="no-print fixed bottom-4 right-4 z-30 flex items-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg transition-colors hover:bg-amber-400">
+      <Tag className="w-4 h-4" />
+      <span className="hidden sm:inline">Precios</span>
+    </button>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-2xl">
         <DialogHeader><DialogTitle>Visor de precios</DialogTitle></DialogHeader>
@@ -80,5 +89,6 @@ export default function PriceViewer() {
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
