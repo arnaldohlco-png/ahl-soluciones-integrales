@@ -14,6 +14,7 @@ import { registerForPayment } from "@/lib/cashRegister";
 import { nowLocalISO, todayLocalKey, addDaysLocalKey, fmtBogota } from "@/lib/localDate";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { Image } from "@/components/ui/image";
 
 export default function Ventas() {
   const confirm = useConfirm();
@@ -467,187 +468,191 @@ export default function Ventas() {
         </div>
       )}
 
-      <div className={"grid lg:grid-cols-3 gap-6" + (view === "pos" ? "" : " hidden")}>
-        {/* Products */}
-        <div className="lg:col-span-2">
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              ref={searchRef}
-              placeholder="Buscar por nombre, SKU o código de barras..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+      <div className={"max-w-4xl mx-auto" + (view === "pos" ? "" : " hidden")}>
+        <div className="bg-white border border-slate-300 shadow-sm">
+          {/* Encabezado del documento */}
+          <div className="text-center px-5 pt-6 pb-4 border-b border-slate-300">
+            {company?.logo && <Image src={company.logo} alt="Logo" fittingType="fit" className="h-16 w-40 mx-auto mb-2" />}
+            <p className="text-lg font-bold text-slate-900 uppercase">{company?.name || "Mi empresa"}</p>
+            {company?.document_number && <p className="text-xs text-slate-500">NIT/CC: {company.document_number}</p>}
+            <p className="text-xs text-slate-500">{[company?.address, company?.city, company?.phone].filter(Boolean).join(" · ")}</p>
+            <div className="mt-3 inline-block border border-slate-300 px-4 py-1.5">
+              <p className="text-sm font-bold text-slate-900 tracking-wide">FACTURA DE VENTA POS</p>
+              <p className="text-xs text-slate-500">Fecha: {fmtBogota(todayLocalKey(), "DD/MM/YYYY")}</p>
+            </div>
           </div>
-          {search ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {filtered.map(p => {
-                  const out = (p.stock || 0) <= 0;
-                  return (
-                  <button
-                    key={p.id}
-                    onClick={() => addToCart(p)}
-                    disabled={out}
-                    className={`rounded-xl border p-4 text-left transition-all ${out ? "bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed" : "bg-white border-slate-200 hover:border-amber-400 hover:shadow-md"}`}
-                  >
-                    <p className="font-medium text-slate-800 text-sm line-clamp-2">{p.name}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{p.brand} · {p.sku || ""}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="font-bold text-slate-900">${(p.price || 0).toLocaleString("es-CO")}</span>
-                      {out
-                        ? <span className="text-xs font-semibold text-red-500">Sin stock</span>
-                        : <span className="text-xs text-slate-400">Stock: {p.stock}</span>}
-                    </div>
-                  </button>
-                  );
-                })}
+
+          {/* Datos del cliente y pago */}
+          <div className="px-5 py-4 border-b border-slate-300 grid sm:grid-cols-2 gap-3">
+            <div className="sm:col-span-2">
+              <Label className="text-xs uppercase text-slate-500">Cliente</Label>
+              <SearchableSelect
+                placeholder="Buscar cliente..."
+                value={customerId || "walkin"}
+                onValueChange={(v) => { setCustomerId(v === "walkin" ? "" : v); const c = customers.find(c => c.id === v); if (c) setCustomerName(c.name); }}
+                onCreate={createCustomer}
+                createLabel="Crear cliente"
+                items={[{ id: "walkin", label: "Cliente mostrador" }, ...customers.map(c => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))]}
+              />
+            </div>
+            <div>
+              <Label className="text-xs uppercase text-slate-500">Tipo de pago</Label>
+              <Select value={paymentType} onValueChange={setPaymentType}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Contado">Contado</SelectItem>
+                  <SelectItem value="Crédito">Crédito</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs uppercase text-slate-500">Medio de pago</Label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Efectivo">Efectivo</SelectItem>
+                  <SelectItem value="Transferencia">Transferencia</SelectItem>
+                  <SelectItem value="Tarjeta">Tarjeta</SelectItem>
+                  <SelectItem value="Otros">Otros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {paymentType === "Crédito" && (
+              <div>
+                <Label className="text-xs uppercase text-slate-500">Días de plazo</Label>
+                <Input type="number" min={1} value={creditDays} onChange={(e) => setCreditDays(parseInt(e.target.value) || 0)} className="h-8 text-sm" />
               </div>
-              {filtered.length === 0 && (
-                <p className="text-center text-slate-400 py-12">No se encontraron productos</p>
-              )}
-            </>
-          ) : (
-            <p className="text-center text-slate-400 py-12 text-sm">Busca un producto por nombre, SKU o código de barras para agregarlo al carrito</p>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Cart */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 h-fit lg:sticky lg:top-6">
-          <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-amber-600" /> Carrito ({cart.length})
-          </h3>
-
-          {cart.length === 0 ? (
-            <p className="text-slate-400 text-sm py-8 text-center">Selecciona productos para vender</p>
-          ) : (
-            <>
-              <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
-                {cart.map(item => (
-                  <div key={item.product_id} className="py-2 border-b border-slate-100 last:border-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-800 text-sm leading-tight line-clamp-2">{item.name}</p>
-                        <p className="text-xs text-slate-400">${item.unit_price.toLocaleString("es-CO")} c/u</p>
-                      </div>
-                      <button onClick={() => removeFromCart(item.product_id)} className="text-slate-300 hover:text-red-500 shrink-0">
-                        <Trash2 className="w-4 h-4" />
+          {/* Búsqueda de productos */}
+          <div className="px-5 py-4 border-b border-slate-300">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                ref={searchRef}
+                placeholder="Buscar por nombre, SKU o código de barras..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            {search && (
+              <div className="mt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto">
+                  {filtered.slice(0, 40).map(p => {
+                    const out = (p.stock || 0) <= 0;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => addToCart(p)}
+                        disabled={out}
+                        className={`border p-3 text-left transition-all ${out ? "bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed" : "bg-white border-slate-200 hover:border-amber-400 hover:bg-amber-50/40"}`}
+                      >
+                        <p className="font-medium text-slate-800 text-sm line-clamp-2">{p.name}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{p.brand} · {p.sku || ""}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="font-bold text-slate-900 text-sm">${(p.price || 0).toLocaleString("es-CO")}</span>
+                          {out
+                            ? <span className="text-xs font-semibold text-red-500">Sin stock</span>
+                            : <span className="text-xs text-slate-400">Stock: {p.stock}</span>}
+                        </div>
                       </button>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 mt-1.5">
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => updateQty(item.product_id, -1)} className="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center">
-                          <Minus className="w-3 h-3" />
-                        </button>
+                    );
+                  })}
+                </div>
+                {filtered.length === 0 && <p className="text-center text-slate-400 py-6 text-sm">No se encontraron productos</p>}
+              </div>
+            )}
+          </div>
+
+          {/* Renglones */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-100 text-slate-600 text-xs uppercase border-b border-slate-300">
+                  <th className="px-3 py-2 text-left font-semibold">Descripción</th>
+                  <th className="px-3 py-2 text-center font-semibold">Cant.</th>
+                  <th className="px-3 py-2 text-right font-semibold">Vr. unit.</th>
+                  <th className="px-3 py-2 text-right font-semibold">Subtotal</th>
+                  <th className="px-2 py-2 w-8"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.length === 0 && (
+                  <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-400">Busca un producto para agregarlo a la venta</td></tr>
+                )}
+                {cart.map(item => (
+                  <tr key={item.product_id} className="border-b border-slate-100">
+                    <td className="px-3 py-2 text-slate-800">{item.name}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => updateQty(item.product_id, -1)} className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
                         <input
                           type="number"
                           value={item.quantity}
                           onChange={(e) => setQtyDirect(item.product_id, parseInt(e.target.value) || 1)}
-                          className="w-11 text-center text-sm border-0 p-0 focus:ring-0"
+                          className="w-10 text-center text-sm border-0 p-0 focus:ring-0"
                         />
-                        <button onClick={() => updateQty(item.product_id, 1)} className="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center">
-                          <Plus className="w-3 h-3" />
-                        </button>
+                        <button onClick={() => updateQty(item.product_id, 1)} className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
                       </div>
-                      <span className="text-sm font-semibold text-slate-800 text-right">${item.subtotal.toLocaleString("es-CO")}</span>
-                    </div>
-                  </div>
+                    </td>
+                    <td className="px-3 py-2 text-right text-slate-600 whitespace-nowrap">${item.unit_price.toLocaleString("es-CO")}</td>
+                    <td className="px-3 py-2 text-right font-semibold text-slate-900 whitespace-nowrap">${item.subtotal.toLocaleString("es-CO")}</td>
+                    <td className="px-2 py-2">
+                      <button onClick={() => removeFromCart(item.product_id)} className="text-slate-300 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
                 ))}
-              </div>
+              </tbody>
+            </table>
+          </div>
 
-              <div className="space-y-1.5 text-sm border-t border-slate-100 pt-3">
-                <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>${totals.subtotal.toLocaleString("es-CO")}</span></div>
-                <div className="flex justify-between text-slate-600"><span>IVA</span><span>${totals.iva.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
-                <div className="flex justify-between items-center text-slate-600">
-                  <span>Descuento</span>
-                  <Input type="number" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="w-20 h-7 text-right text-sm" />
-                </div>
-                <div className="flex justify-between font-bold text-slate-900 text-base pt-1"><span>Total</span><span>${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
-                {totals.anticipo > 0 && (
-                  <>
-                    <div className="flex justify-between text-emerald-700 pt-1"><span>Anticipo aplicado</span><span>-${totals.anticipo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
-                    <div className="flex justify-between font-bold text-slate-900 text-base pt-1 border-t border-slate-200"><span>Saldo a cobrar</span><span>${totals.saldo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
-                  </>
-                )}
-                {paymentMethod === "Efectivo" && paymentType === "Contado" && (
-                  <>
-                    <div className="flex justify-between items-center text-slate-600 pt-1">
-                      <span>Recibido</span>
-                      <Input type="number" value={amountPaid || ""} onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)} className="w-24 h-7 text-right text-sm" placeholder="0" />
+          {/* Totales */}
+          <div className="px-5 py-4 border-t border-slate-300 flex justify-end">
+            <div className="w-full sm:w-72 space-y-1.5 text-sm">
+              <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>${totals.subtotal.toLocaleString("es-CO")}</span></div>
+              <div className="flex justify-between text-slate-600"><span>IVA</span><span>${totals.iva.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+              <div className="flex justify-between items-center text-slate-600">
+                <span>Descuento</span>
+                <Input type="number" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="w-24 h-7 text-right text-sm" />
+              </div>
+              <div className="flex justify-between font-bold text-slate-900 text-base pt-1 border-t border-slate-300"><span>TOTAL</span><span>${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+              {totals.anticipo > 0 && (
+                <>
+                  <div className="flex justify-between text-emerald-700"><span>Anticipo aplicado</span><span>-${totals.anticipo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+                  <div className="flex justify-between font-bold text-slate-900 text-base border-t border-slate-200 pt-1"><span>Saldo a cobrar</span><span>${totals.saldo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
+                </>
+              )}
+              {paymentMethod === "Efectivo" && paymentType === "Contado" && (
+                <>
+                  <div className="flex justify-between items-center text-slate-600 pt-1">
+                    <span>Recibido</span>
+                    <Input type="number" value={amountPaid || ""} onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)} className="w-28 h-7 text-right text-sm" placeholder="0" />
+                  </div>
+                  {amountPaid > 0 && (
+                    <div className="flex justify-between font-semibold text-emerald-700">
+                      <span>Cambio/Vueltas</span>
+                      <span>${Math.max(0, amountPaid - totals.saldo).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
                     </div>
-                    {amountPaid > 0 && (
-                      <div className="flex justify-between font-semibold text-emerald-700">
-                        <span>Cambio/Vueltas</span>
-                        <span>${Math.max(0, amountPaid - totals.saldo).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
 
-              <div className="space-y-3 mt-4">
-                <div>
-                  <Label className="text-xs">Cliente</Label>
-                  <SearchableSelect
-                    placeholder="Buscar cliente..."
-                    value={customerId || "walkin"}
-                    onValueChange={(v) => { setCustomerId(v === "walkin" ? "" : v); const c = customers.find(c => c.id === v); if (c) setCustomerName(c.name); }}
-                    onCreate={createCustomer}
-                    createLabel="Crear cliente"
-                    items={[{ id: "walkin", label: "Cliente mostrador" }, ...customers.map(c => ({ id: c.id, label: c.name, sublabel: [c.document_number, c.phone].filter(Boolean).join(" · ") }))]}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs">Tipo de pago</Label>
-                    <Select value={paymentType} onValueChange={setPaymentType}>
-                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Contado">Contado</SelectItem>
-                        <SelectItem value="Crédito">Crédito</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Medio de pago</Label>
-                    <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Efectivo">Efectivo</SelectItem>
-                        <SelectItem value="Transferencia">Transferencia</SelectItem>
-                        <SelectItem value="Tarjeta">Tarjeta</SelectItem>
-                        <SelectItem value="Otros">Otros</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                {paymentType === "Crédito" && (
-                  <div>
-                    <Label className="text-xs">Días de plazo</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={creditDays}
-                      onChange={(e) => setCreditDays(parseInt(e.target.value) || 0)}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                )}
-                <div className="grid grid-cols-3 gap-2">
-                  <Button onClick={parkSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10 border-amber-300 text-amber-700 hover:bg-amber-50">
-                    <Pause className="w-4 h-4" /> Guardar
-                  </Button>
-                  <Button onClick={startNewSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10">
-                    <FilePlus2 className="w-4 h-4" /> Nueva
-                  </Button>
-                  <Button onClick={checkout} disabled={processing || (!fromOrder && cart.some(i => i.product_id && (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity))} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
-                    {processing ? "..." : "Cobrar"}
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
+          {/* Acciones */}
+          <div className="px-5 py-4 border-t border-slate-300 bg-slate-50 grid grid-cols-3 gap-2">
+            <Button onClick={parkSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10 border-amber-300 text-amber-700 hover:bg-amber-50">
+              <Pause className="w-4 h-4" /> Guardar
+            </Button>
+            <Button onClick={startNewSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10">
+              <FilePlus2 className="w-4 h-4" /> Nueva
+            </Button>
+            <Button onClick={checkout} disabled={processing || (!fromOrder && cart.some(i => i.product_id && (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity))} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
+              {processing ? "..." : "Cobrar"}
+            </Button>
+          </div>
         </div>
       </div>
 
