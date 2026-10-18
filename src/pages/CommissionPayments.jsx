@@ -16,6 +16,7 @@ import { buildDocMessage } from "@/lib/docMessages";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { techBases, isPaidFor, nextPaidState } from "@/lib/commissionShares";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -91,14 +92,11 @@ export default function CommissionPayments() {
     }
     return /tercero/i.test((i.name || "").trim());
   };
-  const commissionBase = (o) => {
-    let items = [];
-    try { items = JSON.parse(o.service_items || "[]"); } catch { items = []; }
-    return items
-      .filter((i) => String(i.type || "").toLowerCase() === "servicio")
-      .filter((i) => !isTercero(i))
-      .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
-  };
+  // Base de comisión de un técnico en una orden (por servicio asignado; si no, técnico general)
+  const baseFor = (o, tid) => techBases(o, isTercero)[tid] || 0;
+  // Técnicos con comisión aún sin pagar en la orden
+  const unpaidShares = (o) =>
+    Object.entries(techBases(o, isTercero)).filter(([tid, b]) => b > 0 && !isPaidFor(o, tid));
 
   const inPeriod = (dStr) => {
     const d = (dStr || "").slice(0, 10);
@@ -108,19 +106,19 @@ export default function CommissionPayments() {
   // Órdenes pendientes de pago de comisión en el período seleccionado
   const pendingOrders = orders.filter((o) => {
     const d = o.entry_date || (o.created_date || "").slice(0, 10);
-    return d >= from && d <= to && isChargedOrDelivered(o) && commissionBase(o) > 0 && !o.commission_paid;
+    return d >= from && d <= to && isChargedOrDelivered(o) && unpaidShares(o).length > 0;
   });
 
-  // Agrupar pendientes por técnico
+  // Agrupar pendientes por técnico (cada servicio aporta a su técnico asignado)
   const pendingByTech = {};
   pendingOrders.forEach((o) => {
-    const tid = o.technician_id || "_sin";
-    if (!pendingByTech[tid]) pendingByTech[tid] = { techId: tid, orders: [], totalBase: 0, totalCommission: 0 };
-    const base = commissionBase(o);
-    const pct = techPct(tid);
-    pendingByTech[tid].orders.push({ ...o, base, commission: base * pct / 100 });
-    pendingByTech[tid].totalBase += base;
-    pendingByTech[tid].totalCommission += base * pct / 100;
+    unpaidShares(o).forEach(([tid, base]) => {
+      if (!pendingByTech[tid]) pendingByTech[tid] = { techId: tid, orders: [], totalBase: 0, totalCommission: 0 };
+      const pct = techPct(tid);
+      pendingByTech[tid].orders.push({ ...o, base, commission: base * pct / 100 });
+      pendingByTech[tid].totalBase += base;
+      pendingByTech[tid].totalCommission += base * pct / 100;
+    });
   });
   const pendingGroups = Object.values(pendingByTech);
 
@@ -134,10 +132,10 @@ export default function CommissionPayments() {
         inRange = (await Promise.all(paidIds.map((id) => base44.entities.ServiceOrder.get(id)))).filter(Boolean);
       } else {
         // Compatibilidad: filtrar por período si no hay order_ids
-        const ords = await base44.entities.ServiceOrder.filter({ technician_id: p.technician_id }, "-created_date", 500);
+        const ords = await fetchAll("ServiceOrder");
         inRange = ords.filter((o) => {
           const d = o.entry_date || (o.created_date || "").slice(0, 10);
-          return d >= p.period_start && d <= p.period_end && isChargedOrDelivered(o);
+          return d >= p.period_start && d <= p.period_end && isChargedOrDelivered(o) && baseFor(o, p.technician_id) > 0;
         });
       }
       setPrintPay({ doc: p, orders: inRange });
@@ -152,18 +150,18 @@ export default function CommissionPayments() {
     setSelectedTech(techId);
     try {
       const [ords, loans] = await Promise.all([
-        base44.entities.ServiceOrder.filter({ technician_id: techId }, "-created_date", 500),
+        fetchAll("ServiceOrder"),
         base44.entities.TechnicianLoan.filter({ technician_id: techId, status: "Pendiente" }, "-created_date", 100),
       ]);
 
       const inRange = ords.filter((o) => {
         const d = o.entry_date || (o.created_date || "").slice(0, 10);
-        return d >= from && d <= to && isChargedOrDelivered(o) && !o.commission_paid && commissionBase(o) > 0;
+        return d >= from && d <= to && isChargedOrDelivered(o) && unpaidShares(o).some(([tid]) => tid === techId);
       });
 
       const pct = techPct(techId);
       const breakdown = inRange.map((o) => {
-        const base = commissionBase(o);
+        const base = baseFor(o, techId);
         return {
           id: o.id, number: o.number || "—",
           date: o.entry_date || (o.created_date || "").slice(0, 10),
@@ -217,7 +215,7 @@ export default function CommissionPayments() {
 
       // Mark orders as commission paid
       for (const o of calc.orders) {
-        await base44.entities.ServiceOrder.update(o.id, { commission_paid: true });
+        await base44.entities.ServiceOrder.update(o.id, nextPaidState(o, calc.techId, Object.keys(techBases(o, isTercero))));
       }
 
       // Mark loans as deducted

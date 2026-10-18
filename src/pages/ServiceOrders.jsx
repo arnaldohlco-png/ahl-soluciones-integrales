@@ -531,7 +531,7 @@ export default function ServiceOrders() {
 
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Productos y servicios</p>
-              <ServiceItemsEditor items={serviceItems} setItems={setServiceItems} products={products} services={services} /> 
+              <ServiceItemsEditor items={serviceItems} setItems={setServiceItems} products={products} services={services} technicians={technicians.filter((t) => t.status === "Activo")} /> 
 
             </div>
 
@@ -613,7 +613,7 @@ export default function ServiceOrders() {
         type="order"
         doc={printOrder}
         company={company}
-        extras={{ motorcycle: motos.find((m) => m.id === printOrder.motorcycle_id), customer: customers.find((c) => c.id === printOrder.customer_id), technician: technicians.find((t) => t.id === printOrder.technician_id) }}
+        extras={{ motorcycle: motos.find((m) => m.id === printOrder.motorcycle_id), customer: customers.find((c) => c.id === printOrder.customer_id), technician: technicians.find((t) => t.id === printOrder.technician_id), technicians }}
         onClose={() => setPrintOrder(null)} />
 
       }

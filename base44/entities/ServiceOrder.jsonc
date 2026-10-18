@@ -185,7 +185,7 @@
     "service_items": {
       "type": "string",
       "title": "Items (productos y servicios)",
-      "description": "JSON: [{type, name, quantity, unit_price, subtotal, product_id?}]"
+      "description": "JSON: [{type, name, quantity, unit_price, subtotal, product_id?, technician_id?}]"
     },
     "anticipos": {
       "type": "string",
@@ -200,6 +200,11 @@
       "type": "boolean",
       "title": "Comisi\u00f3n pagada",
       "default": false
+    },
+    "commission_paid_techs": {
+      "type": "string",
+      "title": "T\u00e9cnicos con comisi\u00f3n pagada (JSON)",
+      "description": "Array JSON de IDs de t\u00e9cnicos cuya comisi\u00f3n de esta orden ya fue pagada"
     },
     "warranty_snapshot": {
       "type": "string",

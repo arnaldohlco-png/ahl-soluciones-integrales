@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2 } from "lucide-react";
 import LiveItemSearch from "@/components/LiveItemSearch";
 
-export default function ServiceItemsEditor({ items, setItems, products, services }) {
+export default function ServiceItemsEditor({ items, setItems, products, services, technicians }) {
   const [newItem, setNewItem] = useState({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
 
   const addItem = () => {
@@ -81,6 +81,15 @@ export default function ServiceItemsEditor({ items, setItems, products, services
                   </td>
                   <td className="px-3 py-2 text-slate-700">
                     <div>{it.name}</div>
+                    {technicians && it.type === "Servicio" && (
+                      <select
+                        value={it.technician_id || ""}
+                        onChange={(e) => updateItem(i, "technician_id", e.target.value)}
+                        className="mt-1 text-xs border border-slate-200 rounded px-1 py-0.5 bg-white text-slate-600 max-w-[200px]">
+                        <option value="">Técnico (general de la orden)</option>
+                        {technicians.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
+                    )}
                     {(() => {
                       const prod = it.product_id && products ? products.find((p) => p.id === it.product_id) : null;
                       if (!prod) return null;

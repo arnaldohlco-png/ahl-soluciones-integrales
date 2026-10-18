@@ -24,10 +24,11 @@ const isTerceroItem = (i, services) => {
   }
   return /tercero/i.test((i.name || "").trim());
 };
-const commissionBase = (o, services) => {
+const commissionBase = (o, services, techId) => {
   const items = parseItems(o.service_items);
   return items
     .filter((i) => String(i.type || "").toLowerCase() === "servicio")
+    .filter((i) => !techId || (i.technician_id || o.technician_id) === techId)
     .filter((i) => !isTerceroItem(i, services))
     .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
 };
@@ -74,7 +75,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
   // Desglose de comisiones recalculado desde las órdenes (base = solo servicios)
   const commBreakdown = type === "commission"
     ? (extras.orders || []).map((o) => {
-        const base = commissionBase(o, extras.services);
+        const base = commissionBase(o, extras.services, doc.technician_id);
         const pct = technician?.commission_percentage || 0;
         return { order: o, base, commission: base * pct / 100, concept: serviceConcept(o) };
       })
@@ -115,6 +116,9 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
             <td className="py-1.5 px-2 border border-slate-300">
               {it.name || "—"}
               {it.type && <span className="ml-2 text-[10px] text-slate-500">[{it.type}]</span>}
+              {type === "order" && it.technician_id && extras.technicians?.find((t) => t.id === it.technician_id) && (
+                <span className="ml-2 text-[10px] text-slate-500">Téc.: {extras.technicians.find((t) => t.id === it.technician_id).name}</span>
+              )}
             </td>
             <td className="py-1.5 px-2 border border-slate-300 text-right">{fmt(it.unit_price || it.unit_cost)}</td>
             <td className="py-1.5 px-2 border border-slate-300 text-right">{fmt(it.subtotal)}</td>
