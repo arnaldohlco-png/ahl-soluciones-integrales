@@ -45,6 +45,11 @@
       "title": "Pie de p\u00e1gina para \u00f3rdenes de servicio",
       "description": "Texto que aparece al pie de las \u00f3rdenes de servicio"
     },
+    "receipt_footer_text": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina POS y facturas",
+      "description": "Texto editable por admin al final de comprobantes POS y facturas"
+    },
     "credit_default_days": {
       "type": "number",
       "title": "D\u00edas de cr\u00e9dito por defecto",

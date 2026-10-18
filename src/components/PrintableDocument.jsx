@@ -519,6 +519,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
             <p>Documento generado el {momentBogota().format("DD/MM/YYYY")}.</p>
           </div>
           <VerseBox />
+          {type === "invoice" && company?.receipt_footer_text && <p className="mt-4 text-[11px] text-slate-600 text-center whitespace-pre-wrap">{company.receipt_footer_text}</p>}
         </div>
       </div>
     </div>

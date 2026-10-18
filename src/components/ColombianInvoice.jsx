@@ -135,6 +135,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
             <p>Formato de factura imprimible conforme a la Ley 1231 de 2008 y normativa DIAN vigente.</p>
           </div>
           <VerseBox />
+          {company?.receipt_footer_text && <p className="mt-4 text-[11px] text-slate-600 text-center whitespace-pre-wrap">{company.receipt_footer_text}</p>}
         </div>
       </div>
     </div>

@@ -9,10 +9,11 @@ import { Building2, Save, Loader2, Cloud, Upload, RotateCcw, FileDown, AlertTria
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import RolesManager from "@/components/RolesManager";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { useAuth } from "@/lib/AuthContext";
 
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
-  email: "", address: "", city: "", logo: "", footer_text: "", credit_default_days: 30,
+  email: "", address: "", city: "", logo: "", footer_text: "", receipt_footer_text: "", credit_default_days: 30,
   charges_iva: true,
   dian_resolution: "", dian_resolution_date: "", dian_range_from: 0, dian_range_to: 0,
   pos_prefix: "VTA", quote_prefix: "COT", purchase_prefix: "COMP", order_prefix: "ORD", invoice_prefix: "FAC",
@@ -20,6 +21,8 @@ const empty = {
 
 export default function Company() {
   const confirm = useConfirm();
+  const { user } = useAuth();
+  const isAdmin = ["admin", "administrador"].includes(user?.role);
   const [company, setCompany] = useState(null);
   const [form, setForm] = useState(empty);
   const [loading, setLoading] = useState(true);
@@ -44,6 +47,7 @@ export default function Company() {
             document_number: data[0].document_number || "", phone: data[0].phone || "",
             email: data[0].email || "", address: data[0].address || "", city: data[0].city || "",
             logo: data[0].logo || "", footer_text: data[0].footer_text || "",
+            receipt_footer_text: data[0].receipt_footer_text || "",
             credit_default_days: data[0].credit_default_days ?? 30,
             charges_iva: data[0].charges_iva ?? (data[0].document_type === "Persona jurídica"),
             dian_resolution: data[0].dian_resolution || "", dian_resolution_date: data[0].dian_resolution_date || "",
@@ -235,6 +239,12 @@ export default function Company() {
           <Textarea value={form.footer_text} onChange={(e) => setForm({ ...form, footer_text: e.target.value })} className="mt-1 py-1 resize-y" rows={1}
             placeholder="Ej: Garantía de 3 meses en repuestos. No nos hacemos responsables por objetos dejados en la motocicleta..." />
           <p className="text-xs text-slate-400 mt-1">Este texto aparecerá al final de cada orden de servicio impresa</p>
+        </div>
+        <div>
+          <Label>Pie de página para POS y facturas</Label>
+          <Textarea value={form.receipt_footer_text} onChange={(e) => setForm({ ...form, receipt_footer_text: e.target.value })} className="mt-1 py-1 resize-y" rows={2}
+            disabled={!isAdmin} placeholder="Ej: Gracias por su compra. Cambios dentro de 8 días con factura." />
+          <p className="text-xs text-slate-400 mt-1">{isAdmin ? "Aparece al final de los comprobantes del POS y de las facturas" : "Solo un administrador puede editar este texto"}</p>
         </div>
 
         <div className="border-t border-slate-100 pt-4">
