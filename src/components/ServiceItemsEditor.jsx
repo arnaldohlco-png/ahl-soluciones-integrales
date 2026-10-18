@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import CatalogPicker from "@/components/CatalogPicker";
+import LiveItemSearch from "@/components/LiveItemSearch";
 
 export default function ServiceItemsEditor({ items, setItems, products, services }) {
   const [newItem, setNewItem] = useState({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
@@ -53,11 +53,11 @@ export default function ServiceItemsEditor({ items, setItems, products, services
         </div>
         {newItem.type === "Producto" && products?.length > 0 ? (
           <div className="flex-1 min-w-[150px] flex items-center">
-            <CatalogPicker options={products} onSelect={onProductSelect} label="Buscar producto" placeholder="Buscar producto..." buttonClass="w-full justify-start" />
+            <LiveItemSearch options={products} onSelect={onProductSelect} placeholder={newItem.name && newItem.product_id ? newItem.name : "Buscar producto..."} />
           </div>
         ) : newItem.type === "Servicio" && services?.length > 0 ? (
           <div className="flex-1 min-w-[150px] flex items-center">
-            <CatalogPicker options={services} onSelect={onServiceSelect} label="Buscar servicio" placeholder="Buscar servicio..." buttonClass="w-full justify-start" />
+            <LiveItemSearch options={services} onSelect={onServiceSelect} placeholder={newItem.name && newItem.service_id ? newItem.name : "Buscar servicio..."} />
           </div>
         ) : (
           <div className="flex-1 min-w-[150px]">
