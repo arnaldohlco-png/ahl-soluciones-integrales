@@ -4,6 +4,7 @@ import { momentBogota, fmtBogota } from "@/lib/localDate";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import PrintToolbar from "@/components/PrintToolbar";
+import VerseBox from "@/components/VerseBox";
 import { Image } from "@/components/ui/image";
 import { parseAnticipos, sumAnticipos } from "@/lib/anticipos";
 
@@ -517,6 +518,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
             {type === "order" && has(doc.admin_footer) && <p className="whitespace-pre-wrap">{doc.admin_footer}</p>}
             <p>Documento generado el {momentBogota().format("DD/MM/YYYY")}.</p>
           </div>
+          <VerseBox />
         </div>
       </div>
     </div>

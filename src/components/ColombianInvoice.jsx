@@ -1,3 +1,4 @@
+import VerseBox from "@/components/VerseBox";
 import React from "react";
 import moment from "moment";
 import { momentBogota } from "@/lib/localDate";
@@ -133,6 +134,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
             {resolutionLine && <p>Esta factura electrónica se expide de acuerdo con la {resolutionLine}.</p>}
             <p>Formato de factura imprimible conforme a la Ley 1231 de 2008 y normativa DIAN vigente.</p>
           </div>
+          <VerseBox />
         </div>
       </div>
     </div>

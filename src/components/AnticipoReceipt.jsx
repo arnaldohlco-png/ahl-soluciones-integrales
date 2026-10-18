@@ -1,4 +1,5 @@
 import React from "react";
+import VerseBox from "@/components/VerseBox";
 import { fmtBogota } from "@/lib/localDate";
 import PrintToolbar from "@/components/PrintToolbar";
 import { parseAnticipos, sumAnticipos } from "@/lib/anticipos";
@@ -82,6 +83,7 @@ export default function AnticipoReceipt({ order, company, customer, motorcycle, 
             <div className="border-t border-slate-400 pt-1">Recibí conforme (Empresa)</div>
             <div className="border-t border-slate-400 pt-1">Cliente</div>
           </div>
+          <VerseBox />
         </div>
       </div>
     </div>
