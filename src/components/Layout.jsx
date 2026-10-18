@@ -189,7 +189,13 @@ export default function Layout() {
           {group.title === "Principal" ?
       <p className="px-3 mb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{group.title}</p> :
       <button
-        onClick={() => setOpenGroups((s) => ({ ...s, [group.title]: !isGroupOpen(group) }))}
+        onClick={() => {
+          const willOpen = !isGroupOpen(group);
+          const next = {};
+          visibleGroups.forEach((g) => {next[g.title] = false;});
+          next[group.title] = willOpen;
+          setOpenGroups(next);
+        }}
         className="flex w-full items-center justify-between px-3 py-2 mb-1 rounded-lg text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800 hover:text-white transition-colors">
               {group.title}
               <ChevronDown className={cn("w-4 h-4 transition-transform", isGroupOpen(group) ? "" : "-rotate-90")} />
