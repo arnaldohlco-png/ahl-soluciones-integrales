@@ -207,6 +207,13 @@ export default function Layout() {
               </Link>);
 
       })}
+          {group.title === "Principal" &&
+      <button
+        onClick={() => {setMobileOpen(false);window.dispatchEvent(new Event("open-price-viewer"));}}
+        className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-300 hover:bg-slate-800 hover:text-white">
+              <Tag className="w-5 h-5" />
+              Visor de precios
+            </button>}
         </div>
     )}
     </>;

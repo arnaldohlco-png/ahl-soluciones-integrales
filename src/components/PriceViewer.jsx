@@ -23,8 +23,13 @@ export default function PriceViewer() {
       e.preventDefault();
       setOpen(true);
     };
+    const onOpen = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("open-price-viewer", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("open-price-viewer", onOpen);
+    };
   }, []);
 
   useEffect(() => {
@@ -48,14 +53,6 @@ export default function PriceViewer() {
 
   return (
     <>
-    <button
-      onClick={() => setOpen(true)}
-      aria-label="Visor de precios"
-      title="Visor de precios (Ctrl+V)"
-      className="no-print fixed bottom-4 right-4 z-30 flex items-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg transition-colors hover:bg-amber-400">
-      <Tag className="w-4 h-4" />
-      <span className="hidden sm:inline">Precios</span>
-    </button>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-2xl">
         <DialogHeader><DialogTitle>Visor de precios</DialogTitle></DialogHeader>
