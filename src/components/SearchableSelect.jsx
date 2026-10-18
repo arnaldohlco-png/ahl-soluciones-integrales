@@ -26,6 +26,7 @@ export default function SearchableSelect({
   emptyText = "Sin resultados",
   onCreate,
   createLabel = "Crear",
+  hideUntilSearch = false,
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -51,12 +52,12 @@ export default function SearchableSelect({
     .replace(/[\u0300-\u036f]/g, "");
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return items;
+    if (!query.trim()) return hideUntilSearch ? [] : items;
     const q = normalized(query);
     return items.filter((i) =>
       normalized(`${i.label} ${i.sublabel || ""}`).includes(q)
     );
-  }, [query, items]);
+  }, [query, items, hideUntilSearch]);
 
   const showDisplay = !open && selected;
 
@@ -92,7 +93,7 @@ export default function SearchableSelect({
           onFocus={() => { setOpen(true); setQuery(""); }}
           className="pl-9"
         />
-        {open && (
+        {open && !(hideUntilSearch && !query.trim() && !canCreate) && (
           <div className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
             {filtered.length === 0 ? (
               <p className="px-3 py-3 text-sm text-slate-400 text-center">{emptyText}</p>

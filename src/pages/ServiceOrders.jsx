@@ -436,6 +436,7 @@ export default function ServiceOrders() {
                 value={form.motorcycle_id}
                 onValueChange={(id) => onMotoChange(id)}
                 required
+                hideUntilSearch
                 items={motos.map((m) => ({ id: m.id, label: `${m.brand} ${m.model}`, sublabel: m.plate ? `Placa: ${m.plate}` : "Sin placa" }))} />
               
               <SearchableSelect
