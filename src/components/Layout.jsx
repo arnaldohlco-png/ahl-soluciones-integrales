@@ -84,6 +84,14 @@ export default function Layout() {
           navigate("/ordenes", { state: { newOrder: true } });
         }
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        if (pathRef.current === "/motocicletas") {
+          window.dispatchEvent(new Event("new-motorcycle"));
+        } else {
+          navigate("/motocicletas", { state: { newMoto: true } });
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "i") {
         e.preventDefault();
         if (pathRef.current === "/inventario") {

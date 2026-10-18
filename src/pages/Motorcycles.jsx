@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Plus, Pencil, Trash2, Bike, Search } from "lucide-react";
 import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
@@ -59,6 +60,21 @@ export default function Motorcycles() {
   })();
 
   const openNew = () => { setForm(empty); setEditing(null); setOpen(true); };
+  const openNewRef = React.useRef(openNew);
+  openNewRef.current = openNew;
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const h = () => openNewRef.current();
+    window.addEventListener("new-motorcycle", h);
+    return () => window.removeEventListener("new-motorcycle", h);
+  }, []);
+  useEffect(() => {
+    if (location.state?.newMoto) {
+      openNewRef.current();
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.state]);
   const openEdit = (m) => {
     setForm({
       customer_id: m.customer_id || "", brand: m.brand || "", line: m.line || "",
