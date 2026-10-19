@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useRoles } from "@/hooks/useRoles";
 import { canAccess } from "@/lib/roles";
-import BackupReminder, { isBackupDue } from "@/components/BackupReminder";
+import BackupReminder from "@/components/BackupReminder";
 import PriceViewer from "@/components/PriceViewer";
 import TurnoOpeningPrompt from "@/components/TurnoOpeningPrompt";
 
@@ -218,7 +218,7 @@ export default function Layout() {
   }, [navigate]);
 
   function requestLogout() {
-    if (isBackupDue()) setBackupOpen(true);else handleLogout();
+    setBackupOpen(true);
   }
 
   async function handleLogout() {
