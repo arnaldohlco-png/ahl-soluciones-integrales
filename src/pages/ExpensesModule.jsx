@@ -16,7 +16,10 @@ import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
 
-const CATEGORIES = ["Arriendo", "Servicios públicos", "Nómina", "Transporte", "Herramientas", "Papelería", "Publicidad", "Mantenimiento", "Compras menores", "Otros"];
+import ExpenseCategoriesManager from "@/components/ExpenseCategoriesManager";
+import { Settings2 } from "lucide-react";
+
+const DEFAULT_CATEGORIES = ["Arriendo", "Servicios públicos", "Nómina", "Transporte", "Herramientas", "Papelería", "Publicidad", "Mantenimiento", "Compras menores", "Otros"];
 const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
 
 export default function Expenses() {
@@ -35,7 +38,25 @@ export default function Expenses() {
     amount: 0, responsible: "", payment_method: "Efectivo", support_photo: ""
   });
 
-  useEffect(() => { load(); }, []);
+  const [catRecords, setCatRecords] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [catsOpen, setCatsOpen] = useState(false);
+  // Categorías: las guardadas + las usadas en gastos existentes (por si fueron eliminadas)
+  const CATEGORIES = [...new Set([...catRecords.map((c) => c.name), ...list.map((e) => e.category).filter(Boolean)])];
+
+  const loadCategories = async () => {
+    const me = await base44.auth.me();
+    const admin = me?.role === "admin" || me?.role === "administrador";
+    setIsAdmin(admin);
+    let cats = await base44.entities.ExpenseCategory.list("created_date", 200);
+    if (cats.length === 0 && admin) {
+      await base44.entities.ExpenseCategory.bulkCreate(DEFAULT_CATEGORIES.map((name) => ({ name })));
+      cats = await base44.entities.ExpenseCategory.list("created_date", 200);
+    }
+    setCatRecords(cats);
+  };
+
+  useEffect(() => { load(); loadCategories(); }, []);
 
   const load = async () => {
     try {
@@ -129,9 +150,12 @@ export default function Expenses() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Gastos</h1>
           <p className="text-slate-500 mt-1">{list.length} gastos registrados · Total: <span className="font-semibold text-red-600">${totalAmount.toLocaleString("es-CO")}</span></p>
         </div>
-        <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-          <Plus className="w-4 h-4" /> Nuevo Gasto
-        </Button>
+        <div className="flex gap-2">
+          {isAdmin && <Button variant="outline" onClick={() => setCatsOpen(true)}><Settings2 className="w-4 h-4" /> Categorías</Button>}
+          <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Plus className="w-4 h-4" /> Nuevo Gasto
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -190,6 +214,8 @@ export default function Expenses() {
           </div>
         </div>
       )}
+
+      <ExpenseCategoriesManager open={catsOpen} onOpenChange={setCatsOpen} categories={catRecords} onChanged={async () => { await loadCategories(); await load(); }} />
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>

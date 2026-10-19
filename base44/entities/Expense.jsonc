@@ -10,18 +10,6 @@
     "category": {
       "type": "string",
       "title": "Categor\u00eda",
-      "enum": [
-        "Arriendo",
-        "Servicios p\u00fablicos",
-        "N\u00f3mina",
-        "Transporte",
-        "Herramientas",
-        "Papeler\u00eda",
-        "Publicidad",
-        "Mantenimiento",
-        "Compras menores",
-        "Otros"
-      ],
       "default": "Otros"
     },
     "description": {
