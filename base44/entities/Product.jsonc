@@ -91,27 +91,7 @@
         },
         {
           "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
             "role": "administrador"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "gerente"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "vendedor"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "tecnico"
           }
         }
       ]
@@ -140,11 +120,6 @@
           "user_condition": {
             "role": "vendedor"
           }
-        },
-        {
-          "user_condition": {
-            "role": "tecnico"
-          }
         }
       ]
     },
@@ -172,11 +147,6 @@
           "user_condition": {
             "role": "vendedor"
           }
-        },
-        {
-          "user_condition": {
-            "role": "tecnico"
-          }
         }
       ]
     },
@@ -187,27 +157,7 @@
         },
         {
           "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
             "role": "administrador"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "gerente"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "vendedor"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "tecnico"
           }
         }
       ]
