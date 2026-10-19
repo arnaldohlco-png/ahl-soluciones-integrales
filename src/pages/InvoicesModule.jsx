@@ -141,6 +141,25 @@ export default function Invoices() {
       const payload = { ...form, subtotal: Number(form.subtotal), iva: Number(form.iva), discount: Number(form.discount), total: Number(form.total), credit_days: Number(form.credit_days) || 0, installments: inst, installment_amount: instAmt, payment_due_date: dueDate, amount_paid: Number(form.amount_paid) || 0, change: Number(form.change) || 0 };
       const newAffects = INVENTORY_TYPES.includes(payload.type) && payload.status !== "Anulada";
       const newProdItems = productItemsOf(payload.items);
+      if (newAffects) {
+        const needed = {};
+        newProdItems.forEach((it) => { needed[it.product_id] = (needed[it.product_id] || 0) + Number(it.quantity); });
+        const returned = {};
+        if (editing && INVENTORY_TYPES.includes(editing.type) && editing.status !== "Anulada") {
+          productItemsOf(editing.items).forEach((it) => { returned[it.product_id] = (returned[it.product_id] || 0) + Number(it.quantity); });
+        }
+        const short = [];
+        for (const pid of Object.keys(needed)) {
+          const prod = await base44.entities.Product.get(pid);
+          const available = (Number(prod?.stock) || 0) + (returned[pid] || 0);
+          if (!prod || available < needed[pid]) short.push(`${prod?.name || "Producto"} (disponible: ${Math.max(0, available)}, solicitado: ${needed[pid]})`);
+        }
+        if (short.length > 0) {
+          alert("Stock insuficiente, no se puede guardar la factura:\n" + short.join("\n"));
+          setSaving(false);
+          return;
+        }
+      }
       if (editing) {
         const oldAffects = INVENTORY_TYPES.includes(editing.type) && editing.status !== "Anulada";
         if (oldAffects) await adjustStock(productItemsOf(editing.items), +1);
