@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Receipt, Plus, Search, Trash2, Pencil, Printer, CircleDollarSign, Undo2, ShoppingCart, Phone } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ExportImport from "@/components/ExportImport";
 import ServiceItemsEditor from "@/components/ServiceItemsEditor";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -33,6 +33,7 @@ const INVENTORY_TYPES = ["Factura de venta", "Factura de taller"];
 
 export default function Invoices() {
   const navigate = useNavigate();
+  const location = useLocation();
   const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -122,6 +123,21 @@ export default function Invoices() {
     setItems([]);
     setModalOpen(true);
   };
+
+  // Atajo global Ctrl+F (lo dispara el Layout)
+  const openNewRef = React.useRef(openNew);
+  openNewRef.current = openNew;
+  useEffect(() => {
+    const h = () => openNewRef.current();
+    window.addEventListener("new-invoice", h);
+    return () => window.removeEventListener("new-invoice", h);
+  }, []);
+  useEffect(() => {
+    if (!loading && location.state?.newInvoice) {
+      openNewRef.current();
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [loading, location.state]);
 
   const openEdit = (inv) => {
     setEditing(inv);
@@ -275,7 +291,7 @@ export default function Invoices() {
         <div className="flex items-center gap-2">
           <ExportImport entityName="Invoice" fields={["number", "type", "customer_name", "date", "items", "subtotal", "iva", "discount", "total", "status", "payment_terms", "credit_days", "installments", "amount_paid", "change"]} itemFields={["items"]} />
           <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-            <Plus className="w-4 h-4" /> Nuevo Documento
+            <Plus className="w-4 h-4" /> Nuevo Documento <span className="ml-2 text-[10px] opacity-60 hidden md:inline">Ctrl+F</span>
           </Button>
         </div>
       </div>

@@ -123,6 +123,14 @@ export default function Layout() {
         e.preventDefault();
         if (pathRef.current !== "/servicios") navigate("/servicios");
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        if (pathRef.current === "/facturacion") {
+          window.dispatchEvent(new Event("new-invoice"));
+        } else {
+          navigate("/facturacion", { state: { newInvoice: true } });
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
         e.preventDefault();
         if (pathRef.current === "/ventas") {
