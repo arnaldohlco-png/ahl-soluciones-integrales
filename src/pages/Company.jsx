@@ -125,14 +125,14 @@ export default function Company() {
     setRestoreResult(null);
     try {
       const res = await base44.functions.invoke('restoreFromDrive', { action: 'restore', fileId: selectedFile });
-      if (res.data?.success) {
+      if (res.data?.results) {
         setRestoreResult(res.data.results);
       } else {
         alert("Error al restaurar: " + (res.data?.error || "desconocido"));
       }
     } catch (e) {
       console.error(e);
-      alert("Error: " + e.message);
+      alert("Error al restaurar: " + (e.response?.data?.error || e.message));
     }
     setRestoring(false);
   };
