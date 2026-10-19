@@ -117,7 +117,16 @@
       ]
     },
     "read": {
-      "data.sede_id": "{{user.role}}"
+      "$or": [
+        {
+          "data.sede_id": "{{user.role}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "update": {
       "$or": [
