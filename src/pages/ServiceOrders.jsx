@@ -206,8 +206,20 @@ export default function ServiceOrders() {
 
   const numFields = ["labor_cost", "parts_cost", "lubricants_cost", "hours_worked", "technician_commission", "cost", "previous_mileage", "current_mileage", "kms_traveled", "oil_change_interval", "next_oil_change"];
 
+  // Cada servicio debe tener técnico asignado para cerrar la orden
+  const servicesWithoutTech = (itemsJson) => {
+    let items = [];
+    try {items = typeof itemsJson === "string" ? JSON.parse(itemsJson || "[]") : itemsJson || [];} catch {items = [];}
+    return items.filter((it) => String(it.type || "").toLowerCase() === "servicio" && !it.technician_id).map((it) => it.name || "Servicio");
+  };
+  const techMessage = (names) => `No se puede cerrar la orden: cada servicio necesita un técnico asignado.\n\nServicios sin técnico:\n- ${names.join("\n- ")}`;
+
   const save = async () => {
     if (!form.motorcycle_id || !form.customer_id) return;
+    if (form.status === "Terminado" || form.status === "Entregado") {
+      const noTech = servicesWithoutTech(serviceItems);
+      if (noTech.length) {alert(techMessage(noTech));return;}
+    }
     if (form.status === "Entregado") {
       const pending = pendingFaults(form);
       if (pending.length) {alert(pendingMessage(pending));return;}
@@ -289,6 +301,10 @@ export default function ServiceOrders() {
     const idx = statuses.indexOf(o.status);
     if (idx < 0 || idx >= 2) return; // el ciclo se detiene en "Terminado"; "Entregado" se alcanza solo con el botón Entregar
     const next = statuses[idx + 1];
+    if (next === "Terminado") {
+      const noTech = servicesWithoutTech(o.service_items);
+      if (noTech.length) {alert(techMessage(noTech));return;}
+    }
     if (!(await confirm({ title: "¿Cambiar el estado de la orden?", description: `De "${o.status}" a "${next}"`, confirmText: "Sí", cancelText: "No" }))) return;
     await base44.entities.ServiceOrder.update(o.id, { status: next });
     await load();
@@ -297,6 +313,8 @@ export default function ServiceOrders() {
   const entregar = async (o) => {
     const pending = pendingFaults(o);
     if (pending.length) {alert(pendingMessage(pending));return;}
+    const noTech = servicesWithoutTech(o.service_items);
+    if (noTech.length) {alert(techMessage(noTech));return;}
     if (!(await confirm({ title: "¿Marcar esta orden como entregada?", description: "Confirma que la motocicleta fue entregada al cliente.", confirmText: "Sí, entregar", cancelText: "No" }))) return;
     await base44.entities.ServiceOrder.update(o.id, { status: "Entregado", delivery_date: todayLocalKey() });
     await load();
