@@ -253,7 +253,7 @@ export default function Dashboard() {
             </div>
             <div className="text-right shrink-0 hidden sm:block">
               <span className="block text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase opacity-80 capitalize">
-                {momentBogota().format("dddd")}
+                {["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][momentBogota().day()]}
               </span>
               <b className="block text-base md:text-xl font-black mt-0.5">{momentBogota().format("DD/MM/YYYY")}</b>
             </div>
