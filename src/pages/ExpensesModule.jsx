@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Wallet, Plus, Pencil, Trash2, Search, TrendingDown } from "lucide-react";
 import moment from "moment";
+import { useNavigate, useLocation } from "react-router-dom";
 import { nowLocalISO, momentBogota } from "@/lib/localDate";
 import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
@@ -24,6 +25,8 @@ const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
 
 export default function Expenses() {
   const confirm = useConfirm();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -78,6 +81,21 @@ export default function Expenses() {
     setForm({ date: momentBogota().format("YYYY-MM-DD"), category: "Otros", description: "", amount: 0, responsible: "", payment_method: "Efectivo", support_photo: "" });
     setModalOpen(true);
   };
+
+  // Atajo global Ctrl+G (lo dispara el Layout)
+  const openNewRef = React.useRef(openNew);
+  openNewRef.current = openNew;
+  useEffect(() => {
+    const h = () => openNewRef.current();
+    window.addEventListener("new-expense", h);
+    return () => window.removeEventListener("new-expense", h);
+  }, []);
+  useEffect(() => {
+    if (!loading && location.state?.newExpense) {
+      openNewRef.current();
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [loading, location.state]);
 
   const openEdit = (e) => {
     setEditing(e);
@@ -153,7 +171,7 @@ export default function Expenses() {
         <div className="flex gap-2">
           {isAdmin && <Button variant="outline" onClick={() => setCatsOpen(true)}><Settings2 className="w-4 h-4" /> Categorías</Button>}
           <Button onClick={openNew} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-            <Plus className="w-4 h-4" /> Nuevo Gasto
+            <Plus className="w-4 h-4" /> Nuevo Gasto <span className="ml-2 text-[10px] opacity-60 hidden md:inline">Ctrl+G</span>
           </Button>
         </div>
       </div>

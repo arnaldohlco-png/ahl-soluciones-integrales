@@ -123,6 +123,14 @@ export default function Layout() {
         e.preventDefault();
         if (pathRef.current !== "/servicios") navigate("/servicios");
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        if (pathRef.current === "/gastos") {
+          window.dispatchEvent(new Event("new-expense"));
+        } else {
+          navigate("/gastos", { state: { newExpense: true } });
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "f") {
         e.preventDefault();
         if (pathRef.current === "/facturacion") {
