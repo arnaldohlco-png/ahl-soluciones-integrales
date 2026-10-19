@@ -68,20 +68,7 @@
         }
       ]
     },
-    "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "administrador"
-          }
-        }
-      ]
-    },
+    "read": null,
     "update": {
       "$or": [
         {

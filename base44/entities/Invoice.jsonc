@@ -126,6 +126,9 @@
     "create": {
       "$or": [
         {
+          "data.sede_id": "{{user.role}}"
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
@@ -153,21 +156,13 @@
       ]
     },
     "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "administrador"
-          }
-        }
-      ]
+      "data.sede_id": "{{user.role}}"
     },
     "update": {
       "$or": [
+        {
+          "data.sede_id": "{{user.role}}"
+        },
         {
           "user_condition": {
             "role": "admin"
@@ -197,6 +192,9 @@
     },
     "delete": {
       "$or": [
+        {
+          "data.sede_id": "{{user.role}}"
+        },
         {
           "user_condition": {
             "role": "admin"

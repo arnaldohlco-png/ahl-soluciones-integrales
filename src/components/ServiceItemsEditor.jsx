@@ -119,7 +119,7 @@ export default function ServiceItemsEditor({ items, setItems, products, services
             </tbody>
             <tfoot className="bg-slate-50 border-t-2 border-slate-200">
               <tr>
-                <td colSpan={4} className="px-3 py-2 text-right font-medium text-slate-600">Total items ({items.length} ítems · {items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)} uds):</td>
+                <td colSpan={4} className="px-3 py-2 text-right font-medium text-slate-600">Total items:</td>
                 <td className="px-3 py-2 text-right font-bold text-slate-900">${total.toLocaleString("es-CO")}</td>
                 <td></td>
               </tr>
