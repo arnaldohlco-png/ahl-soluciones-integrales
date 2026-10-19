@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import FaultChecklist from "@/components/FaultChecklist";
+import { pendingMessage } from "@/lib/faultChecklist";
 import { useNavigate, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
@@ -37,7 +39,7 @@ const empty = {
   motorcycle_id: "", customer_id: "", service_type: "Mantenimiento", description: "",
   status: "Ingresado", technician_id: "", mechanic: "", entry_date: "", entry_time: "",
   fuel_level: "1/2", visual_condition: "", accessories: "",
-  customer_complaint: "", reported_fault: "", technical_diagnosis: "", recommendations: "",
+  customer_complaint: "", reported_fault: "", has_faults: "", fault_checklist: "[]", technical_diagnosis: "", recommendations: "",
   tests_performed: "", labor_description: "", labor_cost: "", parts_cost: "", lubricants_cost: "",
   hours_worked: "", technician_commission: "", work_done: "", delivery_recommendations: "",
   warranty: "", delivery_date: "", cost: "", parts_used: "",
@@ -168,6 +170,7 @@ export default function ServiceOrders() {
       mechanic: o.mechanic || "", entry_date: o.entry_date || "", entry_time: o.entry_time || "",
       fuel_level: o.fuel_level || "1/2", visual_condition: o.visual_condition || "", accessories: o.accessories || "",
       customer_complaint: o.customer_complaint || "", reported_fault: o.reported_fault || "",
+      has_faults: o.has_faults || "", fault_checklist: o.fault_checklist || "[]",
       technical_diagnosis: o.technical_diagnosis || "", recommendations: o.recommendations || "",
       tests_performed: o.tests_performed || "", labor_description: o.labor_description || "",
       labor_cost: o.labor_cost ?? "", parts_cost: o.parts_cost ?? "", lubricants_cost: o.lubricants_cost ?? "",
@@ -203,6 +206,10 @@ export default function ServiceOrders() {
 
   const save = async () => {
     if (!form.motorcycle_id || !form.customer_id) return;
+    if (form.status === "Terminado" || form.status === "Entregado") {
+      const msg = pendingMessage(form);
+      if (msg) {alert(msg);return;}
+    }
     setSaving(true);
     const nextOil = (Number(form.current_mileage) || 0) + (Number(form.oil_change_interval) || 0);
     const payload = { ...form, service_items: JSON.stringify(serviceItems), next_oil_change: nextOil };
@@ -280,12 +287,14 @@ export default function ServiceOrders() {
     const idx = statuses.indexOf(o.status);
     if (idx < 0 || idx >= 2) return; // el ciclo se detiene en "Terminado"; "Entregado" se alcanza solo con el botón Entregar
     const next = statuses[idx + 1];
+    if (next === "Terminado" && pendingMessage(o)) {alert(pendingMessage(o));return;}
     if (!(await confirm({ title: "¿Cambiar el estado de la orden?", description: `De "${o.status}" a "${next}"`, confirmText: "Sí", cancelText: "No" }))) return;
     await base44.entities.ServiceOrder.update(o.id, { status: next });
     await load();
   };
 
   const entregar = async (o) => {
+    if (pendingMessage(o)) {alert(pendingMessage(o));return;}
     if (!(await confirm({ title: "¿Marcar esta orden como entregada?", description: "Confirma que la motocicleta fue entregada al cliente.", confirmText: "Sí, entregar", cancelText: "No" }))) return;
     await base44.entities.ServiceOrder.update(o.id, { status: "Entregado", delivery_date: todayLocalKey() });
     await load();
@@ -570,7 +579,7 @@ export default function ServiceOrders() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Diagnóstico</p>
               <div className="space-y-3">
                 
-                <div><Label>Falla reportada</Label><Textarea value={form.reported_fault} onChange={(e) => setForm({ ...form, reported_fault: e.target.value })} className="mt-1" rows={2} /></div>
+                <FaultChecklist form={form} setForm={setForm} />
                 <div><Label>Diagnóstico técnico</Label><Textarea value={form.technical_diagnosis} onChange={(e) => setForm({ ...form, technical_diagnosis: e.target.value })} className="mt-1" rows={2} /></div>
                 
 

@@ -84,6 +84,19 @@
       "type": "string",
       "title": "Falla reportada"
     },
+    "has_faults": {
+      "type": "string",
+      "title": "\u00bfCliente reporta fallas?",
+      "enum": [
+        "si",
+        "no"
+      ]
+    },
+    "fault_checklist": {
+      "type": "string",
+      "title": "Lista de chequeo de fallas (JSON)",
+      "description": "JSON [{text, done}]"
+    },
     "technical_diagnosis": {
       "type": "string",
       "title": "Diagn\u00f3stico t\u00e9cnico"
