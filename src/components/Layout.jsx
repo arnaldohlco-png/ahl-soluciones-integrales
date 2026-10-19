@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useRoles } from "@/hooks/useRoles";
 import { canAccess } from "@/lib/roles";
-import BackupReminder from "@/components/BackupReminder";
+import BackupReminder, { isBackupDue } from "@/components/BackupReminder";
 import PriceViewer from "@/components/PriceViewer";
 import TurnoOpeningPrompt from "@/components/TurnoOpeningPrompt";
 
@@ -66,6 +66,7 @@ export default function Layout() {
   const { roles } = useRoles();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [backupOpen, setBackupOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
   const navigate = useNavigate();
   const pathRef = React.useRef(location.pathname);
@@ -216,7 +217,12 @@ export default function Layout() {
     return () => window.removeEventListener("keydown", onKey, true);
   }, [navigate]);
 
+  function requestLogout() {
+    if (isBackupDue()) setBackupOpen(true);else handleLogout();
+  }
+
   async function handleLogout() {
+    setBackupOpen(false);
     setLeaving(true);
     try {
       await base44.auth.logout("/login");
@@ -339,9 +345,6 @@ export default function Layout() {
             <nav className="flex-1 px-3 py-4">
               <NavContent />
             </nav>
-            <div className="px-3 pb-3">
-              <BackupReminder />
-            </div>
             <div className="px-3 py-3 border-t border-slate-800">
               {user &&
             <div className="mb-2 px-2 text-xs">
@@ -350,7 +353,7 @@ export default function Layout() {
                 </div>
             }
               <button
-              onClick={handleLogout}
+              onClick={requestLogout}
               disabled={leaving}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-600 hover:text-white disabled:opacity-60">
               
@@ -364,6 +367,7 @@ export default function Layout() {
 
       <PriceViewer />
       <TurnoOpeningPrompt />
+      <BackupReminder open={backupOpen} onContinue={handleLogout} onCancel={() => setBackupOpen(false)} />
 
       {/* Main content */}
       <main className={`min-h-screen ${isDashboard ? "" : "pt-14 md:pt-0 md:pl-16"}`}>
