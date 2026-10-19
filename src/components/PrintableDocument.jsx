@@ -8,7 +8,6 @@ import VerseBox from "@/components/VerseBox";
 import AdminSignatureStamp from "@/components/AdminSignatureStamp";
 import { Image } from "@/components/ui/image";
 import { parseAnticipos, sumAnticipos } from "@/lib/anticipos";
-import { parseChecklist } from "@/lib/faultChecklist";
 
 const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 });
 const fmtDate = (d) => fmtBogota(d, "DD/MM/YYYY");
@@ -271,27 +270,9 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                 </div>
               )}
 
-              {(() => {
-                const checklist = parseChecklist(doc.fault_checklist);
-                if (!checklist.length) return null;
-                return (
-                  <div className="mt-3 border-t border-slate-200 pt-3">
-                    <p className="font-semibold uppercase text-xs text-slate-500 mb-1">Lista de chequeo de fallas</p>
-                    <ul className="space-y-0.5">
-                      {checklist.map((it, i) => (
-                        <li key={i} className="text-slate-700 flex gap-2">
-                          <span>{it.done ? "☑" : "☐"}</span>
-                          <span className={it.done ? "line-through" : ""}>{it.text}</span>
-                          <span className="text-slate-500">({it.done ? "Solucionada" : "Pendiente"})</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })()}
-
               {[
                 ["Queja del cliente", doc.customer_complaint],
+                ["Falla reportada", doc.reported_fault],
                 ["Diagnóstico técnico", doc.technical_diagnosis],
                 ["Pruebas realizadas", doc.tests_performed],
                 ["Recomendaciones", doc.recommendations],
@@ -300,6 +281,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                   <p className="font-semibold uppercase text-xs text-slate-500">Diagnóstico</p>
                   {[
                     ["Queja del cliente", doc.customer_complaint],
+                    ["Falla reportada", doc.reported_fault],
                     ["Diagnóstico técnico", doc.technical_diagnosis],
                     ["Pruebas realizadas", doc.tests_performed],
                     ["Recomendaciones", doc.recommendations],
