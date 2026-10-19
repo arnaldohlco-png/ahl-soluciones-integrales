@@ -255,7 +255,7 @@ export default function ServiceOrders() {
       const usadas = new Set();
       const porDevolver = entradas.filter((e) => {
         const d = devueltas.find((x) => !usadas.has(x.id) && x.amount === e.amount && x.payment_method === e.payment_method && x.bank_account === e.bank_account);
-        if (d) { usadas.add(d.id); return false; }
+        if (d) {usadas.add(d.id);return false;}
         return true;
       });
       if (porDevolver.length) {
@@ -508,7 +508,7 @@ export default function ServiceOrders() {
                 items={technicians.filter((t) => t.status === "Activo").map((t) => ({ id: t.id, label: t.name, sublabel: [t.document_number, t.specialty].filter(Boolean).join(" · ") }))} />
               
             </div>
-            <div><Label>Descripción del trabajo</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1" rows={2} /></div>
+            <div className="hidden"><Label>Descripción del trabajo</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1" rows={2} /></div>
 
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Recepción</p>
