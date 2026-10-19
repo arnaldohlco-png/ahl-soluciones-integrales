@@ -216,6 +216,7 @@ export default function ServiceOrders() {
 
   const save = async () => {
     if (!form.motorcycle_id || !form.customer_id) return;
+    if (!editing && !form.fault_answer) {alert("Indica si el cliente reporta fallas (Sí o No) antes de guardar la orden.");return;}
     if (form.status === "Terminado" || form.status === "Entregado") {
       const noTech = servicesWithoutTech(serviceItems);
       if (noTech.length) {alert(techMessage(noTech));return;}
