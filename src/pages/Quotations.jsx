@@ -104,11 +104,11 @@ export default function Quotations() {
   };
 
   const addItem = (product) => {
-    setItems([...items, { name: product.name, quantity: 1, unit_price: product.price || 0, subtotal: product.price || 0, product_id: product.id }]);
+    setItems([{ name: product.name, quantity: 1, unit_price: product.price || 0, subtotal: product.price || 0, product_id: product.id }, ...items]);
   };
 
   const addService = (service) => {
-    setItems([...items, { name: service.name, quantity: 1, unit_price: service.price || 0, subtotal: service.price || 0, service_id: service.id }]);
+    setItems([{ name: service.name, quantity: 1, unit_price: service.price || 0, subtotal: service.price || 0, service_id: service.id }, ...items]);
   };
 
   const updateItem = (idx, field, value) => {

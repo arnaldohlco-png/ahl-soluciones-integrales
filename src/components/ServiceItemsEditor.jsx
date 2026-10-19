@@ -11,7 +11,7 @@ export default function ServiceItemsEditor({ items, setItems, products, services
   const addItem = () => {
     if (!newItem.name.trim()) return;
     const subtotal = (Number(newItem.quantity) || 1) * (Number(newItem.unit_price) || 0);
-    setItems([...items, { ...newItem, quantity: Number(newItem.quantity) || 1, unit_price: Number(newItem.unit_price) || 0, subtotal }]);
+    setItems([{ ...newItem, quantity: Number(newItem.quantity) || 1, unit_price: Number(newItem.unit_price) || 0, subtotal }, ...items]);
     setNewItem({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
   };
 

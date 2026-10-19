@@ -247,16 +247,17 @@ export default function Ventas() {
     const existing = cart.find(c => c.product_id === product.id);
     if (existing) {
       if (existing.quantity >= product.stock) return;
-      setCart(cart.map(c => c.product_id === product.id ? { ...c, quantity: c.quantity + 1, subtotal: (c.quantity + 1) * c.unit_price } : c));
+      const upd = { ...existing, quantity: existing.quantity + 1, subtotal: (existing.quantity + 1) * existing.unit_price };
+      setCart([upd, ...cart.filter(c => c.product_id !== product.id)]);
     } else {
-      setCart([...cart, {
+      setCart([{
         product_id: product.id,
         name: product.name,
         quantity: 1,
         unit_price: product.price,
         iva_rate: product.iva_rate || 19,
         subtotal: product.price,
-      }]);
+      }, ...cart]);
     }
     setSearch("");
     setTimeout(() => searchRef.current?.focus(), 0);
