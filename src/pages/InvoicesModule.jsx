@@ -1,3 +1,4 @@
+import { countUnits } from "@/lib/itemsCount";
 // Facturación
 import React, { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
@@ -317,6 +318,7 @@ export default function Invoices() {
                   <th className="px-4 py-3 font-medium">Tipo</th>
                   <th className="px-4 py-3 font-medium">Cliente</th>
                   <th className="px-4 py-3 font-medium">Fecha</th>
+                  <th className="px-4 py-3 font-medium text-right">Ítems</th>
                   <th className="px-4 py-3 font-medium text-right">Total</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
                   <th className="px-4 py-3"></th>
@@ -329,6 +331,7 @@ export default function Invoices() {
                     <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-600">{inv.type}</span></td>
                     <td className="px-4 py-3 text-slate-700">{inv.customer_name || "—"}</td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{inv.date ? moment(inv.date).format("DD/MM/YYYY") : "—"}</td>
+                    <td className="px-4 py-3 text-right text-slate-600">{countUnits(inv.items)}</td>
                     <td className="px-4 py-3 text-right font-semibold text-slate-800">${(inv.total || 0).toLocaleString("es-CO")}</td>
                     <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[inv.status]}`}>{inv.status}</span></td>
                     <td className="px-4 py-3">

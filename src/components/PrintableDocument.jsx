@@ -1,4 +1,5 @@
 import React from "react";
+import { countUnits } from "@/lib/itemsCount";
 import moment from "moment";
 import { momentBogota, fmtBogota } from "@/lib/localDate";
 import { Button } from "@/components/ui/button";
@@ -441,6 +442,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           {/* Totals */}
           <div className="flex justify-end mt-3">
             <div className="w-72 text-xs space-y-1 print-totals">
+              <div className="flex justify-between"><span>Total ítems</span><span>{countUnits(items)}</span></div>
               {type === "order" && (() => {
                 const ant = sumAnticipos(doc.anticipos);
                 const totalOrd = doc.cost || items.reduce((s, i) => s + (i.subtotal || 0), 0);

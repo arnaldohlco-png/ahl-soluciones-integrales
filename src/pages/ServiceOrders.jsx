@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { countUnits } from "@/lib/itemsCount";
 import FaultChecklist from "@/components/FaultChecklist";
 import { pendingFaults, pendingMessage } from "@/lib/faultChecklist";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -426,6 +427,7 @@ export default function ServiceOrders() {
                 <div className="flex items-center gap-4 ml-auto">
                   <div className="text-right">
                     <p className="text-lg font-bold text-slate-900">${itemsTotal(o).toLocaleString("es-CO")}</p>
+                    <p className="text-xs text-slate-500">Total ítems: {countUnits(o.service_items)}</p>
                     {sumAnticipos(o.anticipos) > 0 && <p className="text-xs text-emerald-600 font-medium">Anticipo: ${sumAnticipos(o.anticipos).toLocaleString("es-CO")}</p>}
                     {o.mechanic && <p className="text-xs text-slate-400">{o.mechanic}</p>}
                     {o.entry_date && <p className="text-xs text-slate-400">Ingreso: {o.entry_date}</p>}

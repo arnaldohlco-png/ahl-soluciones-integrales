@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { countUnits } from "@/lib/itemsCount";
 import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
@@ -220,6 +221,7 @@ export default function Quotations() {
                   ))}
                   {parsed.length > 3 && <p className="text-xs text-slate-400">+{parsed.length - 3} items más...</p>}
                 </div>
+                <div className="flex justify-between text-xs text-slate-500 mb-1"><span>Total ítems</span><span>{countUnits(parsed)}</span></div>
                 <div className="flex justify-between border-t border-slate-100 pt-2 mb-3">
                   <span className="text-sm text-slate-500">Total</span>
                   <span className="font-bold text-slate-900">{fmt(q.total)}</span>
@@ -341,6 +343,7 @@ export default function Quotations() {
             {/* Totales */}
             <div className="px-5 py-4 border-t border-slate-300 flex justify-end">
               <div className="w-full sm:w-72 space-y-1.5 text-sm">
+                <div className="flex justify-between text-slate-600"><span>Total ítems</span><span>{countUnits(items)}</span></div>
                 <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
                 <div className="flex justify-between font-bold text-slate-900 text-base pt-1 border-t border-slate-300"><span>TOTAL</span><span>{fmt(total)}</span></div>
               </div>

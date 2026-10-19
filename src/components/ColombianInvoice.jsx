@@ -1,4 +1,5 @@
 import VerseBox from "@/components/VerseBox";
+import { countUnits } from "@/lib/itemsCount";
 import AdminSignatureStamp from "@/components/AdminSignatureStamp";
 import React from "react";
 import moment from "moment";
@@ -107,6 +108,7 @@ export default function ColombianInvoice({ sale, company, customer, onClose }) {
           {/* Totals */}
           <div className="flex justify-end mt-3">
             <div className="w-72 text-xs space-y-1 print-totals">
+              <div className="flex justify-between"><span>Total ítems</span><span>{countUnits(items)}</span></div>
               <div className="flex justify-between"><span>Subtotal</span><span>{fmt(sale.subtotal)}</span></div>
               {ivaRates.map((r) => (
                 <div key={r} className="flex justify-between"><span>IVA {r}%</span><span>{fmt(ivaGroups[r].iva)}</span></div>

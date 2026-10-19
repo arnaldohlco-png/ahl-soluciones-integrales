@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
+import { countUnits } from "@/lib/itemsCount";
 import { base44 } from "@/api/base44Client";
 import BankAccountSelect, { needsBank } from "@/components/BankAccountSelect";
 import { fetchAllCustomers } from "@/lib/customersLoader";
@@ -636,6 +637,7 @@ export default function Ventas() {
           {/* Totales */}
           <div className="px-5 py-4 border-t border-slate-300 flex justify-end">
             <div className="w-full sm:w-72 space-y-1.5 text-sm">
+              <div className="flex justify-between text-slate-600"><span>Total ítems</span><span>{countUnits(cart)}</span></div>
               <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>${totals.subtotal.toLocaleString("es-CO")}</span></div>
               <div className="flex justify-between text-slate-600"><span>IVA</span><span>${totals.iva.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span></div>
               <div className="flex justify-between items-center text-slate-600">
@@ -700,6 +702,7 @@ export default function Ventas() {
                       <th className="px-4 py-3 font-medium">Cliente</th>
                       <th className="px-4 py-3 font-medium">Fecha</th>
                       <th className="px-4 py-3 font-medium">Pago</th>
+                      <th className="px-4 py-3 font-medium text-right">Ítems</th>
                       <th className="px-4 py-3 font-medium text-right">Total</th>
                       <th className="px-4 py-3 font-medium">Estado</th>
                       <th className="px-4 py-3"></th>
@@ -708,13 +711,14 @@ export default function Ventas() {
                   <tbody>
                     {filteredHistory.map(s => {
                       let itemCount = 0;
-                      try { itemCount = JSON.parse(s.items || "[]").length; } catch (e) { /* ignore */ }
+                      itemCount = countUnits(s.items);
                       return (
                         <tr key={s.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
                           <td className="px-4 py-3 font-medium text-slate-800">{s.number || "—"}</td>
                           <td className="px-4 py-3 text-slate-700">{s.customer_name || "Cliente mostrador"}</td>
                           <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{fmtBogota(s.date, "DD/MM/YYYY")}</td>
                           <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{s.payment_type} · {s.payment_method}</td>
+                          <td className="px-4 py-3 text-right text-slate-600">{itemCount}</td>
                           <td className="px-4 py-3 text-right font-semibold text-slate-800">${(s.total || 0).toLocaleString("es-CO")}</td>
                           <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs ${s.status === "Pagada" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{s.status}</span></td>
                           <td className="px-4 py-3 text-right">
