@@ -48,15 +48,17 @@ export default function Expenses() {
   const CATEGORIES = [...new Set([...catRecords.map((c) => c.name), ...list.map((e) => e.category).filter(Boolean)])];
 
   const loadCategories = async () => {
-    const me = await base44.auth.me();
-    const admin = me?.role === "admin" || me?.role === "administrador";
-    setIsAdmin(admin);
-    let cats = await base44.entities.ExpenseCategory.list("created_date", 200);
-    if (cats.length === 0 && admin) {
-      await base44.entities.ExpenseCategory.bulkCreate(DEFAULT_CATEGORIES.map((name) => ({ name })));
-      cats = await base44.entities.ExpenseCategory.list("created_date", 200);
-    }
-    setCatRecords(cats);
+    try {
+      const me = await base44.auth.me();
+      const admin = me?.role === "admin" || me?.role === "administrador";
+      setIsAdmin(admin);
+      let cats = await base44.entities.ExpenseCategory.list("created_date", 200);
+      if (cats.length === 0 && admin) {
+        await base44.entities.ExpenseCategory.bulkCreate(DEFAULT_CATEGORIES.map((name) => ({ name })));
+        cats = await base44.entities.ExpenseCategory.list("created_date", 200);
+      }
+      setCatRecords(cats);
+    } catch (e) { console.error(e); }
   };
 
   useEffect(() => { load(); loadCategories(); }, []);
