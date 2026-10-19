@@ -224,13 +224,6 @@ export default function Dashboard() {
         <div className="relative z-[2] flex flex-col gap-6 md:gap-9">
           {/* Barra de navegación */}
           <div className="relative flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-[#F0B429] text-[#18212B] rounded-md px-3 pt-3 pb-3 md:px-5 md:py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] border-b-4 border-[#18212B] dash-rise">
-            <button
-              onClick={openMenu}
-              aria-label="Abrir menú"
-              className="absolute top-3 left-3 md:static w-11 h-11 rounded-md bg-[#18212B] text-[#EAF0F4] border-2 border-[#263442] flex items-center justify-center shrink-0 cursor-pointer transition-colors hover:bg-[#263442] active:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              
-              <Menu className="w-5 h-5" />
-            </button>
             <div className="w-full md:flex-1 min-w-0">
               <div className="flex justify-center mb-1.5">
                 {company?.logo ?
@@ -251,12 +244,27 @@ export default function Dashboard() {
                 filter(Boolean).join("  ·  ")}
               </p>
             </div>
-            <div className="text-right shrink-0 hidden sm:block">
-              <span className="block text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase opacity-80 capitalize">
-                {["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][momentBogota().day()]}
-              </span>
-              <b className="block text-base md:text-xl font-black mt-0.5">{momentBogota().format("DD/MM/YYYY")}</b>
+          </div>
+
+          {/* Franja compacta: fecha y menú */}
+          <div className="strip-arrive flex items-center justify-between gap-3 bg-[#18212B] border border-[#263442] border-b-4 border-b-[#F0B429] rounded-lg px-4 md:px-[26px] py-4 md:py-[22px] text-[#EAF0F4] shadow-[0_8px_22px_rgba(24,33,43,0.18)]">
+            <div className="flex items-center gap-[13px]">
+              <span className="w-1 h-[42px] rounded-[3px] bg-[#F0B429] shrink-0" />
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] leading-[1.2] font-extrabold tracking-[0.14em] uppercase text-[#F0B429]">
+                  {["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][momentBogota().day()]}
+                </span>
+                <span className="text-[22px] leading-[1.15] font-extrabold tracking-[0.025em] text-[#EAF0F4]">{momentBogota().format("DD/MM/YYYY")}</span>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={openMenu}
+              aria-label="Abrir menú"
+              className="h-12 px-[17px] border border-[#40505f] rounded-[7px] bg-[#263442] text-[#EAF0F4] flex items-center gap-[11px] text-xs leading-none font-extrabold tracking-[0.08em] uppercase cursor-pointer transition-[background-color,color,box-shadow,transform] duration-[180ms] ease-in-out hover:bg-[#344657] hover:shadow-[0_4px_12px_rgba(0,0,0,0.22)] active:translate-y-px active:bg-[#101820] active:duration-[120ms] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#F0B429]">
+              <Menu className="w-[18px] h-[18px] text-[#F0B429]" strokeWidth={2} />
+              <span>Abrir menú</span>
+            </button>
           </div>
 
           {/* Órdenes por estado */}

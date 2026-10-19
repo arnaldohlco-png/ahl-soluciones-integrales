@@ -99,6 +99,14 @@
   animation: dash-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+@keyframes strip-arrive {
+  from { opacity: 0.68; }
+  to { opacity: 1; }
+}
+.strip-arrive {
+  animation: strip-arrive 0.55s ease-out both;
+}
+
 @media print {
   body * {
     visibility: hidden;
