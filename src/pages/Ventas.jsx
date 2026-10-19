@@ -596,7 +596,7 @@ export default function Ventas() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-100 text-slate-600 text-xs uppercase border-b border-slate-300">
-                  <th className="px-3 py-2 text-left font-semibold">Descripción</th>
+                  <th className="px-3 py-2 text-left font-semibold">Descripción ({cart.length} ítems · {cart.reduce((s, c) => s + (Number(c.quantity) || 0), 0)} uds)</th>
                   <th className="px-3 py-2 text-center font-semibold">Cant.</th>
                   <th className="px-3 py-2 text-right font-semibold">Vr. unit.</th>
                   <th className="px-3 py-2 text-right font-semibold">Subtotal</th>

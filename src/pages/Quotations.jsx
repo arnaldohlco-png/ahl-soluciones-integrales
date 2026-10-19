@@ -281,7 +281,7 @@ export default function Quotations() {
 
             {/* Agregar items */}
             <div className="px-5 py-3 border-b border-slate-300 flex items-center justify-between gap-2 flex-wrap">
-              <Label className="text-xs uppercase text-slate-500">Items</Label>
+              <Label className="text-xs uppercase text-slate-500">Items ({items.length} ítems · {items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)} uds)</Label>
               <div className="flex-1 min-w-[220px] max-w-md">
                 <LiveItemSearch
                   options={[
