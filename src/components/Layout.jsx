@@ -139,6 +139,14 @@ export default function Layout() {
           navigate("/facturacion", { state: { newInvoice: true } });
         }
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        if (pathRef.current !== "/creditos") navigate("/creditos");
+      }
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.code === "KeyP") {
+        e.preventDefault();
+        if (pathRef.current !== "/compras") navigate("/compras");
+      }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
         e.preventDefault();
         if (pathRef.current === "/ventas") {
