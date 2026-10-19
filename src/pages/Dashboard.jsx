@@ -231,14 +231,14 @@ export default function Dashboard() {
               
               <Menu className="w-5 h-5" />
             </button>
-            <div className={`w-16 h-16 md:w-[52px] md:h-[52px] rounded-md ${company?.logo ? "" : "bg-[#EAF0F4]"} flex items-center justify-center shrink-0 overflow-hidden`}>
-              {company?.logo ?
-              <img src={company.logo} alt="Logo" className="w-full h-full object-contain" /> :
-
-              <Bike className="w-7 h-7 text-[#18212B]" />
-              }
-            </div>
             <div className="w-full md:flex-1 min-w-0">
+              <div className="flex justify-center mb-1.5">
+                {company?.logo ?
+                <img src={company.logo} alt="Logo" className="h-16 md:h-20 w-auto max-w-full object-contain" /> :
+                <div className="w-14 h-14 rounded-md bg-[#EAF0F4] flex items-center justify-center">
+                  <Bike className="w-7 h-7 text-[#18212B]" />
+                </div>}
+              </div>
               <h1 className="text-[15px] md:text-[22px] font-black uppercase tracking-[0.08em] md:tracking-[0.14em] leading-tight text-center md:truncate">
                 {company?.name || "Mi Taller"}
               </h1>
