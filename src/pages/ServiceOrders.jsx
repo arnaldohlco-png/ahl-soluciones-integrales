@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import FaultChecklist from "@/components/FaultChecklist";
+import { pendingFaults, pendingMessage } from "@/lib/faultChecklist";
 import { useNavigate, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
@@ -43,7 +45,8 @@ const empty = {
   warranty: "", delivery_date: "", cost: "", parts_used: "",
   previous_mileage: "", current_mileage: "", kms_traveled: 0, oil_change_interval: 1000, next_oil_change: "",
   photos: "[]", anticipos: "[]", admin_footer: "",
-  customer_signature: "", technician_signature: ""
+  customer_signature: "", technician_signature: "",
+  fault_answer: "", fault_checklist: "[]"
 };
 
 export default function ServiceOrders() {
@@ -178,7 +181,8 @@ export default function ServiceOrders() {
       previous_mileage: o.previous_mileage ?? "", current_mileage: o.current_mileage ?? "", kms_traveled: o.kms_traveled ?? 0,
       oil_change_interval: o.oil_change_interval || 1000, next_oil_change: o.next_oil_change ?? "",
       photos: o.photos || "[]", anticipos: o.anticipos || "[]", admin_footer: o.admin_footer || company?.footer_text || "",
-      customer_signature: o.customer_signature || "", technician_signature: o.technician_signature || ""
+      customer_signature: o.customer_signature || "", technician_signature: o.technician_signature || "",
+      fault_answer: o.fault_answer || "", fault_checklist: o.fault_checklist || "[]"
     });
     try {setServiceItems(JSON.parse(o.service_items || "[]"));} catch {setServiceItems([]);}
     setEditing(o);setOpen(true);
@@ -203,6 +207,10 @@ export default function ServiceOrders() {
 
   const save = async () => {
     if (!form.motorcycle_id || !form.customer_id) return;
+    if (form.status === "Entregado") {
+      const pending = pendingFaults(form);
+      if (pending.length) {alert(pendingMessage(pending));return;}
+    }
     setSaving(true);
     const nextOil = (Number(form.current_mileage) || 0) + (Number(form.oil_change_interval) || 0);
     const payload = { ...form, service_items: JSON.stringify(serviceItems), next_oil_change: nextOil };
@@ -286,6 +294,8 @@ export default function ServiceOrders() {
   };
 
   const entregar = async (o) => {
+    const pending = pendingFaults(o);
+    if (pending.length) {alert(pendingMessage(pending));return;}
     if (!(await confirm({ title: "¿Marcar esta orden como entregada?", description: "Confirma que la motocicleta fue entregada al cliente.", confirmText: "Sí, entregar", cancelText: "No" }))) return;
     await base44.entities.ServiceOrder.update(o.id, { status: "Entregado", delivery_date: todayLocalKey() });
     await load();
@@ -570,7 +580,7 @@ export default function ServiceOrders() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Diagnóstico</p>
               <div className="space-y-3">
                 
-                <div><Label>Falla reportada</Label><Textarea value={form.reported_fault} onChange={(e) => setForm({ ...form, reported_fault: e.target.value })} className="mt-1" rows={2} /></div>
+                <FaultChecklist answer={form.fault_answer} value={form.fault_checklist} onChange={(patch) => setForm((f) => ({ ...f, ...patch }))} />
                 <div><Label>Diagnóstico técnico</Label><Textarea value={form.technical_diagnosis} onChange={(e) => setForm({ ...form, technical_diagnosis: e.target.value })} className="mt-1" rows={2} /></div>
                 
 
