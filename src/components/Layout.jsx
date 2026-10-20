@@ -305,7 +305,7 @@ export default function Layout() {
       <button
         onClick={() => setMobileOpen(true)}
         aria-label="Abrir menú"
-        className="hidden md:flex fixed top-3 left-3 z-30 w-10 h-10 items-center justify-center rounded-lg bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
+        className="hidden md:flex fixed top-3 right-3 z-30 w-10 h-10 items-center justify-center rounded-lg bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
         <Menu className="w-5 h-5" />
       </button>}
 
@@ -370,7 +370,7 @@ export default function Layout() {
       <BackupReminder open={backupOpen} onContinue={handleLogout} onCancel={() => setBackupOpen(false)} />
 
       {/* Main content */}
-      <main className={`min-h-screen ${isDashboard ? "" : "pt-14 md:pt-0 md:pl-16"}`}>
+      <main className={`min-h-screen ${isDashboard ? "" : "pt-14 md:pt-0 md:pr-16"}`}>
         <Outlet />
       </main>
     </div>);
