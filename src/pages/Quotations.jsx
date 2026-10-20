@@ -33,6 +33,7 @@ export default function Quotations() {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -60,6 +61,7 @@ export default function Quotations() {
 
   const load = async () => {
     try {
+      fetchAll("Technician").then((t) => setTechnicians(t.filter((x) => x.status !== "Inactivo"))).catch(() => {});
       const [q, c, p, s, comps] = await Promise.all([
         base44.entities.Invoice.filter({ type: "Cotización" }, "-created_date", 5000),
         fetchAllCustomers(),
@@ -112,7 +114,7 @@ export default function Quotations() {
   };
 
   const addService = (service) => {
-    setItems([{ name: service.name, quantity: 1, unit_price: service.price || 0, subtotal: service.price || 0, service_id: service.id }, ...items]);
+    setItems([{ name: service.name, quantity: 1, unit_price: service.price || 0, subtotal: service.price || 0, service_id: service.id, type: "Servicio" }, ...items]);
   };
 
   const updateItem = (idx, field, value) => {
@@ -320,6 +322,15 @@ export default function Quotations() {
                     <tr key={i} className="border-b border-slate-100">
                       <td className="px-3 py-1">
                         <input value={it.name} onChange={(e) => updateItem(i, "name", e.target.value)} className="w-full border-0 px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-300 rounded" />
+                        {(it.service_id || it.type === "Servicio") && (
+                          <select
+                            value={it.technician_id || ""}
+                            onChange={(e) => updateItem(i, "technician_id", e.target.value)}
+                            className="mt-1 ml-1 text-xs border border-slate-200 rounded px-1 py-0.5 bg-white text-slate-600 max-w-[220px]">
+                            <option value="">Técnico (opcional)</option>
+                            {technicians.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                          </select>
+                        )}
                         {(() => {
                           const prod = it.product_id ? products.find((p) => p.id === it.product_id) : null;
                           if (!prod) return null;
