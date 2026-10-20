@@ -139,7 +139,9 @@ export default function Invoices() {
     }
   }, [loading, location.state]);
 
+  const LOCK_MSG = "Documento cerrado: no se puede editar, eliminar ni cambiar su estado. Para devoluciones o ajustes use una nota crédito o débito.";
   const openEdit = (inv) => {
+    if (isLocked(inv)) { alert(LOCK_MSG); return; }
     setEditing(inv);
     setForm({ ...inv });
     let parsed = [];
@@ -150,6 +152,7 @@ export default function Invoices() {
 
   const save = async () => {
     if (!form.total) return;
+    if (editing && isLocked(editing)) { alert(LOCK_MSG); return; }
     setSaving(true);
     try {
       const dueDate = form.payment_terms === "Crédito" && form.credit_days > 0 ? moment(form.date).add(Number(form.credit_days), "days").format("YYYY-MM-DD") : "";
@@ -177,6 +180,7 @@ export default function Invoices() {
   };
 
   const remove = async (id) => {
+    if (list.some((x) => x.id === id && isLocked(x))) { alert(LOCK_MSG); return; }
     if (!(await confirm({ title: "¿Anular este documento?", confirmText: "Sí, anular", cancelText: "No", variant: "destructive" }))) return;
     const inv = list.find((i) => i.id === id);
     if (inv && INVENTORY_TYPES.includes(inv.type) && inv.status !== "Anulada") {

@@ -95,7 +95,10 @@ export default function Quotations() {
     }
   }, [loading, location.state]);
 
+  const isFinalQ = (q) => q.status === "Aceptada" || q.status === "Pagada";
+  const LOCK_MSG = "Documento cerrado: no se puede editar, eliminar ni cambiar su estado. Para devoluciones o ajustes use una nota crédito o débito.";
   const openEdit = (q) => {
+    if (isFinalQ(q)) { alert(LOCK_MSG); return; }
     setEditing(q);
     let parsedItems = [];
     try { parsedItems = JSON.parse(q.items || "[]"); } catch { parsedItems = []; }
@@ -162,6 +165,7 @@ export default function Quotations() {
   };
 
   const remove = async (id) => {
+    if (quotes.some((x) => x.id === id && isFinalQ(x))) { alert(LOCK_MSG); return; }
     if (!(await confirm({ title: "¿Eliminar esta cotización?", confirmText: "Sí, eliminar", cancelText: "No", variant: "destructive" }))) return;
     await base44.entities.Invoice.delete(id);
     await load();
@@ -227,9 +231,9 @@ export default function Quotations() {
                   <span className="font-bold text-slate-900">{fmt(q.total)}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(q)} className="flex-1 min-w-[80px]">
+                  {!isFinalQ(q) && <Button size="sm" variant="outline" onClick={() => openEdit(q)} className="flex-1 min-w-[80px]">
                     <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
-                  </Button>
+                  </Button>}
                   <Button size="sm" variant="outline" onClick={() => convertToInvoice(q)} className="flex-1 min-w-[80px]">
                     <FileCheck className="w-3.5 h-3.5 mr-1" /> Facturar
                   </Button>
@@ -238,9 +242,9 @@ export default function Quotations() {
                   )}
                   <WhatsAppButton size="sm" phone={customerPhone(q.customer_id)} message={buildDocMessage("quotation", q, company, { customer: customers.find((c) => c.id === q.customer_id) })} variant="outline" label="WhatsApp" />
                   <button onClick={() => setPrintQ(q)} title="Imprimir" className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md border border-slate-200"><Printer className="w-3.5 h-3.5" /></button>
-                  <Button size="sm" variant="ghost" onClick={() => remove(q.id)} className="text-red-500">
+                  {!isFinalQ(q) && <Button size="sm" variant="ghost" onClick={() => remove(q.id)} className="text-red-500">
                     <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                  </Button>}
                 </div>
               </div>
             );
