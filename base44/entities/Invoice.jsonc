@@ -163,6 +163,16 @@
           "user_condition": {
             "role": "administrador"
           }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendedor"
+          }
         }
       ]
     },
