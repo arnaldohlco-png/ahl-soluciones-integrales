@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import { fmtBogota } from "@/lib/localDate";
@@ -22,14 +23,42 @@ function Row({ label, value, bold }) {
 
 export default function ShiftReportView({ report: r, onClose }) {
   const diff = r.difference;
+  const [format, setFormat] = useState("a4");
+  const [company, setCompany] = useState(null);
+
+  useEffect(() => {
+    base44.entities.Company.list("-created_date", 1).then((l) => setCompany((l.items || l)[0] || null));
+  }, []);
+
+  const handlePrint = () => {
+    const body = document.body;
+    body.classList.toggle("print-80mm", format === "80mm");
+    const cleanup = () => {
+      body.classList.remove("print-80mm");
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    window.print();
+  };
+
+  const fmtBtn = (f) => `px-3 py-1.5 font-medium text-xs ${format === f ? "bg-slate-800 text-white" : "bg-white text-slate-700 hover:bg-slate-100"}`;
+
   return (
     <div className="fixed inset-0 z-[60] bg-slate-100 overflow-y-auto">
-      <div className="no-print sticky top-0 bg-white border-b px-4 py-3 flex justify-end gap-2">
-        <Button onClick={() => window.print()} className="bg-amber-500 hover:bg-amber-600 text-slate-900"><Printer className="w-4 h-4" /> Imprimir</Button>
-        <Button variant="outline" onClick={onClose}><X className="w-4 h-4" /> Cerrar</Button>
+      <div className="no-print sticky top-0 bg-white border-b px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+        <div className="inline-flex rounded-md border border-slate-300 overflow-hidden">
+          <button type="button" onClick={() => setFormat("a4")} className={fmtBtn("a4")}>Carta</button>
+          <button type="button" onClick={() => setFormat("80mm")} className={`${fmtBtn("80mm")} border-l border-slate-300`}>Tirilla 80 mm</button>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handlePrint} className="bg-amber-500 hover:bg-amber-600 text-slate-900"><Printer className="w-4 h-4" /> Imprimir</Button>
+          <Button variant="outline" onClick={onClose}><X className="w-4 h-4" /> Cerrar</Button>
+        </div>
       </div>
       <div className="print-area bg-white max-w-3xl mx-auto my-4 p-6 text-xs text-slate-900">
         <div className="text-center mb-4">
+          {company?.logo && <img src={company.logo} alt="Logo" className="h-14 mx-auto mb-1 object-contain" />}
+          {company?.name && <p className="text-base font-bold">{company.name}</p>}
           <h2 className="text-xl font-bold">Reporte de cierre de turno</h2>
           <p className="text-slate-600">{r.register} · Turno {r.turno_number ?? "—"}</p>
         </div>
