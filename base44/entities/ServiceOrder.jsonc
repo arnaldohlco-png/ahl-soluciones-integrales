@@ -208,8 +208,11 @@
     },
     "fault_answer": {
       "type": "string",
-      "title": "¿Cliente reporta fallas?",
-      "enum": ["si", "no"]
+      "title": "\u00bfCliente reporta fallas?",
+      "enum": [
+        "si",
+        "no"
+      ]
     },
     "fault_checklist": {
       "type": "string",
