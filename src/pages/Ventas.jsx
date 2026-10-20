@@ -296,15 +296,16 @@ export default function Ventas() {
       ? `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })} · Anticipo: $${totals.anticipo.toLocaleString("es-CO", { maximumFractionDigits: 0 })} · Saldo: $${totals.saldo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`
       : `Total: $${totals.total.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
     if (!(await confirm({ title: "¿Cobrar esta venta?", description: cobroDesc, confirmText: "Sí, cobrar", cancelText: "No" }))) return;
-    if (!fromOrder) {
+    {
+      const ids = [...new Set(cart.map(i => i.product_id).filter(Boolean))];
+      const fresh = ids.length ? (await base44.entities.Product.filter({ id: { $in: ids } }, { limit: 500 })).items || [] : [];
       const insufficient = cart.find(item => {
         if (!item.product_id) return false;
-        const prod = products.find(p => p.id === item.product_id);
+        const prod = fresh.find(p => p.id === item.product_id);
         return !prod || (prod.stock || 0) < item.quantity;
       });
       if (insufficient) {
-        const prod = products.find(p => p.id === insufficient.product_id);
-        alert(`Stock insuficiente para "${prod?.name || "un producto"}". No se puede completar la venta.`);
+        alert(`Stock insuficiente para "${insufficient.name || "un producto"}". No se puede completar la venta.`);
         return;
       }
     }
@@ -663,7 +664,7 @@ export default function Ventas() {
             <Button onClick={startNewSale} disabled={cart.length === 0 || processing} variant="outline" className="h-10">
               <FilePlus2 className="w-4 h-4" /> Nueva
             </Button>
-            <Button onClick={checkout} disabled={processing || (!fromOrder && cart.some(i => i.product_id && (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity))} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
+            <Button onClick={checkout} disabled={processing || (cart.some(i => i.product_id && (products.find(p => p.id === i.product_id)?.stock || 0) < i.quantity))} className="h-10 bg-amber-500 hover:bg-amber-600 text-slate-900">
               {processing ? "..." : "Cobrar"}
             </Button>
           </div>

@@ -8,8 +8,17 @@ import LiveItemSearch from "@/components/LiveItemSearch";
 export default function ServiceItemsEditor({ items, setItems, products, services, technicians }) {
   const [newItem, setNewItem] = useState({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
 
+  const stockOf = (id) => (products || []).find((p) => p.id === id)?.stock || 0;
+
   const addItem = () => {
     if (!newItem.name.trim()) return;
+    if (newItem.product_id) {
+      const already = items.filter((i) => i.product_id === newItem.product_id).reduce((s, i) => s + (Number(i.quantity) || 0), 0);
+      if (already + (Number(newItem.quantity) || 1) > stockOf(newItem.product_id)) {
+        alert(`Stock insuficiente para "${newItem.name}". Disponible: ${stockOf(newItem.product_id)}.`);
+        return;
+      }
+    }
     const subtotal = (Number(newItem.quantity) || 1) * (Number(newItem.unit_price) || 0);
     setItems([{ ...newItem, quantity: Number(newItem.quantity) || 1, unit_price: Number(newItem.unit_price) || 0, subtotal }, ...items]);
     setNewItem({ type: "Servicio", name: "", quantity: 1, unit_price: 0 });
@@ -20,6 +29,13 @@ export default function ServiceItemsEditor({ items, setItems, products, services
   };
 
   const updateItem = (idx, field, value) => {
+    if (field === "quantity" && items[idx].product_id) {
+      const others = items.filter((x, k) => k !== idx && x.product_id === items[idx].product_id).reduce((s, x) => s + (Number(x.quantity) || 0), 0);
+      if (others + (Number(value) || 0) > stockOf(items[idx].product_id)) {
+        alert(`Stock insuficiente para "${items[idx].name}". Disponible: ${stockOf(items[idx].product_id)}.`);
+        return;
+      }
+    }
     const updated = [...items];
     updated[idx] = { ...updated[idx], [field]: value };
     if (field === "quantity" || field === "unit_price") {
@@ -29,6 +45,10 @@ export default function ServiceItemsEditor({ items, setItems, products, services
   };
 
   const onProductSelect = (p) => {
+    if ((p.stock || 0) <= 0) {
+      alert(`"${p.name}" no tiene inventario disponible.`);
+      return;
+    }
     setNewItem({ type: "Producto", name: p.name, quantity: 1, unit_price: p.price || 0, product_id: p.id });
   };
 
