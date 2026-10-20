@@ -20,7 +20,7 @@ export default function PrintToolbar({ onClose, defaultFormat = "a4", whatsappPh
   };
 
   return (
-    <div className="no-print flex flex-wrap items-center justify-between gap-2 p-3 border-b border-slate-200">
+    <div className="no-print flex flex-wrap items-center justify-end gap-2 p-3 border-b border-slate-200">
       <div className="flex items-center gap-2 text-xs">
         <span className="text-slate-500 font-medium">Formato:</span>
         <div className="inline-flex rounded-md border border-slate-300 overflow-hidden">
