@@ -41,6 +41,21 @@ export default function CommissionPayments() {
   const [adminSig, setAdminSig] = useState("");
   const [tab, setTab] = useState("pendientes");
   const [convertedOrderIds, setConvertedOrderIds] = useState(new Set());
+  const [invoices, setInvoices] = useState([]);
+
+  // Facturas pagadas (sin orden vinculada) con servicios que tienen técnico asignado, tratadas como documentos de comisión
+  const invoiceDocs = (list) => list
+    .filter((i) => i.status === "Pagada" && ["Factura de venta", "Factura de taller"].includes(i.type) && !i.related_order_id)
+    .map((i) => {
+      let its = [];
+      try { its = JSON.parse(i.items || "[]"); } catch { its = []; }
+      const svc = its
+        .filter((x) => x.technician_id && (String(x.type || "").toLowerCase() === "servicio" || x.service_id))
+        .map((x) => ({ ...x, type: "Servicio" }));
+      return { id: i.id, number: i.number, entry_date: i.date, service_type: "Factura", status: "Pagada", _invoice: true, commission_paid_techs: i.commission_paid_techs, service_items: JSON.stringify(svc) };
+    })
+    .filter((d) => JSON.parse(d.service_items).length > 0);
+  const allDocs = [...orders, ...invoiceDocs(invoices)];
 
   useEffect(() => {
     (async () => {
@@ -59,6 +74,7 @@ export default function CommissionPayments() {
         setTechs(t.filter((x) => x.status === "Activo"));
         setPayments(p);
         setOrders(o);
+        setInvoices(inv);
         setMotos(m);
         setCustomers(c);
         setServices(sv);
@@ -76,7 +92,7 @@ export default function CommissionPayments() {
   const techName = (id) => techs.find((t) => t.id === id)?.name || "—";
   const techPct = (id) => techs.find((t) => t.id === id)?.commission_percentage || 0;
   // Comisión pagable: orden entregada (siempre con venta/factura vinculada) o cobrada (Terminado con vínculo)
-  const isChargedOrDelivered = (o) => o.status === "Entregado" || (o.status === "Terminado" && convertedOrderIds.has(o.id));
+  const isChargedOrDelivered = (o) => o._invoice || o.status === "Entregado" || (o.status === "Terminado" && convertedOrderIds.has(o.id));
 
   const createTechnician = async (name) => {
     const t = await base44.entities.Technician.create({ name, status: "Activo" });
@@ -104,7 +120,7 @@ export default function CommissionPayments() {
   };
 
   // Órdenes pendientes de pago de comisión en el período seleccionado
-  const pendingOrders = orders.filter((o) => {
+  const pendingOrders = allDocs.filter((o) => {
     const d = o.entry_date || (o.created_date || "").slice(0, 10);
     return d >= from && d <= to && isChargedOrDelivered(o) && unpaidShares(o).length > 0;
   });
@@ -129,7 +145,12 @@ export default function CommissionPayments() {
       try { paidIds = JSON.parse(p.order_ids || "[]"); } catch { paidIds = []; }
       if (paidIds.length > 0) {
         // Usar las órdenes exactas registradas en el pago
-        inRange = (await Promise.all(paidIds.map((id) => base44.entities.ServiceOrder.get(id)))).filter(Boolean);
+        inRange = (await Promise.all(paidIds.map(async (id) => {
+          const so = await base44.entities.ServiceOrder.get(id).catch(() => null);
+          if (so) return so;
+          const iv = await base44.entities.Invoice.get(id).catch(() => null);
+          return iv ? invoiceDocs([iv])[0] || { ...iv, service_type: "Factura", service_items: iv.items } : null;
+        }))).filter(Boolean);
       } else {
         // Compatibilidad: filtrar por período si no hay order_ids
         const ords = await fetchAll("ServiceOrder");
@@ -149,11 +170,13 @@ export default function CommissionPayments() {
     setTechSig(""); setAdminSig("");
     setSelectedTech(techId);
     try {
-      const [ords, loans] = await Promise.all([
+      const [ords0, invs, loans] = await Promise.all([
         fetchAll("ServiceOrder"),
+        fetchAll("Invoice"),
         base44.entities.TechnicianLoan.filter({ technician_id: techId, status: "Pendiente" }, "-created_date", 100),
       ]);
 
+      const ords = [...ords0, ...invoiceDocs(invs)];
       const inRange = ords.filter((o) => {
         const d = o.entry_date || (o.created_date || "").slice(0, 10);
         return d >= from && d <= to && isChargedOrDelivered(o) && unpaidShares(o).some(([tid]) => tid === techId);
@@ -215,7 +238,9 @@ export default function CommissionPayments() {
 
       // Mark orders as commission paid
       for (const o of calc.orders) {
-        await base44.entities.ServiceOrder.update(o.id, nextPaidState(o, calc.techId, Object.keys(techBases(o, isTercero))));
+        const st = nextPaidState(o, calc.techId, Object.keys(techBases(o, isTercero)));
+        if (o._invoice) await base44.entities.Invoice.update(o.id, { commission_paid_techs: st.commission_paid_techs });
+        else await base44.entities.ServiceOrder.update(o.id, st);
       }
 
       // Mark loans as deducted
@@ -226,12 +251,14 @@ export default function CommissionPayments() {
       }
 
       // Reload
-      const [p, o] = await Promise.all([
+      const [p, o, iv] = await Promise.all([
         base44.entities.CommissionPayment.list("-created_date", 200),
         fetchAll("ServiceOrder"),
+        fetchAll("Invoice"),
       ]);
       setPayments(p);
       setOrders(o);
+      setInvoices(iv);
       setCalc(null);
       alert("Comisión pagada y préstamos descontados");
     } catch (e) { console.error(e); alert("Error al pagar"); }

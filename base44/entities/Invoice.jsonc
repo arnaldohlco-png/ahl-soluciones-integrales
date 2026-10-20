@@ -115,6 +115,10 @@
     "related_order_id": {
       "type": "string",
       "title": "Orden relacionada"
+    },
+    "commission_paid_techs": {
+      "type": "string",
+      "title": "T\u00e9cnicos con comisi\u00f3n pagada (JSON)"
     }
   },
   "required": [
