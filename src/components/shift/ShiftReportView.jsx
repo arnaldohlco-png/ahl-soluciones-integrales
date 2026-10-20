@@ -96,6 +96,19 @@ export default function ShiftReportView({ report: r, onClose }) {
           )}
         </Section>
 
+        {(r.by_service || []).length > 0 && (
+          <Section title="Ventas por servicio">
+            <table className="w-full">
+              <thead><tr className="text-left border-b border-slate-300"><th>Servicio</th><th>Categoría</th><th className="text-right">Cant.</th><th className="text-right">Valor</th></tr></thead>
+              <tbody>
+                {r.by_service.map((p) => (
+                  <tr key={p.name} className="border-b border-slate-100"><td>{p.name}</td><td>{p.category}</td><td className="text-right">{p.qty}</td><td className="text-right">{fmt(p.value)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </Section>
+        )}
+
         <Section title="Gastos y retiros de caja">
           {r.outflows.length === 0 && <p className="text-slate-500">Sin gastos ni retiros.</p>}
           {r.outflows.map((o, i) => (

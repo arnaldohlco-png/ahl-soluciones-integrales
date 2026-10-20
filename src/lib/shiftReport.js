@@ -56,16 +56,30 @@ export async function buildShiftReport({ list, register, turno, counted, respons
     const page = await base44.entities.Product.filter({ id: { $in: productIds } }, { limit: 500, fields: ["category"] });
     (page.items || []).forEach((p) => { catById[p.id] = p.category; });
   }
+  const svcPage = await base44.entities.Service.list("-created_date", 1000);
+  const svcList = svcPage.items || svcPage;
+  const svcById = {};
+  const svcByName = {};
+  svcList.forEach((s) => { svcById[s.id] = s; svcByName[(s.name || "").trim().toLowerCase()] = s; });
   const products = {};
+  const services = {};
   const categories = {};
   parsed.forEach(({ items }) => items.forEach((it) => {
     const qty = Number(it.quantity) || 0;
     const val = Number(it.subtotal) || qty * (Number(it.unit_price) || 0);
     const name = it.name || "Sin nombre";
-    const cat = it.product_id ? (catById[it.product_id] || "Otros") : (it.type === "Servicio" ? "Servicios" : "Otros");
-    products[name] = products[name] || { name, category: cat, qty: 0, value: 0 };
-    products[name].qty += qty;
-    products[name].value += val;
+    const svc = (it.service_id && svcById[it.service_id])
+      || (it.product_id && !catById[it.product_id] && svcById[it.product_id])
+      || (it.type === "Servicio" ? svcByName[name.trim().toLowerCase()] : null)
+      || (!it.product_id && svcByName[name.trim().toLowerCase()]);
+    const isService = it.type === "Servicio" || !!svc;
+    const cat = isService
+      ? (svc?.category || "Servicios")
+      : (it.product_id ? (catById[it.product_id] || "Otros") : "Otros");
+    const bucket = isService ? services : products;
+    bucket[name] = bucket[name] || { name, category: cat, qty: 0, value: 0 };
+    bucket[name].qty += qty;
+    bucket[name].value += val;
     categories[cat] = categories[cat] || { category: cat, qty: 0, value: 0 };
     categories[cat].qty += qty;
     categories[cat].value += val;
@@ -88,6 +102,7 @@ export async function buildShiftReport({ list, register, turno, counted, respons
     sales_total: sum(ventaMovs, (m) => m.amount),
     sales_by_method: Object.entries(byMethod).map(([method, amount]) => ({ method, amount })),
     by_product: Object.values(products).sort((a, b) => b.value - a.value),
+    by_service: Object.values(services).sort((a, b) => b.value - a.value),
     by_category: Object.values(categories).sort((a, b) => b.value - a.value),
     outflows, outflows_total: sum(outflows, (o) => o.amount),
     base: turno.base || 0, entradas, salidas, expected, counted: countedN, difference: countedN - expected,
