@@ -1,0 +1,94 @@
+{
+  "name": "SaleVoid",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "title": "Fecha y hora"
+    },
+    "register_type": {
+      "type": "string",
+      "title": "Caja"
+    },
+    "sale_id": {
+      "type": "string",
+      "title": "Venta anulada"
+    },
+    "sale_number": {
+      "type": "string",
+      "title": "N\u00famero de venta"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Valor anulado"
+    },
+    "reason": {
+      "type": "string",
+      "title": "Motivo"
+    },
+    "authorized_by": {
+      "type": "string",
+      "title": "Autorizado por"
+    },
+    "registered_by": {
+      "type": "string",
+      "title": "Registrado por"
+    }
+  },
+  "required": [
+    "date",
+    "sale_id",
+    "amount",
+    "authorized_by"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

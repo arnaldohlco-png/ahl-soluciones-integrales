@@ -5,11 +5,13 @@ import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
   Package, AlertTriangle, HardHat, ShoppingCart, Bike, CreditCard,
-  FileText, ClipboardList, Menu } from
+  FileText, ClipboardList, Menu, Lock } from
 "lucide-react";
 import { momentBogota } from "@/lib/localDate";
 import { Image } from "@/components/ui/image";
 import AreaPanel from "@/components/dashboard/AreaPanel";
+import { useAuth } from "@/lib/AuthContext";
+import CloseShiftDialog from "@/components/shift/CloseShiftDialog";
 
 const HERO_IMG = "https://media.base44.com/images/public/6aa16a1f0b9991c625ec0ea5/42f289adc_generated_77deb9b2.jpg";
 const ALMACEN_IMG = "https://media.base44.com/images/public/6aa16a1f0b9991c625ec0ea5/1ee1362a1_generated_a3115d3f.jpg";
@@ -21,6 +23,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [d, setD] = useState({});
   const [company, setCompany] = useState(null);
+  const { user } = useAuth();
+  const [closeShiftOpen, setCloseShiftOpen] = useState(false);
+  const canClose = ["admin", "administrador", "gerente"].includes(user?.role);
 
   useEffect(() => {
     (async () => {
@@ -257,6 +262,16 @@ export default function Dashboard() {
                 <span className="text-[22px] leading-[1.15] font-extrabold tracking-[0.025em] text-[#EAF0F4]">{momentBogota().format("DD/MM/YYYY")}</span>
               </div>
             </div>
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+            {canClose && (
+              <button
+                type="button"
+                onClick={() => setCloseShiftOpen(true)}
+                className="h-12 px-[17px] rounded-[7px] bg-[#F0B429] text-[#18212B] flex items-center gap-[9px] text-xs leading-none font-extrabold tracking-[0.08em] uppercase cursor-pointer transition-colors hover:bg-[#f5c04a] active:bg-[#d99f1f]">
+                <Lock className="w-[18px] h-[18px]" strokeWidth={2} />
+                <span>Cerrar turno</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={openMenu}
@@ -265,6 +280,7 @@ export default function Dashboard() {
               <Menu className="w-[18px] h-[18px] text-[#F0B429]" strokeWidth={2} />
               <span>Abrir menú</span>
             </button>
+            </div>
           </div>
 
           {/* Órdenes por estado */}
@@ -296,6 +312,8 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {canClose && <CloseShiftDialog open={closeShiftOpen} onOpenChange={setCloseShiftOpen} />}
 
       {/* CUERPO POR ÁREAS */}
       <div className="px-4 md:px-6 lg:px-12 pb-12 md:pb-16 flex flex-col gap-7 md:gap-9">

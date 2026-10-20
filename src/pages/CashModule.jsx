@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Landmark, Plus, ArrowDownCircle, ArrowUpCircle, Search, User, Clock, Printer } from "lucide-react";
 import TurnoPrintReport from "@/components/TurnoPrintReport";
+import CloseShiftDialog from "@/components/shift/CloseShiftDialog";
+import ShiftClosuresList from "@/components/shift/ShiftClosuresList";
 import CreditPaymentDialog from "@/components/CreditPaymentDialog";
 import CreditSalesPanel from "@/components/CreditSalesPanel";
 import { creditSalesInTurno } from "@/lib/creditSales";
@@ -46,7 +48,7 @@ export default function Cash() {
   const [openingOpen, setOpeningOpen] = useState(false);
   const [openingForm, setOpeningForm] = useState({ register_type: "Caja almacén", amount: 0, payment_method: "Efectivo", vendedor: "" });
   const [closingOpen, setClosingOpen] = useState(false);
-  const [closingForm, setClosingForm] = useState({ register_type: "Caja almacén", counted: 0 });
+  const [closuresOpen, setClosuresOpen] = useState(false);
   const [printData, setPrintData] = useState(null);
   const [creditOpen, setCreditOpen] = useState(false);
   const [sales, setSales] = useState([]);
@@ -168,67 +170,7 @@ export default function Cash() {
     setOpeningOpen(true);
   };
 
-  const openClosing = () => {
-    setClosingForm({ register_type: "Caja almacén", counted: 0 });
-    setClosingOpen(true);
-  };
-
-  const currentClosingTurno = useMemo(() => {
-    if (!closingOpen) return null;
-    return findCurrentTurno(list, closingForm.register_type);
-  }, [closingOpen, closingForm.register_type, list]);
-
-  const closingSummary = useMemo(() => {
-    if (!currentClosingTurno) return null;
-    // Cierre abarca TODO el turno (sin filtro de día) para que el saldo esperado
-    // incluya los movimientos de días anteriores dentro del mismo turno.
-    return turnoSummary(list, closingForm.register_type, currentClosingTurno, null);
-  }, [list, closingForm.register_type, currentClosingTurno]);
-
-  const saveClosing = async () => {
-    const turno = currentClosingTurno;
-    if (!turno) return;
-    const summary = closingSummary;
-    if (!summary) return;
-    const saldoEsperado = summary.esperado;
-    const counted = Number(closingForm.counted);
-    const diferencia = counted - saldoEsperado;
-    setSaving(true);
-    try {
-      // Borrar cierres anteriores de este turno (permite re-cerrar)
-      const start = new Date(turno.apertura.date).getTime();
-      const oldCierres = list.filter(
-        (m) => m.register_type === closingForm.register_type && isCierre(m) && new Date(m.date).getTime() >= start
-      );
-      if (oldCierres.length > 0) {
-        await base44.entities.CashMovement.deleteMany({ id: { $in: oldCierres.map((m) => m.id) } });
-      }
-      const base = { payment_method: "Efectivo", register_type: closingForm.register_type, date: nowLocalISO() };
-      const tv = `Turno ${turno.turno} | ${turno.vendedor || "Sin vendedor"}`;
-      const movs = [];
-      if (diferencia > 0) {
-        movs.push({ ...base, type: "Entrada", category: "Otro ingreso", amount: diferencia, description: `Cierre de caja - Sobrante | ${tv}` });
-      } else if (diferencia < 0) {
-        movs.push({ ...base, type: "Salida", category: "Otro egreso", amount: Math.abs(diferencia), description: `Cierre de caja - Faltante | ${tv}` });
-      }
-      if (counted > 0) {
-        movs.push({ ...base, type: "Salida", category: "Retiro", amount: counted, description: `Cierre de caja - Retiro de efectivo | ${tv}` });
-      }
-      if (movs.length === 0) {
-        movs.push({ ...base, type: "Salida", category: "Otro egreso", amount: 0, description: `Cierre de caja - Cuadre exacto | ${tv}` });
-      }
-      const created = await base44.entities.CashMovement.bulkCreate(movs);
-      // Actualización optimista: agrega los movimientos de cierre a la lista local
-      // para que findOpenTurno detecte el cierre y la tarjeta "Abierto" desaparezca
-      // de inmediato, sin esperar al re-fetch.
-      const createdRecords = Array.isArray(created) && created.length > 0
-        ? created
-        : movs.map((m, i) => ({ ...m, id: `tmp-cierre-${Date.now()}-${i}` }));
-      setList((prev) => [...createdRecords, ...prev]);
-      setClosingOpen(false);
-      await load();
-    } catch (e) { console.error(e); } finally { setSaving(false); }
-  };
+  const openClosing = () => setClosingOpen(true);
 
   const saveOpening = async () => {
     if (!openingForm.amount || openingForm.amount <= 0) return;
@@ -284,7 +226,10 @@ export default function Cash() {
             <ArrowDownCircle className="w-4 h-4" /> Apertura de Turno
           </Button>
           <Button onClick={openClosing} variant="outline">
-            <ArrowUpCircle className="w-4 h-4" /> Cierre de Turno
+            <ArrowUpCircle className="w-4 h-4" /> Cerrar turno
+          </Button>
+          <Button onClick={() => setClosuresOpen(true)} variant="outline">
+            <Printer className="w-4 h-4" /> Reportes de cierre
           </Button>
           <Button onClick={() => setCreditOpen(true)} variant="outline">
             <Landmark className="w-4 h-4" /> Cobro venta a crédito
@@ -542,96 +487,8 @@ export default function Cash() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={closingOpen} onOpenChange={setClosingOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Cierre de Turno</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div>
-              <Label>Caja</Label>
-              <Select value={closingForm.register_type} onValueChange={(v) => setClosingForm({ ...closingForm, register_type: v, counted: 0 })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {REGISTERS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {!currentClosingTurno ? (
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-600 text-center">
-                No hay un turno abierto para <span className="font-semibold">{closingForm.register_type}</span>.
-                Abre un turno antes de cerrar.
-              </div>
-            ) : (
-              <>
-                <div className="bg-slate-50 rounded-lg p-3 text-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-slate-900">Turno {currentClosingTurno.turno}</span>
-                    {currentClosingTurno.alreadyClosed && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200 text-slate-600 uppercase">Ya cerrado</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                    <User className="w-3.5 h-3.5 text-slate-400" /> {currentClosingTurno.vendedor || "Sin vendedor"}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" /> {fmtBogota(currentClosingTurno.openDate)}
-                  </div>
-                </div>
-
-                {closingSummary?.alreadyClosed && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-                    Este turno ya está cerrado. Al confirmar se reemplazará el cuadre anterior.
-                  </div>
-                )}
-
-                {closingSummary && (
-                  <div className="bg-slate-50 rounded-lg p-4 space-y-1.5 text-sm">
-                    <div className="flex justify-between"><span className="text-slate-600">Base inicial</span><span className="font-medium">{fmt(closingSummary.apertura)}</span></div>
-                    <div className="flex justify-between text-emerald-600"><span>(+) Entradas del turno</span><span>{fmt(closingSummary.entradas)}</span></div>
-                    <div className="flex justify-between text-red-600"><span>(−) Salidas del turno</span><span>{fmt(closingSummary.salidas)}</span></div>
-                    <div className="flex justify-between border-t border-slate-200 pt-1.5 font-bold text-slate-900"><span>Saldo esperado del turno</span><span>{fmt(closingSummary.esperado)}</span></div>
-                    <div className="flex justify-between text-slate-600"><span>(−) Monto contado</span><span>{fmt(Number(closingForm.counted))}</span></div>
-                    <div className={`flex justify-between border-t border-slate-200 pt-1.5 font-bold ${Number(closingForm.counted) - closingSummary.esperado === 0 ? "text-emerald-700" : Number(closingForm.counted) - closingSummary.esperado > 0 ? "text-amber-700" : "text-red-700"}`}>
-                      <span>Diferencia</span>
-                      <span>{(() => { const d = Number(closingForm.counted) - closingSummary.esperado; return d === 0 ? "Cuadre exacto" : `${d > 0 ? "Sobrante" : "Faltante"}: ${fmt(Math.abs(d))}`; })()}</span>
-                    </div>
-                    <p className="text-xs text-slate-400 pt-0.5">{closingSummary.count} movimientos en el turno</p>
-                    <div className="flex justify-between border border-dashed border-slate-300 rounded p-2 mt-1 text-slate-700">
-                      <span>Ventas a crédito del turno <span className="text-xs text-slate-400">(no es dinero recibido)</span></span>
-                      <span className="font-semibold">{fmt(creditSalesInTurno(sales, currentClosingTurno.openDate, currentClosingTurno.closeDate).total)}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <Label>Monto contado (efectivo físico) *</Label>
-                  <Input type="number" placeholder="0" value={closingForm.counted === 0 ? "" : closingForm.counted} onChange={(e) => setClosingForm({ ...closingForm, counted: e.target.value === "" ? 0 : (parseFloat(e.target.value) || 0) })} />
-                </div>
-              </>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setClosingOpen(false)}>Cancelar</Button>
-            <Button
-              variant="outline"
-              disabled={!currentClosingTurno}
-              onClick={() => setPrintData({
-                register: closingForm.register_type,
-                turno: {
-                  turno: currentClosingTurno.turno, vendedor: currentClosingTurno.vendedor,
-                  openDate: currentClosingTurno.openDate, base: currentClosingTurno.base,
-                  closeDate: currentClosingTurno.closeDate,
-                },
-                counted: Number(closingForm.counted) || 0,
-              })}>
-              <Printer className="w-4 h-4" /> Imprimir
-            </Button>
-            <Button onClick={saveClosing} disabled={saving || !currentClosingTurno} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
-              {saving ? "Guardando..." : closingSummary?.alreadyClosed ? "Re-cerrar turno" : "Confirmar Cierre"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CloseShiftDialog open={closingOpen} onOpenChange={setClosingOpen} onClosed={load} />
+      <ShiftClosuresList open={closuresOpen} onOpenChange={setClosuresOpen} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
-import { ENTITY_NAMES, BUILT_IN_FIELDS, BACKUP_VERSION, MAX_BACKUP_BYTES } from '../../shared/backupEntities.ts';
+import { ENTITY_NAMES, OPTIONAL_ENTITIES, BUILT_IN_FIELDS, BACKUP_VERSION, MAX_BACKUP_BYTES } from '../../shared/backupEntities.ts';
 
 function validateBackup(backup) {
   const problems = [];
@@ -11,6 +11,7 @@ function validateBackup(backup) {
   }
   for (const name of ENTITY_NAMES) {
     const records = backup[name];
+    if (records === undefined && OPTIONAL_ENTITIES.includes(name)) continue;
     if (!Array.isArray(records)) {
       problems.push(`Falta la entidad ${name} o está dañada.`);
       continue;
@@ -85,6 +86,7 @@ export default async function(req) {
 
       const results = {};
       for (const name of ENTITY_NAMES) {
+        if (!Array.isArray(backup[name])) continue;
         try {
           const clean = backup[name].map((r) => {
             const copy = { ...r };

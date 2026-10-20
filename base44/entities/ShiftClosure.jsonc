@@ -1,0 +1,109 @@
+{
+  "name": "ShiftClosure",
+  "type": "object",
+  "properties": {
+    "register_type": {
+      "type": "string",
+      "title": "Caja"
+    },
+    "turno_number": {
+      "type": "number",
+      "title": "N\u00famero de turno"
+    },
+    "apertura_id": {
+      "type": "string",
+      "title": "ID del movimiento de apertura"
+    },
+    "responsible": {
+      "type": "string",
+      "title": "Responsable del cierre"
+    },
+    "open_date": {
+      "type": "string",
+      "title": "Apertura"
+    },
+    "close_date": {
+      "type": "string",
+      "title": "Cierre"
+    },
+    "base": {
+      "type": "number",
+      "title": "Base inicial",
+      "default": 0
+    },
+    "expected": {
+      "type": "number",
+      "title": "Efectivo esperado",
+      "default": 0
+    },
+    "counted": {
+      "type": "number",
+      "title": "Efectivo contado",
+      "default": 0
+    },
+    "difference": {
+      "type": "number",
+      "title": "Diferencia",
+      "default": 0
+    },
+    "report": {
+      "type": "string",
+      "title": "Reporte (JSON)"
+    }
+  },
+  "required": [
+    "register_type",
+    "apertura_id",
+    "close_date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "administrador"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "gerente"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
