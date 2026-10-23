@@ -55,9 +55,14 @@ export default function Dashboard() {
         );
         const visibleOrders = orders.filter((o) => !convertedOrderIds.has(o.id));
 
-        const salesToday = sales.filter((s) => (s.date || "") >= today).reduce((s, x) => s + (x.total || 0), 0);
-        const salesWeek = sales.filter((s) => (s.date || "") >= startWeek).reduce((s, x) => s + (x.total || 0), 0);
-        const salesMonth = sales.filter((s) => (s.date || "") >= startMonth).reduce((s, x) => s + (x.total || 0), 0);
+        const COBRABLES = ["Factura de venta", "Factura de taller", "Recibo de pago", "Comprobante de abono"];
+        const paidInvoices = invoices.filter((i) => i.status === "Pagada" && COBRABLES.includes(i.type) && !i.related_sale_id);
+        const sumFrom = (start) =>
+        sales.filter((s) => (s.date || "") >= start).reduce((s, x) => s + (x.total || 0), 0) +
+        paidInvoices.filter((i) => (i.date || "") >= start).reduce((s, x) => s + (x.total || 0), 0);
+        const salesToday = sumFrom(today);
+        const salesWeek = sumFrom(startWeek);
+        const salesMonth = sumFrom(startMonth);
 
         // Mapa de costos de productos para calcular el COGS del almacén
         const productCostMap = {};
