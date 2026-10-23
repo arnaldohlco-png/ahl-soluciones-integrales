@@ -38,7 +38,10 @@ export default function PriceViewer() {
     setLoading(true);
     const t = setTimeout(async () => {
       const conds = [];
-      if (name.trim()) conds.push({ name: { $regex: esc(name), $options: "i" } });
+      if (name.trim()) {
+        const n = { $regex: esc(name), $options: "i" };
+        conds.push({ $or: [{ name: n }, { sku: n }, { reference: n }] });
+      }
       if (line.trim()) {
         const r = { $regex: esc(line), $options: "i" };
         conds.push({ $or: [{ compatibility: r }, { name: r }] });
@@ -59,7 +62,7 @@ export default function PriceViewer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-            <Input autoFocus className="pl-9" placeholder="Nombre del repuesto" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input autoFocus className="pl-9" placeholder="Nombre, referencia o SKU" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="relative">
             <Bike className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
