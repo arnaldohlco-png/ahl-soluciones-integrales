@@ -39,6 +39,10 @@ export default function Invoices() {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  useEffect(() => {
+    fetchAll("Technician").then((t) => setTechnicians(t.filter((x) => x.status !== "Inactivo"))).catch(() => {});
+  }, []);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -422,7 +426,7 @@ export default function Invoices() {
             </div>
             <div>
               <Label>Detalle / Items</Label>
-              <ServiceItemsEditor items={items} setItems={updateItems} products={products} services={services} />
+              <ServiceItemsEditor items={items} setItems={updateItems} products={products} services={services} technicians={technicians} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
