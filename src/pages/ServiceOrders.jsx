@@ -167,7 +167,7 @@ export default function ServiceOrders() {
   }, [loading, location.state]);
 
   const openEdit = (o) => {
-    if (isFinal(o)) {alert(LOCK_MSG);return;}
+    if (o.status === "Entregado") {alert(LOCK_MSG);return;}
     setForm({
       motorcycle_id: o.motorcycle_id || "", customer_id: o.customer_id || "",
       service_type: o.service_type || "Mantenimiento", description: o.description || "",
@@ -219,7 +219,7 @@ export default function ServiceOrders() {
 
   const save = async () => {
     if (!form.motorcycle_id || !form.customer_id) return;
-    if (editing && isFinal(editing)) {alert(LOCK_MSG);return;}
+    if (editing && editing.status === "Entregado") {alert(LOCK_MSG);return;}
     if (!editing && !form.fault_answer) {alert("Indica si el cliente reporta fallas (Sí o No) antes de guardar la orden.");return;}
     if (form.status === "Terminado" || form.status === "Entregado") {
       const noTech = servicesWithoutTech(serviceItems);
@@ -478,7 +478,7 @@ export default function ServiceOrders() {
                   }
                       </>
                 }
-                    {!isFinal(o) &&
+                    {o.status !== "Entregado" &&
                 <button onClick={() => openEdit(o)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
                 }
                     {!isFinal(o) &&
