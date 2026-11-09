@@ -510,13 +510,37 @@ export default function ServiceOrders() {
                 label="Cliente"
                 placeholder="Buscar cliente..."
                 value={form.customer_id}
-                onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                onValueChange={(v) => {
+                  const mine = motos.filter((m) => m.customer_id === v);
+                  const keep = mine.some((m) => m.id === form.motorcycle_id);
+                  if (mine.length === 1 && !keep) onMotoChange(mine[0].id);
+                  else if (!keep && form.motorcycle_id) setForm({ ...form, customer_id: v, motorcycle_id: "" });
+                  else setForm({ ...form, customer_id: v });
+                }}
                 onCreate={createCustomer}
                 createLabel="Crear cliente"
                 required
                 items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: c.document_number || c.phone }))} />
               
             </div>
+            {form.customer_id && (() => {
+              const mine = motos.filter((m) => m.customer_id === form.customer_id);
+              return (
+                <div>
+                  <Label>Motos del cliente</Label>
+                  {mine.length === 0 ?
+                  <p className="text-xs text-slate-400 mt-1">Este cliente no tiene motos registradas.</p> :
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {mine.map((m) =>
+                    <button type="button" key={m.id} onClick={() => onMotoChange(m.id)}
+                    className={`text-left px-3 py-2 rounded-lg border transition-colors ${form.motorcycle_id === m.id ? "border-amber-500 bg-amber-50" : "border-slate-200 hover:bg-slate-50"}`}>
+                        <span className="block text-sm font-bold tracking-wider text-slate-900">{m.plate || "SIN PLACA"}</span>
+                        <span className="block text-xs text-slate-500">{[m.brand, m.line, m.model].filter(Boolean).join(" ")}</span>
+                      </button>
+                    )}
+                  </div>}
+                </div>);
+            })()}
             <div className="grid grid-cols-3 gap-3">
               <SearchableSelect
                 label="Tipo de servicio"
