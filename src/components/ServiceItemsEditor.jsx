@@ -67,7 +67,7 @@ export default function ServiceItemsEditor({ items, setItems, products, services
     <div className="space-y-3">
       {/* Add new item row */}
       <div className="flex flex-wrap gap-2 items-end">
-        <div className="flex-1 min-w-[200px] flex items-center">
+        <div data-autofocus-items className="flex-1 min-w-[200px] flex items-center">
           <LiveItemSearch
             options={allOptions}
             onSelect={(o) => (o._type === "Producto" ? onProductSelect(o) : onServiceSelect(o))}

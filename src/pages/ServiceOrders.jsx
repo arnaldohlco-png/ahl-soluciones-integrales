@@ -493,7 +493,10 @@ export default function ServiceOrders() {
       }
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => {
+          const el = document.querySelector("[data-autofocus-items] input");
+          if (el) { e.preventDefault(); el.focus(); }
+        }}>
           <DialogHeader><DialogTitle>{editing ? "Editar Orden de Servicio" : "Nueva Orden de Servicio"}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-3">
