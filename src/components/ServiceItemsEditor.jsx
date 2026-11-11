@@ -132,7 +132,7 @@ export default function ServiceItemsEditor({ items, setItems, products, services
                   </td>
                   <td className="px-3 py-2 text-right font-semibold text-slate-900">${(it.subtotal || 0).toLocaleString("es-CO")}</td>
                   <td className="px-3 py-2 text-right">
-                    <button type="button" onClick={() => removeItem(i)} title="Eliminar" aria-label="Eliminar" className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                    <button type="button" onClick={() => removeItem(i)} className="p-1 text-slate-400 hover:text-red-600 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
                   </td>
                 </tr>
               ))}
