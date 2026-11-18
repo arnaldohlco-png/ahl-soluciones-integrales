@@ -29,6 +29,7 @@ import { buildDocMessage } from "@/lib/docMessages";
 import { getNextDocNumber, getPrefix } from "@/lib/docNumbering";
 import { fetchAllProducts } from "@/lib/productsLoader";
 import { matchAny } from "@/lib/search";
+import { isTerceroItem } from "@/lib/terceros";
 import { registerForPayment } from "@/lib/cashRegister";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -208,11 +209,14 @@ export default function ServiceOrders() {
 
   const numFields = ["labor_cost", "parts_cost", "lubricants_cost", "hours_worked", "technician_commission", "cost", "previous_mileage", "current_mileage", "kms_traveled", "oil_change_interval", "next_oil_change"];
 
-  // Cada servicio debe tener técnico asignado para cerrar la orden
+  // Cada servicio debe tener técnico asignado para cerrar la orden (excepto los de categoría "Terceros")
   const servicesWithoutTech = (itemsJson) => {
     let items = [];
     try {items = typeof itemsJson === "string" ? JSON.parse(itemsJson || "[]") : itemsJson || [];} catch {items = [];}
-    return items.filter((it) => String(it.type || "").toLowerCase() === "servicio" && !it.technician_id).map((it) => it.name || "Servicio");
+    return items.
+    filter((it) => String(it.type || "").toLowerCase() === "servicio").
+    filter((it) => !it.technician_id && !isTerceroItem(it, services)).
+    map((it) => it.name || "Servicio");
   };
   const techMessage = (names) => `No se puede cerrar la orden: cada servicio necesita un técnico asignado.\n\nServicios sin técnico:\n- ${names.join("\n- ")}`;
 
