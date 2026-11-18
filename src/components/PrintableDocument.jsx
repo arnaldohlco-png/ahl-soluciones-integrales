@@ -33,11 +33,14 @@ const commissionBase = (o, services, techId) => {
     .filter((i) => !isTerceroItem(i, services))
     .reduce((s, i) => s + (Number(i.subtotal) || 0), 0);
 };
-const serviceConcept = (o) => {
+// Concepto: solo los servicios que generan comisión al técnico (asignados a él, no de terceros y con valor)
+const serviceConcept = (o, techId, services) => {
   const items = parseItems(o.service_items)
     .filter((i) => String(i.type || "").toLowerCase() === "servicio")
-    .filter((i) => !/tercero/i.test((i.name || "").trim()));
-  return items.map((i) => i.name).filter(Boolean).join(", ") || o.service_type || "—";
+    .filter((i) => !techId || (i.technician_id || o.technician_id) === techId)
+    .filter((i) => !isTerceroItem(i, services))
+    .filter((i) => Number(i.subtotal) > 0);
+  return items.map((i) => i.name).filter(Boolean).join(", ") || "—";
 };
 
 const TITLES = {
@@ -78,10 +81,12 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
     ? (extras.orders || []).map((o) => {
         const base = commissionBase(o, extras.services, doc.technician_id);
         const pct = technician?.commission_percentage || 0;
-        return { order: o, base, commission: base * pct / 100, concept: serviceConcept(o) };
+        return { order: o, base, commission: base * pct / 100, concept: serviceConcept(o, doc.technician_id, extras.services) };
       })
     : [];
-  const commTotal = commBreakdown.reduce((s, b) => s + b.commission, 0);
+  // Solo se listan conceptos que generan comisión
+  const commRows = commBreakdown.filter((b) => b.commission > 0);
+  const commTotal = commRows.reduce((s, b) => s + b.commission, 0);
   const commNet = commTotal - (Number(doc.loans_deducted) || 0);
 
   const whatsappPhone =
@@ -418,7 +423,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                   </tr>
                 </thead>
                 <tbody>
-                  {commBreakdown.map((b) => {
+                  {commRows.map((b) => {
                     const m = extras.motos?.find((x) => x.id === b.order.motorcycle_id);
                     return (
                       <tr key={b.order.id}>
@@ -431,8 +436,8 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                       </tr>
                     );
                   })}
-                  {commBreakdown.length === 0 && (
-                    <tr><td colSpan={6} className="py-2 px-2 border border-slate-300 text-center text-slate-400">Sin órdenes</td></tr>
+                  {commRows.length === 0 && (
+                    <tr><td colSpan={6} className="py-2 px-2 border border-slate-300 text-center text-slate-400">Sin servicios con comisión</td></tr>
                   )}
                 </tbody>
               </table>
