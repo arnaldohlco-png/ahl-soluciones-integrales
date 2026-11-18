@@ -489,12 +489,12 @@ export default function ServiceOrders() {
       }
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => {
+        <DialogContent className="!flex !flex-col w-screen max-w-none h-[100dvh] max-h-[100dvh] sm:max-w-none sm:rounded-none rounded-none p-4 md:p-6 gap-4" onOpenAutoFocus={(e) => {
           const el = document.querySelector("[data-autofocus-items] input");
           if (el) { e.preventDefault(); el.focus(); }
         }}>
-          <DialogHeader><DialogTitle>{editing ? "Editar Orden de Servicio" : "Nueva Orden de Servicio"}</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pr-1">
+          <DialogHeader className="shrink-0 pr-8"><DialogTitle>{editing ? "Editar Orden de Servicio" : "Nueva Orden de Servicio"}</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2 flex-1 min-h-0 overflow-y-auto pr-2 w-full max-w-6xl mx-auto">
             <div className="grid grid-cols-2 gap-3">
               <SearchableSelect
                 label="Motocicleta"
@@ -673,7 +673,7 @@ export default function ServiceOrders() {
               </div>
               </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className="shrink-0 border-t border-slate-100 pt-3">
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button onClick={save} disabled={saving || !form.motorcycle_id || !form.customer_id} className="bg-amber-500 hover:bg-amber-600 text-slate-900">{saving ? "Guardando..." : "Guardar"}</Button>
           </DialogFooter>
