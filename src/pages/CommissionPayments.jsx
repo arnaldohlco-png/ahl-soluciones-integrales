@@ -163,10 +163,20 @@ export default function CommissionPayments() {
       let loans = [];
       try { loans = JSON.parse(p.loans_detail || "[]"); } catch { loans = []; }
       if (!loans.length && (Number(p.loans_deducted) || 0) > 0) {
+        // Solo los préstamos que completan exactamente el monto descontado del pago
+        const total = Number(p.loans_deducted) || 0;
         const deducted = await base44.entities.TechnicianLoan.filter({ technician_id: p.technician_id, status: "Descontado" }, "-date", 200);
-        loans = deducted.filter((l) => (Number(l.deducted_amount) || 0) > 0).map((l) => ({
-          id: l.id, date: l.date, description: l.description || "Préstamo", amount: Number(l.deducted_amount) || 0,
-        }));
+        const candidates = deducted
+          .filter((l) => (Number(l.deducted_amount) || 0) > 0)
+          .map((l) => ({ id: l.id, date: l.date, description: l.description || "Préstamo", amount: Number(l.deducted_amount) || 0 }));
+        let sum = 0;
+        loans = [];
+        for (const c of candidates) {
+          if (sum >= total) break;
+          if (sum + c.amount > total) continue;
+          loans.push(c);
+          sum += c.amount;
+        }
       }
       setPrintPay({ doc: p, orders: inRange, loans });
     } catch (e) { console.error(e); alert("Error al cargar detalle"); }
