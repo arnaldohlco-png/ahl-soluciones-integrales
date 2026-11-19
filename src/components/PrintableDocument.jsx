@@ -14,6 +14,12 @@ const fmt = (n) => "$" + (Number(n) || 0).toLocaleString("es-CO", { maximumFract
 const fmtDate = (d) => fmtBogota(d, "DD/MM/YYYY");
 const parseItems = (s) => { try { return JSON.parse(s || "[]"); } catch { return []; } };
 const parsePhotos = (s) => { try { const v = JSON.parse(s || "[]"); return Array.isArray(v) ? v.filter(Boolean) : []; } catch { return []; } };
+const parseLoans = (doc) => {
+  try {
+    const v = JSON.parse(doc.loans_detail || "[]");
+    return Array.isArray(v) ? v.filter((l) => Number(l.amount) > 0) : [];
+  } catch { return []; }
+};
 const has = (v) => v != null && String(v).trim() !== "" && !(typeof v === "number" && isNaN(v));
 const hasNum = (v) => has(v) && Number(v) > 0;
 
@@ -441,6 +447,43 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                   )}
                 </tbody>
               </table>
+
+              {/* Descuentos por préstamos */}
+              {(() => {
+                const loans = parseLoans(doc);
+                const totalDeducted = Number(doc.loans_deducted) || 0;
+                if (loans.length === 0 && totalDeducted === 0) return null;
+                const rows = loans.length > 0
+                  ? loans
+                  : [{ description: "Descuento por préstamos", amount: totalDeducted }];
+                return (
+                  <div className="mt-4">
+                    <p className="font-semibold uppercase text-xs text-slate-500 mb-2">Descuentos aplicados · préstamos al técnico</p>
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-100 text-slate-700">
+                          <th className="text-left py-2 px-2 border border-slate-300">Fecha</th>
+                          <th className="text-left py-2 px-2 border border-slate-300">Concepto / motivo</th>
+                          <th className="text-right py-2 px-2 border border-slate-300">Monto descontado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((l, i) => (
+                          <tr key={l.id || i}>
+                            <td className="py-1.5 px-2 border border-slate-300">{l.date ? fmtDate(l.date) : "—"}</td>
+                            <td className="py-1.5 px-2 border border-slate-300">{l.description || "Préstamo"}</td>
+                            <td className="py-1.5 px-2 border border-slate-300 text-right">-{fmt(l.amount)}</td>
+                          </tr>
+                        ))}
+                        <tr className="bg-slate-50 font-semibold">
+                          <td colSpan={2} className="py-1.5 px-2 border border-slate-300 text-right">Total descuentos</td>
+                          <td className="py-1.5 px-2 border border-slate-300 text-right">-{fmt(totalDeducted)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -499,7 +542,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
               {type === "commission" && (
                 <>
                   <div className="flex justify-between"><span>Total comisiones</span><span>{fmt(commTotal)}</span></div>
-                  <div className="flex justify-between"><span>Descuentos</span><span>-{fmt(doc.loans_deducted)}</span></div>
+                  <div className="flex justify-between"><span>Préstamos descontados</span><span>-{fmt(doc.loans_deducted)}</span></div>
                   <div className="flex justify-between font-bold text-sm border-t-2 border-slate-800 pt-1"><span>Neto a pagar</span><span>{fmt(commNet)}</span></div>
                 </>
               )}

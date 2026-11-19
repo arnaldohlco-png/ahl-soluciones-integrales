@@ -45,6 +45,11 @@
       "title": "Pr\u00e9stamos descontados",
       "default": 0
     },
+    "loans_detail": {
+      "type": "string",
+      "title": "Detalle de pr\u00e9stamos descontados (JSON)",
+      "description": "Array JSON: [{id, date, description, amount}]"
+    },
     "net_amount": {
       "type": "number",
       "title": "Monto neto a pagar",

@@ -217,6 +217,12 @@ export default function CommissionPayments() {
         date: momentBogota().format("YYYY-MM-DD"), period_start: from, period_end: to,
         orders_count: calc.orders.length, total_commission: calc.totalCommission,
         loans_deducted: calc.loansDeducted, net_amount: calc.netAmount,
+        loans_detail: JSON.stringify(calc.loans.map((l) => ({
+          id: l.id,
+          date: l.date || "",
+          description: l.description || "Préstamo",
+          amount: Number(l.balance) || 0,
+        }))),
         status: "Pagado",
         technician_signature: techSig, admin_signature: adminSig,
         order_ids: JSON.stringify(calc.orders.map((o) => o.id)),
