@@ -450,7 +450,8 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
 
               {/* Descuentos por préstamos */}
               {(() => {
-                const loans = parseLoans(doc);
+                const provided = Array.isArray(extras.loans) ? extras.loans : [];
+                const loans = provided.length > 0 ? provided : parseLoans(doc);
                 const totalDeducted = Number(doc.loans_deducted) || 0;
                 if (loans.length === 0 && totalDeducted === 0) return null;
                 const rows = loans.length > 0
@@ -458,7 +459,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
                   : [{ description: "Descuento por préstamos", amount: totalDeducted }];
                 return (
                   <div className="mt-4">
-                    <p className="font-semibold uppercase text-xs text-slate-500 mb-2">Descuentos aplicados · préstamos al técnico</p>
+                    <p className="font-semibold uppercase text-xs text-slate-500 mb-2">Préstamos descontados ({rows.length}) · fecha y monto</p>
                     <table className="w-full text-xs border-collapse">
                       <thead>
                         <tr className="bg-slate-100 text-slate-700">

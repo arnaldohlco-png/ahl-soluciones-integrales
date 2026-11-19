@@ -159,7 +159,16 @@ export default function CommissionPayments() {
           return d >= p.period_start && d <= p.period_end && isChargedOrDelivered(o) && baseFor(o, p.technician_id) > 0;
         });
       }
-      setPrintPay({ doc: p, orders: inRange });
+      // Detalle de préstamos descontados: el guardado en el pago; si no existe, los préstamos ya descontados del técnico
+      let loans = [];
+      try { loans = JSON.parse(p.loans_detail || "[]"); } catch { loans = []; }
+      if (!loans.length && (Number(p.loans_deducted) || 0) > 0) {
+        const deducted = await base44.entities.TechnicianLoan.filter({ technician_id: p.technician_id, status: "Descontado" }, "-date", 200);
+        loans = deducted.filter((l) => (Number(l.deducted_amount) || 0) > 0).map((l) => ({
+          id: l.id, date: l.date, description: l.description || "Préstamo", amount: Number(l.deducted_amount) || 0,
+        }));
+      }
+      setPrintPay({ doc: p, orders: inRange, loans });
     } catch (e) { console.error(e); alert("Error al cargar detalle"); }
   };
 
@@ -553,7 +562,7 @@ export default function CommissionPayments() {
           type="commission"
           doc={printPay.doc}
           company={company}
-          extras={{ technician: techs.find((t) => t.id === printPay.doc.technician_id), motos, customers, orders: printPay.orders, services }}
+          extras={{ technician: techs.find((t) => t.id === printPay.doc.technician_id), motos, customers, orders: printPay.orders, loans: printPay.loans, services }}
           onClose={() => setPrintPay(null)}
         />
       )}
