@@ -19,6 +19,7 @@ import { useConfirm } from "@/components/ConfirmProvider";
 
 import ExpenseCategoriesManager from "@/components/ExpenseCategoriesManager";
 import { Settings2 } from "lucide-react";
+import { nextExpenseNumber, backfillExpenseNumbers } from "@/lib/expenseNumbering";
 
 const DEFAULT_CATEGORIES = ["Arriendo", "Servicios públicos", "Nómina", "Transporte", "Herramientas", "Papelería", "Publicidad", "Mantenimiento", "Compras menores", "Otros"];
 const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
@@ -67,6 +68,7 @@ export default function Expenses() {
     try {
       const data = await fetchAll("Expense", "-date");
       setList(data);
+      try { setList(await backfillExpenseNumbers(data)); } catch (e) { console.error(e); }
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
@@ -126,7 +128,7 @@ export default function Expenses() {
           }
         } catch (e) { console.error(e); }
       } else {
-        const saved = await base44.entities.Expense.create(payload);
+        const saved = await base44.entities.Expense.create({ ...payload, number: nextExpenseNumber(await fetchAll("Expense", "-date")) });
         // Registrar salida de caja por el gasto
         await base44.entities.CashMovement.create({
           date: nowLocalISO(),
@@ -203,6 +205,7 @@ export default function Expenses() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-slate-400 border-b border-slate-100 bg-slate-50">
+                  <th className="px-4 py-3 font-medium">N°</th>
                   <th className="px-4 py-3 font-medium">Fecha</th>
                   <th className="px-4 py-3 font-medium">Categoría</th>
                   <th className="px-4 py-3 font-medium">Descripción</th>
@@ -215,6 +218,7 @@ export default function Expenses() {
               <tbody>
                 {filtered.map((e) => (
                   <tr key={e.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+                    <td className="px-4 py-3 font-mono text-xs text-slate-700 whitespace-nowrap">{e.number || "—"}</td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{e.date ? moment(e.date).format("DD/MM/YYYY") : "—"}</td>
                     <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600">{e.category}</span></td>
                     <td className="px-4 py-3 text-slate-800">{e.description || "—"}</td>

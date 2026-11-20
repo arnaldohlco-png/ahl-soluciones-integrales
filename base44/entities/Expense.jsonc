@@ -2,6 +2,10 @@
   "name": "Expense",
   "type": "object",
   "properties": {
+    "number": {
+      "type": "string",
+      "title": "Consecutivo"
+    },
     "date": {
       "type": "string",
       "format": "date",
