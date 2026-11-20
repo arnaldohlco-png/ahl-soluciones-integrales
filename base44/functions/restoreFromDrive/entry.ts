@@ -35,7 +35,8 @@ export default async function(req) {
 
     const body = await req.json().catch(() => ({}));
     const action = body.action || 'list';
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection("googledrive");
+    const isLocal = action === 'restore_local';
+    const accessToken = isLocal ? null : (await base44.asServiceRole.connectors.getConnection("googledrive")).accessToken;
 
     if (action === 'list') {
       const query = encodeURIComponent("name contains 'AHL_MotoControl_backup_' and trashed = false");
@@ -52,14 +53,20 @@ export default async function(req) {
       return Response.json({ success: true, files: data.files || [] });
     }
 
-    if (action === 'restore') {
-      const fileId = body.fileId;
-      if (!fileId) return Response.json({ error: "fileId required" }, { status: 400 });
-
-      const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`, {
-        headers: { "Authorization": `Bearer ${accessToken}` },
-        signal: AbortSignal.timeout(120000),
-      });
+    if (action === 'restore' || isLocal) {
+      let fileRes;
+      if (isLocal) {
+        if (!body.fileUri) return Response.json({ error: "fileUri required" }, { status: 400 });
+        const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: body.fileUri });
+        fileRes = await fetch(signed_url, { signal: AbortSignal.timeout(120000) });
+      } else {
+        const fileId = body.fileId;
+        if (!fileId) return Response.json({ error: "fileId required" }, { status: 400 });
+        fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`, {
+          headers: { "Authorization": `Bearer ${accessToken}` },
+          signal: AbortSignal.timeout(120000),
+        });
+      }
       if (!fileRes.ok) {
         const errText = await fileRes.text();
         return Response.json({ error: "No se pudo descargar el respaldo", details: errText }, { status: 502 });

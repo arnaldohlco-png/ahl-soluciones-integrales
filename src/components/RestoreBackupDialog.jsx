@@ -53,6 +53,26 @@ export default function RestoreBackupDialog({ open, onOpenChange }) {
     setRestoring(false);
   };
 
+  const doRestoreLocal = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".json")) { alert("Selecciona un archivo .json de respaldo."); return; }
+    if (!(await confirm({ title: "Restaurar copia local", description: `Se actualizarán los registros existentes y se crearán los faltantes con el archivo "${file.name}". No se duplican datos. ¿Continuar?`, confirmText: "Sí, restaurar", cancelText: "No", variant: "destructive" }))) return;
+    setRestoring(true);
+    setRestoreResult(null);
+    try {
+      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+      const res = await base44.functions.invoke('restoreFromDrive', { action: 'restore_local', fileUri: file_uri });
+      if (res.data?.results) setRestoreResult(res.data.results);
+      else alert("Error al restaurar: " + (res.data?.error || "desconocido"));
+    } catch (err) {
+      console.error(err);
+      alert("Error al restaurar: " + (err.response?.data?.error || err.message));
+    }
+    setRestoring(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={(v) => !restoring && onOpenChange(v)}>
       <DialogContent className="max-w-lg">
@@ -122,6 +142,10 @@ export default function RestoreBackupDialog({ open, onOpenChange }) {
             <Button onClick={() => onOpenChange(false)} className="bg-amber-500 hover:bg-amber-600 text-slate-900">Cerrar</Button>
           ) : (
             <>
+              <label className={`inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md border border-input text-sm font-medium cursor-pointer hover:bg-accent ${restoring ? "opacity-50 pointer-events-none" : ""}`}>
+                <FileDown className="w-4 h-4" />Desde copia local (.json)
+                <input type="file" accept=".json,application/json" className="hidden" onChange={doRestoreLocal} disabled={restoring} />
+              </label>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={restoring}>Cancelar</Button>
               <Button onClick={doRestore} disabled={!selectedFile || restoring} className="bg-amber-500 hover:bg-amber-600 text-slate-900">
                 {restoring ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <RotateCcw className="w-4 h-4 mr-1" />}
