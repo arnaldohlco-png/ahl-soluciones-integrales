@@ -99,27 +99,6 @@
   animation: dash-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-/* Dashboard editorial */
-.ed-root { font-family: Georgia, "Times New Roman", serif; }
-.ed-sans { font-family: "Helvetica Neue", Arial, sans-serif; }
-@keyframes ed-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes ed-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.ed-rule { height: 1px; background: #111; transform-origin: left; animation: ed-draw 1.4s cubic-bezier(.3,.7,.2,1) both; }
-.ed-rule2 { height: 3px; border-top: 1px solid #111; border-bottom: 1px solid #111; transform-origin: left; animation: ed-draw 1.6s cubic-bezier(.3,.7,.2,1) both; }
-.ed-fade { animation: ed-fade .8s ease-out both; }
-.ed-sepia img { filter: sepia(.25) contrast(1.02); }
-.ed-btn { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; padding: 12px 20px; border: 1px solid #111; background: transparent; color: #111; cursor: pointer; transition: background-color .2s, color .2s, box-shadow .2s; }
-.ed-btn:hover { background: #111; color: #F3EDE2; }
-.ed-btn:active { background: #8A1C1C; color: #F3EDE2; border-color: #8A1C1C; }
-.ed-btn:focus-visible { outline: 2px solid #8A1C1C; outline-offset: 3px; }
-.ed-btn-red { background: #8A1C1C; border-color: #8A1C1C; color: #F3EDE2; }
-.ed-btn-red:hover { background: #6e1515; border-color: #6e1515; color: #F3EDE2; }
-.ed-btn-sm { padding: 9px 16px; font-size: 11px; }
-.ed-link { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; letter-spacing: .1em; color: #111; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; transition: color .2s; }
-.ed-link:hover { color: #8A1C1C; }
-.ed-link:active { color: #6e1515; }
-.ed-link:focus-visible { outline: 2px solid #8A1C1C; outline-offset: 4px; }
-
 @keyframes strip-arrive {
   from { opacity: 0.68; }
   to { opacity: 1; }
