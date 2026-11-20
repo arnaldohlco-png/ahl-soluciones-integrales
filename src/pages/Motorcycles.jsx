@@ -224,7 +224,7 @@ export default function Motorcycles() {
                 </div>
               <div>
                 <Label>Línea</Label>
-                <Input value={form.line} onChange={(e) => setForm({ ...form, line: e.target.value.toUpperCase() })} className="mt-1" placeholder="CB, YBR..." list="lines-list" />
+                <Input value={form.line} onChange={(e) => { const v = e.target.value.toUpperCase(); setForm({ ...form, line: v, model: v }); }} className="mt-1" placeholder="CB, YBR..." list="lines-list" />
                 <datalist id="lines-list">
                   {brandLines.map((l) => <option key={l} value={l} />)}
                 </datalist>
