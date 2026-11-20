@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 
 export const DEFAULT_VERSE = {
-  text: "Porque yo sé los planes que tengo para ustedes, planes de bienestar y no de calamidad, a fin de darles un futuro y una esperanza.",
-  reference: "Jeremías 29:11",
+  text: "En verdad, con la dificultad viene la facilidad.",
+  reference: "Corán, Sura 94:5",
 };
 
 export default function VerseBox() {

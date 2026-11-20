@@ -17,7 +17,7 @@ export default async function(req) {
     }
 
     const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: 'Elige un versículo bíblico alentador, breve (máximo 220 caracteres), en español (versión Reina-Valera o similar), distinto a este: "' + (company.verse_text || 'Jeremías 29:11') + '". Devuelve el texto del versículo sin comillas y su referencia (libro capítulo:versículo).',
+      prompt: 'Elige una aleya alentadora y breve (máximo 220 caracteres) del Sagrado Corán, en traducción al español, distinta a esta: "' + (company.verse_text || '') + '". Escribe siempre "Dios" y nunca "Allah" ni variantes del nombre. Devuelve el texto sin comillas y su referencia con el formato "Corán, Sura N:Aleya" (por ejemplo "Corán, Sura 94:5").',
       response_json_schema: {
         type: 'object',
         properties: { text: { type: 'string' }, reference: { type: 'string' } },
@@ -26,7 +26,7 @@ export default async function(req) {
     });
     const text = String(res?.text || '').trim();
     const reference = String(res?.reference || '').trim();
-    if (!text || !reference || text.length > 400) {
+    if (!text || !reference || text.length > 400 || /all?[aá]h|alá/i.test(text + ' ' + reference)) {
       return Response.json({ skipped: 'invalid result' });
     }
 

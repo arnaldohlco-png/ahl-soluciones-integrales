@@ -8,15 +8,15 @@ import { RefreshCw } from "lucide-react";
 export default function VerseSettings({ form, setForm, isAdmin, active, nextChange, onResume }) {
   return (
     <div className="border-t border-slate-100 pt-4 space-y-3">
-      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Texto bíblico de los pies de página</p>
+      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Cita del Sagrado Corán en los pies de página</p>
       <div>
-        <Label>Versículo</Label>
+        <Label>Cita (aleya)</Label>
         <Textarea value={form.verse_text} onChange={(e) => setForm({ ...form, verse_text: e.target.value })} className="mt-1 resize-y" rows={2} disabled={!isAdmin}
-          placeholder="Si lo dejas vacío se usa Jeremías 29:11" />
+          placeholder="Si lo dejas vacío se usa Corán, Sura 94:5" />
       </div>
       <div>
         <Label>Referencia</Label>
-        <Input value={form.verse_reference} onChange={(e) => setForm({ ...form, verse_reference: e.target.value })} className="mt-1" disabled={!isAdmin} placeholder="Ej: Salmos 23:1" />
+        <Input value={form.verse_reference} onChange={(e) => setForm({ ...form, verse_reference: e.target.value })} className="mt-1" disabled={!isAdmin} placeholder="Ej: Corán, Sura 94:5" />
       </div>
       <div className="flex items-center gap-3 flex-wrap">
         <span className={`text-xs font-medium ${active ? "text-emerald-600" : "text-amber-600"}`}>
@@ -28,7 +28,7 @@ export default function VerseSettings({ form, setForm, isAdmin, active, nextChan
           </Button>
         )}
       </div>
-      <p className="text-xs text-slate-400">Cada 8 días el sistema genera un versículo nuevo. Al guardar un texto distinto, la rotación se pausa hasta que la reanudes.</p>
+      <p className="text-xs text-slate-400">Cada 8 días el sistema genera una aleya nueva del Sagrado Corán (con «Dios»). Al guardar un texto distinto, la rotación se pausa hasta que la reanudes.</p>
     </div>
   );
 }
