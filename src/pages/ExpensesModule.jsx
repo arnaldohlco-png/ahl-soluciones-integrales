@@ -19,7 +19,7 @@ import { useConfirm } from "@/components/ConfirmProvider";
 
 import ExpenseCategoriesManager from "@/components/ExpenseCategoriesManager";
 import { Settings2 } from "lucide-react";
-import { nextExpenseNumber, backfillExpenseNumbers } from "@/lib/expenseNumbering";
+import { nextSopNumber, backfillNumbers } from "@/lib/sopNumbering";
 
 const DEFAULT_CATEGORIES = ["Arriendo", "Servicios públicos", "Nómina", "Transporte", "Herramientas", "Papelería", "Publicidad", "Mantenimiento", "Compras menores", "Otros"];
 const METHODS = ["Efectivo", "Transferencia", "Tarjeta", "Otros"];
@@ -68,7 +68,7 @@ export default function Expenses() {
     try {
       const data = await fetchAll("Expense", "-date");
       setList(data);
-      try { setList(await backfillExpenseNumbers(data)); } catch (e) { console.error(e); }
+      try { setList(await backfillNumbers("Expense", data)); } catch (e) { console.error(e); }
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
@@ -128,7 +128,7 @@ export default function Expenses() {
           }
         } catch (e) { console.error(e); }
       } else {
-        const saved = await base44.entities.Expense.create({ ...payload, number: nextExpenseNumber(await fetchAll("Expense", "-date")) });
+        const saved = await base44.entities.Expense.create({ ...payload, number: await nextSopNumber() });
         // Registrar salida de caja por el gasto
         await base44.entities.CashMovement.create({
           date: nowLocalISO(),

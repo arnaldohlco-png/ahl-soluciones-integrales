@@ -17,6 +17,7 @@ import { matchAny } from "@/lib/search";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { techBases, isPaidFor, nextPaidState } from "@/lib/commissionShares";
+import { nextSopNumber, backfillNumbers } from "@/lib/sopNumbering";
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-CO")}`;
 
@@ -73,6 +74,7 @@ export default function CommissionPayments() {
         ]);
         setTechs(t.filter((x) => x.status === "Activo"));
         setPayments(p);
+        backfillNumbers("CommissionPayment", p).then(setPayments).catch(console.error);
         setOrders(o);
         setInvoices(inv);
         setMotos(m);
@@ -232,6 +234,7 @@ export default function CommissionPayments() {
     setPaying(true);
     try {
       const payment = await base44.entities.CommissionPayment.create({
+        number: await nextSopNumber(),
         technician_id: calc.techId, technician_name: calc.techName,
         date: momentBogota().format("YYYY-MM-DD"), period_start: from, period_end: to,
         orders_count: calc.orders.length, total_commission: calc.totalCommission,
@@ -452,6 +455,7 @@ export default function CommissionPayments() {
               <table className="w-full text-sm min-w-[720px]">
                 <thead className="bg-slate-50 text-slate-500">
                   <tr>
+                    <th className="px-4 py-3 text-left font-medium">N°</th>
                     <th className="px-4 py-3 text-left font-medium">Fecha</th>
                     <th className="px-4 py-3 text-left font-medium">Técnico</th>
                     <th className="px-4 py-3 text-center font-medium">Órdenes</th>
@@ -465,6 +469,7 @@ export default function CommissionPayments() {
                 <tbody>
                   {filteredPayments.map((p) => (
                     <tr key={p.id} className="border-t border-slate-100">
+                      <td className="px-4 py-3 font-mono text-xs text-slate-700 whitespace-nowrap">{p.number || "—"}</td>
                       <td className="px-4 py-3 text-slate-600">{moment(p.date).format("DD/MM/YYYY")}</td>
                       <td className="px-4 py-3 font-medium text-slate-900">{p.technician_name}</td>
                       <td className="px-4 py-3 text-center text-slate-600">{p.orders_count}</td>

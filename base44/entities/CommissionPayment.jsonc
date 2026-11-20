@@ -2,6 +2,10 @@
   "name": "CommissionPayment",
   "type": "object",
   "properties": {
+    "number": {
+      "type": "string",
+      "title": "Consecutivo"
+    },
     "technician_id": {
       "type": "string",
       "title": "T\u00e9cnico"

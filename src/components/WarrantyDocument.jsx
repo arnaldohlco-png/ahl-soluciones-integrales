@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { nextSopNumber } from "@/lib/sopNumbering";
 import { base44 } from "@/api/base44Client";
 import { momentBogota, fmtBogota } from "@/lib/localDate";
 import { wrapWhatsApp } from "@/lib/whatsappTemplate";
@@ -37,10 +38,15 @@ export default function WarrantyDocument({ order, company, motorcycle, customer,
   }, [order.id, company?.id]);
 
   // Guarda una copia de los términos usados en la orden (historial)
+  // y asigna el consecutivo global SOP del soporte de garantía si aún no lo tiene
+  const [sopNumber, setSopNumber] = useState(content.number || "");
   useEffect(() => {
-    if (!order.warranty_snapshot) {
-      base44.entities.ServiceOrder.update(order.id, { warranty_snapshot: JSON.stringify(content) }).catch(console.error);
-    }
+    if (content.number) return;
+    (async () => {
+      const number = await nextSopNumber();
+      await base44.entities.ServiceOrder.update(order.id, { warranty_snapshot: JSON.stringify({ ...content, number }) });
+      setSopNumber(number);
+    })().catch(console.error);
   }, [order.id]);
 
   const items = parse(order.service_items);
@@ -72,7 +78,8 @@ export default function WarrantyDocument({ order, company, motorcycle, customer,
             </div>
             <div className="doc-type text-right">
               <p className="font-bold text-sm uppercase">Comprobante de Orden y Garantía</p>
-              {order.number && <p className="font-mono text-sm font-bold">N° {order.number}</p>}
+              {sopNumber && <p className="font-mono text-sm font-bold">Soporte N° {sopNumber}</p>}
+              {order.number && <p className="font-mono text-xs">Orden N° {order.number}</p>}
               <p className="text-xs">Fecha: {momentBogota().format("DD/MM/YYYY")}</p>
               {order.status && <p className="text-xs">Estado: {order.status}</p>}
             </div>
