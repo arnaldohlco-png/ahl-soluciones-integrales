@@ -54,6 +54,31 @@
       "title": "Pie de p\u00e1gina POS y facturas",
       "description": "Texto editable por admin al final de comprobantes POS y facturas"
     },
+    "quotation_footer_text": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina de cotizaciones",
+      "description": "Texto editable por admin al final de las cotizaciones"
+    },
+    "purchase_footer_text": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina de compras y pedidos a proveedor",
+      "description": "Texto editable por admin al final de compras y pedidos a proveedor"
+    },
+    "loan_footer_text": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina de comprobantes de pr\u00e9stamo",
+      "description": "Texto editable por admin al final de los comprobantes de pr\u00e9stamo"
+    },
+    "commission_footer_text": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina de comprobantes de comisiones",
+      "description": "Texto editable por admin al final de los comprobantes de pago de comisiones"
+    },
+    "warranty_footer_text": {
+      "type": "string",
+      "title": "Pie de p\u00e1gina de comprobantes de garant\u00eda",
+      "description": "Texto editable por admin al final del comprobante de t\u00e9rminos y condiciones de garant\u00eda"
+    },
     "warranty_terms": {
       "type": "string",
       "title": "Garant\u00eda: t\u00e9rminos y condiciones"

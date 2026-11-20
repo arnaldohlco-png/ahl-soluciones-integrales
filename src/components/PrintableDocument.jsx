@@ -49,6 +49,14 @@ const serviceConcept = (o, techId, services) => {
   return items.map((i) => i.name).filter(Boolean).join(", ") || "—";
 };
 
+const DOC_FOOTERS = {
+  quotation: "quotation_footer_text",
+  purchase: "purchase_footer_text",
+  supplier_order: "purchase_footer_text",
+  loan: "loan_footer_text",
+  commission: "commission_footer_text",
+};
+
 const TITLES = {
   order: "Orden de Servicio",
   quotation: "Cotización",
@@ -572,6 +580,9 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           <div className="mt-6 pt-3 border-t border-slate-200 text-[11px] text-slate-600 text-center space-y-1">
             {type === "order" && company?.footer_text && <p className="whitespace-pre-wrap">{company.footer_text}</p>}
             {type === "order" && has(doc.admin_footer) && <p className="whitespace-pre-wrap">{doc.admin_footer}</p>}
+            {DOC_FOOTERS[type] && company?.[DOC_FOOTERS[type]] && (
+              <p className="whitespace-pre-wrap">{company[DOC_FOOTERS[type]]}</p>
+            )}
             <p>Documento generado el {momentBogota().format("DD/MM/YYYY")}.</p>
           </div>
           {!(type === "commission" && doc.admin_signature) && <AdminSignatureStamp company={company} />}

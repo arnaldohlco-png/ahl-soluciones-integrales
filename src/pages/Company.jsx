@@ -14,9 +14,21 @@ import AdminSignatureDialog from "@/components/AdminSignatureDialog";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { useAuth } from "@/lib/AuthContext";
 
+const FOOTER_FIELDS = [
+  ["footer_text", "Órdenes de servicio", "Ej: Garantía de 3 meses en repuestos. No nos hacemos responsables por objetos dejados en la motocicleta..."],
+  ["receipt_footer_text", "POS y facturas", "Ej: Gracias por su compra. Cambios dentro de 8 días con factura."],
+  ["quotation_footer_text", "Cotizaciones", "Ej: Precios válidos por 15 días."],
+  ["purchase_footer_text", "Compras y pedidos a proveedor", "Ej: Recibido conforme. Revisar mercancía al recibir."],
+  ["loan_footer_text", "Comprobantes de préstamo", "Ej: El descuento se aplicará en el próximo pago de comisiones."],
+  ["commission_footer_text", "Comprobantes de comisiones", "Ej: Recibí a satisfacción el valor neto indicado."],
+  ["warranty_footer_text", "Comprobantes de garantía", "Ej: La garantía aplica presentando este comprobante."],
+];
+
 const empty = {
   name: "", document_type: "Persona jurídica", document_number: "", phone: "",
-  email: "", address: "", city: "", logo: "", admin_signature: "", footer_text: "", receipt_footer_text: "", warranty_terms: "", warranty_coverage: "", warranty_exclusions: "", credit_default_days: 30,
+  email: "", address: "", city: "", logo: "", admin_signature: "", footer_text: "", receipt_footer_text: "",
+  quotation_footer_text: "", purchase_footer_text: "", loan_footer_text: "", commission_footer_text: "", warranty_footer_text: "",
+  warranty_terms: "", warranty_coverage: "", warranty_exclusions: "", credit_default_days: 30,
   charges_iva: true,
   dian_resolution: "", dian_resolution_date: "", dian_range_from: 0, dian_range_to: 0,
   pos_prefix: "VTA", quote_prefix: "COT", purchase_prefix: "COMP", order_prefix: "ORD", invoice_prefix: "FAC",
@@ -52,6 +64,11 @@ export default function Company() {
             email: data[0].email || "", address: data[0].address || "", city: data[0].city || "",
             logo: data[0].logo || "", admin_signature: data[0].admin_signature || "", footer_text: data[0].footer_text || "",
             receipt_footer_text: data[0].receipt_footer_text || "",
+            quotation_footer_text: data[0].quotation_footer_text || "",
+            purchase_footer_text: data[0].purchase_footer_text || "",
+            loan_footer_text: data[0].loan_footer_text || "",
+            commission_footer_text: data[0].commission_footer_text || "",
+            warranty_footer_text: data[0].warranty_footer_text || "",
             warranty_terms: data[0].warranty_terms || "", warranty_coverage: data[0].warranty_coverage || "", warranty_exclusions: data[0].warranty_exclusions || "",
             credit_default_days: data[0].credit_default_days ?? 30,
             charges_iva: data[0].charges_iva ?? (data[0].document_type === "Persona jurídica"),
@@ -270,17 +287,16 @@ export default function Company() {
           </div>
           <p className="text-xs text-slate-400 mt-1">Se muestra en todos los documentos impresos</p>
         </div>
-        <div>
-          <Label>Pie de página para órdenes de servicio</Label>
-          <Textarea value={form.footer_text} onChange={(e) => setForm({ ...form, footer_text: e.target.value })} className="mt-1 py-1 resize-y" rows={1}
-            placeholder="Ej: Garantía de 3 meses en repuestos. No nos hacemos responsables por objetos dejados en la motocicleta..." />
-          <p className="text-xs text-slate-400 mt-1">Este texto aparecerá al final de cada orden de servicio impresa</p>
-        </div>
-        <div>
-          <Label>Pie de página para POS y facturas</Label>
-          <Textarea value={form.receipt_footer_text} onChange={(e) => setForm({ ...form, receipt_footer_text: e.target.value })} className="mt-1 py-1 resize-y" rows={2}
-            disabled={!isAdmin} placeholder="Ej: Gracias por su compra. Cambios dentro de 8 días con factura." />
-          <p className="text-xs text-slate-400 mt-1">{isAdmin ? "Aparece al final de los comprobantes del POS y de las facturas" : "Solo un administrador puede editar este texto"}</p>
+        <div className="border-t border-slate-100 pt-4 space-y-3">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pies de página de documentos</p>
+          {FOOTER_FIELDS.map(([key, label, hint]) => (
+            <div key={key}>
+              <Label>{label}</Label>
+              <Textarea value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} className="mt-1 py-1 resize-y" rows={2}
+                disabled={!isAdmin} placeholder={hint} />
+            </div>
+          ))}
+          <p className="text-xs text-slate-400">{isAdmin ? "El texto aparece al final de cada documento impreso o enviado en PDF" : "Solo un administrador puede editar estos textos"}</p>
         </div>
 
         <div className="border-t border-slate-100 pt-4 space-y-3">

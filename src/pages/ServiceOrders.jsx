@@ -699,6 +699,7 @@ export default function ServiceOrders() {
         company={company}
         motorcycle={motos.find((m) => m.id === warrantyOrder.motorcycle_id)}
         customer={customers.find((c) => c.id === warrantyOrder.customer_id)}
+        technician={technicians.find((t) => t.id === warrantyOrder.technician_id)}
         onClose={() => {setWarrantyOrder(null);load();}} />
       }
 
