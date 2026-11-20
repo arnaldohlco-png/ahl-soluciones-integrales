@@ -1,23 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/entityLoader";
-import { Link } from "react-router-dom";
-import {
-  DollarSign, TrendingUp, TrendingDown, Wallet, Clock, Wrench,
-  Package, AlertTriangle, HardHat, ShoppingCart, Bike, CreditCard,
-  FileText, ClipboardList, Menu, Lock } from
-"lucide-react";
 import { momentBogota } from "@/lib/localDate";
-import { Image } from "@/components/ui/image";
-import AreaPanel from "@/components/dashboard/AreaPanel";
+import BipolarDashboard from "@/components/dashboard/BipolarDashboard";
+import RestoreBackupDialog from "@/components/RestoreBackupDialog";
 import { useAuth } from "@/lib/AuthContext";
 import CloseShiftDialog from "@/components/shift/CloseShiftDialog";
-
-const HERO_IMG = "https://media.base44.com/images/public/6aa16a1f0b9991c625ec0ea5/42f289adc_generated_77deb9b2.jpg";
-const ALMACEN_IMG = "https://media.base44.com/images/public/6aa16a1f0b9991c625ec0ea5/1ee1362a1_generated_a3115d3f.jpg";
-const CAJA_IMG = "https://media.base44.com/images/public/6aa16a1f0b9991c625ec0ea5/16ce35a1d_generated_748468fb.jpg";
-
-const fmt = (n) => `$${(n || 0).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -25,6 +13,7 @@ export default function Dashboard() {
   const [company, setCompany] = useState(null);
   const { user } = useAuth();
   const [closeShiftOpen, setCloseShiftOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
   const canClose = ["admin", "administrador", "gerente"].includes(user?.role);
 
   useEffect(() => {
@@ -203,223 +192,16 @@ export default function Dashboard() {
 
   const openMenu = () => window.dispatchEvent(new Event("open-app-menu"));
 
-  const statusMeta = {
-    "Ingresado": { color: "#60a5fa", icon: ClipboardList },
-    "En proceso": { color: "#F0B429", icon: Wrench },
-    "Terminado": { color: "#34d399", icon: HardHat },
-    "Entregado": { color: "#cbd5e1", icon: Bike }
-  };
-
-  const cardBase =
-  "flex flex-col gap-2 bg-[#18212B] border border-[#34475a] border-l-4 border-l-[#F0B429] rounded-md p-4 md:p-5 text-[#EAF0F4] no-underline cursor-pointer min-h-0 justify-between transition-colors hover:bg-[#1f2b37] hover:border-[#F0B429] active:bg-[#141c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0B429]";
-  const cardHL =
-  "flex flex-col gap-2 bg-[#F0B429] text-[#18212B] border border-[#F0B429] border-l-4 border-l-[#18212B] rounded-md p-4 md:p-5 cursor-pointer min-h-0 justify-between transition-colors hover:bg-[#f5c04a] hover:border-[#f5c04a] active:bg-[#d99f1f]";
-  const grid3 = "grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4";
-  const big = "text-xl md:text-[34px] font-black leading-[1.1] tracking-[-0.01em] mt-1.5";
-  const bigXl = "text-4xl md:text-[52px] font-black leading-none";
-  const lb = "text-xs font-bold tracking-[0.16em] uppercase text-[#b9c6d1]";
-  const ut = "text-[13px] font-extrabold text-[#F0B429] tracking-[0.04em]";
-
   return (
-    <div className="min-h-screen bg-[#18212B] text-[#EAF0F4] flex flex-col">
-      {/* HERO */}
-      <div className="relative px-4 md:px-6 lg:px-12 pt-4 md:pt-8 pb-8 md:pb-14 flex flex-col gap-6 md:gap-9">
-        <div className="absolute inset-0 z-0">
-          <Image src={HERO_IMG} alt="Taller" fittingType="fill" className="w-full h-full" />
-        </div>
-        <div
-          className="absolute inset-0 z-[1]"
-          style={{ background: "linear-gradient(180deg,rgba(24,33,43,.78) 0%,rgba(24,33,43,.9) 70%,#18212B 100%)" }} />
-        
-        <div className="relative z-[2] flex flex-col gap-6 md:gap-9">
-          {/* Barra de navegación */}
-          <div className="relative flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-[#F0B429] text-[#18212B] rounded-md px-3 pt-3 pb-3 md:px-5 md:py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] border-b-4 border-[#18212B] dash-rise">
-            <div className="w-full md:flex-1 min-w-0">
-              <div className="flex justify-center mb-1.5">
-                {company?.logo ?
-                <img src={company.logo} alt="Logo" className="h-16 md:h-20 w-auto max-w-full object-contain" /> :
-                <div className="w-14 h-14 rounded-md bg-[#EAF0F4] flex items-center justify-center">
-                  <Bike className="w-7 h-7 text-[#18212B]" />
-                </div>}
-              </div>
-              <h1 className="text-[15px] md:text-[22px] font-black uppercase tracking-[0.08em] md:tracking-[0.14em] leading-tight text-center md:truncate">
-                {company?.name || "Mi Taller"}
-              </h1>
-              <p className="text-[11px] md:text-xs font-semibold mt-1 leading-tight truncate text-center">
-                {[
-                company?.document_number && `NIT/C.C.: ${company.document_number}`,
-                company?.phone,
-                company?.email,
-                [company?.address, company?.city].filter(Boolean).join(" · ")].
-                filter(Boolean).join("  ·  ")}
-              </p>
-            </div>
-          </div>
-
-          {/* Franja compacta: fecha y menú */}
-          <div className="strip-arrive flex items-center justify-between gap-3 bg-[#18212B] border border-[#263442] border-b-4 border-b-[#F0B429] rounded-lg px-4 md:px-[26px] py-4 md:py-[22px] text-[#EAF0F4] shadow-[0_8px_22px_rgba(24,33,43,0.18)]">
-            <div className="flex items-center gap-[13px]">
-              <span className="w-1 h-[42px] rounded-[3px] bg-[#F0B429] shrink-0" />
-              <div className="flex flex-col gap-1">
-                <span className="text-[11px] leading-[1.2] font-extrabold tracking-[0.14em] uppercase text-[#F0B429]">
-                  {["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][momentBogota().day()]}
-                </span>
-                <span className="text-[22px] leading-[1.15] font-extrabold tracking-[0.025em] text-[#EAF0F4]">{momentBogota().format("DD/MM/YYYY")}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap justify-end">
-            {canClose && (
-              <button
-                type="button"
-                onClick={() => setCloseShiftOpen(true)}
-                className="h-12 px-[17px] rounded-[7px] bg-[#F0B429] text-[#18212B] flex items-center gap-[9px] text-xs leading-none font-extrabold tracking-[0.08em] uppercase cursor-pointer transition-colors hover:bg-[#f5c04a] active:bg-[#d99f1f]">
-                <Lock className="w-[18px] h-[18px]" strokeWidth={2} />
-                <span>Cerrar turno</span>
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={openMenu}
-              aria-label="Abrir menú"
-              className="h-12 px-[17px] border border-[#40505f] rounded-[7px] bg-[#263442] text-[#EAF0F4] flex items-center gap-[11px] text-xs leading-none font-extrabold tracking-[0.08em] uppercase cursor-pointer transition-[background-color,color,box-shadow,transform] duration-[180ms] ease-in-out hover:bg-[#344657] hover:shadow-[0_4px_12px_rgba(0,0,0,0.22)] active:translate-y-px active:bg-[#101820] active:duration-[120ms] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#F0B429]">
-              <Menu className="w-[18px] h-[18px] text-[#F0B429]" strokeWidth={2} />
-              <span>Abrir menú</span>
-            </button>
-            </div>
-          </div>
-
-          {/* Órdenes por estado */}
-          <div className="dash-rise" style={{ animationDelay: "0.1s" }}>
-            <div className="flex items-center gap-3 mb-4 md:mb-[18px] text-[#F0B429] text-[11px] md:text-xs font-bold tracking-[0.28em] uppercase">
-              <span>Órdenes por estado</span>
-              <span className="flex-1 h-[3px] bg-[#F0B429]/90" />
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-              {Object.entries(statusMeta).map(([status, meta]) => {
-                const Icon = meta.icon;
-                const count = d.ordersByStatus?.[status] || 0;
-                return (
-                  <Link
-                    key={status}
-                    to="/ordenes"
-                    className="flex flex-col gap-2.5 bg-[#263442]/[0.88] border border-[#34475a] rounded-md p-4 md:p-5 text-[#EAF0F4] no-underline shadow-[0_10px_24px_rgba(0,0,0,0.4)] transition-colors hover:bg-[#2d3d4e] hover:shadow-[0_14px_30px_rgba(0,0,0,0.5)] active:bg-[#223040] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0B429]"
-                    style={{ borderTop: `4px solid ${meta.color}` }}>
-                    
-                    <div className="flex items-center gap-3 md:gap-3.5">
-                      <Icon className="w-7 h-7 md:w-8 md:h-8 shrink-0" style={{ color: meta.color }} />
-                      <span className="text-4xl md:text-[52px] font-black leading-none">{count}</span>
-                    </div>
-                    <p className="text-[13px] font-bold tracking-[0.16em] uppercase text-[#b9c6d1]">{status}</p>
-                  </Link>);
-
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <>
+      <BipolarDashboard
+        d={d}
+        company={company}
+        canClose={canClose}
+        onCloseShift={() => setCloseShiftOpen(true)}
+        onOpenMenu={openMenu}
+        onRestore={() => setRestoreOpen(true)} />
       {canClose && <CloseShiftDialog open={closeShiftOpen} onOpenChange={setCloseShiftOpen} />}
-
-      {/* CUERPO POR ÁREAS */}
-      <div className="px-4 md:px-6 lg:px-12 pb-12 md:pb-16 flex flex-col gap-7 md:gap-9">
-        {/* Taller */}
-        <AreaPanel title="Taller" icon={Wrench} image={HERO_IMG} imageAlt="Taller" delay={0.2}>
-          <div className={grid3}>
-            <Link to="/ordenes" className={cardBase}>
-              <div className="flex items-center gap-3">
-                <Bike className="w-7 h-7" style={{ color: "#F0B429" }} />
-                <span className={bigXl}>{d.motosInWorkshopCount}</span>
-              </div>
-              <span className={lb}>Motos en taller</span>
-            </Link>
-            <Link to="/ordenes" className={cardBase}>
-              <div className="flex items-center gap-3">
-                <Clock className="w-7 h-7" style={{ color: "#60a5fa" }} />
-                <span className={bigXl}>{d.pendingOrders}</span>
-              </div>
-              <span className={lb}>Órdenes pendientes</span>
-            </Link>
-            <Link to="/ordenes" className={cardBase}>
-              <Wrench className="w-5 h-5" style={{ color: "#60a5fa" }} />
-              <span className={big}>{fmt(d.workshopIncome)}</span>
-              <span className={lb}>Ingresos taller (servicios)</span>
-              <span className={ut}>Utilidad: {fmt(d.workshopProfit)}</span>
-            </Link>
-          </div>
-        </AreaPanel>
-
-        <div className="h-1.5 rounded-sm opacity-90" style={{ background: "repeating-linear-gradient(135deg,#F0B429 0 14px,#18212B 14px 28px)" }} />
-
-        {/* Almacén */}
-        <AreaPanel title="Almacén" icon={Package} image={ALMACEN_IMG} imageAlt="Almacén" delay={0.3}>
-          <div className={grid3}>
-            <Link to="/ventas" className={cardBase}>
-              <ShoppingCart className="w-5 h-5" style={{ color: "#34d399" }} />
-              <span className={big}>{fmt(d.storeIncome)}</span>
-              <span className={lb}>Ingresos almacén (productos)</span>
-              <span className={ut}>Utilidad: {fmt(d.storeProfit)}</span>
-            </Link>
-            <Link to="/inventario" className={cardBase}>
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="w-7 h-7" style={{ color: "#f87171" }} />
-                <span className={bigXl}>{d.lowStock?.length || 0}</span>
-              </div>
-              <span className={lb}>Productos stock bajo</span>
-            </Link>
-            <Link to="/facturacion" className={cardBase}>
-              <FileText className="w-5 h-5" style={{ color: "#c084fc" }} />
-              <span className={bigXl} style={{ marginTop: 6 }}>{d.pendingInvoices}</span>
-              <span className={lb}>Facturas pendientes</span>
-            </Link>
-          </div>
-        </AreaPanel>
-
-        <div className="h-1.5 rounded-sm opacity-90" style={{ background: "repeating-linear-gradient(135deg,#F0B429 0 14px,#18212B 14px 28px)" }} />
-
-        {/* Caja */}
-        <AreaPanel title="Caja" icon={Wallet} image={CAJA_IMG} imageAlt="Caja" delay={0.4}>
-          <div className={grid3}>
-            <div className={cardHL}>
-              <div className="flex items-center gap-3">
-                <ShoppingCart className="w-5 h-5" />
-                <span className="text-xs font-bold tracking-[0.16em] uppercase">Ventas del día</span>
-              </div>
-              <span className="text-xl md:text-[42px] font-black leading-tight">{fmt(d.salesToday)}</span>
-            </div>
-            <div className={cardBase}>
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-5 h-5" style={{ color: "#EAF0F4" }} />
-                <span className="text-xs font-bold tracking-[0.16em] uppercase text-[#b9c6d1]">Ventas de la semana</span>
-              </div>
-              <span className="text-xl md:text-[42px] font-black leading-tight">{fmt(d.salesWeek)}</span>
-            </div>
-            <div className={cardBase}>
-              <div className="flex items-center gap-3">
-                <DollarSign className="w-5 h-5" style={{ color: "#EAF0F4" }} />
-                <span className="text-xs font-bold tracking-[0.16em] uppercase text-[#b9c6d1]">Ventas del mes</span>
-              </div>
-              <span className="text-xl md:text-[42px] font-black leading-tight">{fmt(d.salesMonth)}</span>
-            </div>
-          </div>
-          <div className={grid3}>
-            <Link to="/creditos" className={cardBase}>
-              <CreditCard className="w-5 h-5" style={{ color: "#c084fc" }} />
-              <span className={big}>{fmt(d.totalReceivables)}</span>
-              <span className={lb}>Cuentas por cobrar</span>
-            </Link>
-            <Link to="/gastos" className={cardBase}>
-              <TrendingDown className="w-5 h-5" style={{ color: "#f87171" }} />
-              <span className={big}>{fmt(d.totalExpenses)}</span>
-              <span className={lb}>Gastos totales</span>
-            </Link>
-            <div className={cardHL}>
-              <DollarSign className="w-5 h-5" />
-              <span className={big}>{fmt(d.estimatedProfit)}</span>
-              <span className="text-xs font-bold tracking-[0.16em] uppercase">Utilidad estimada</span>
-            </div>
-          </div>
-        </AreaPanel>
-      </div>
-    </div>);
-
+      {canClose && <RestoreBackupDialog open={restoreOpen} onOpenChange={setRestoreOpen} />}
+    </>);
 }

@@ -99,6 +99,23 @@
   animation: dash-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+@keyframes bd-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.bd-grow {
+  transform-origin: bottom;
+  animation: bd-grow 0.8s ease-out 0.6s both;
+}
+
+@keyframes bd-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,183,3,.55); }
+  50% { box-shadow: 0 0 0 7px rgba(255,183,3,0); }
+}
+.bd-pulse {
+  animation: bd-pulse 2.6s ease-out 1.2s 2;
+}
+
 @keyframes strip-arrive {
   from { opacity: 0.68; }
   to { opacity: 1; }
