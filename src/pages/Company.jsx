@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import RolesManager from "@/components/RolesManager";
 import BankAccountsManager from "@/components/BankAccountsManager";
 import UsersManager from "@/components/UsersManager";
+import VerseSettings from "@/components/VerseSettings";
 import AdminSignatureDialog from "@/components/AdminSignatureDialog";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { useAuth } from "@/lib/AuthContext";
@@ -29,6 +30,7 @@ const empty = {
   email: "", address: "", city: "", logo: "", admin_signature: "", footer_text: "", receipt_footer_text: "",
   quotation_footer_text: "", purchase_footer_text: "", loan_footer_text: "", commission_footer_text: "", warranty_footer_text: "",
   warranty_terms: "", warranty_coverage: "", warranty_exclusions: "", credit_default_days: 30,
+  verse_text: "", verse_reference: "",
   charges_iva: true,
   dian_resolution: "", dian_resolution_date: "", dian_range_from: 0, dian_range_to: 0,
   pos_prefix: "VTA", quote_prefix: "COT", purchase_prefix: "COMP", order_prefix: "ORD", invoice_prefix: "FAC",
@@ -71,6 +73,7 @@ export default function Company() {
             warranty_footer_text: data[0].warranty_footer_text || "",
             warranty_terms: data[0].warranty_terms || "", warranty_coverage: data[0].warranty_coverage || "", warranty_exclusions: data[0].warranty_exclusions || "",
             credit_default_days: data[0].credit_default_days ?? 30,
+            verse_text: data[0].verse_text || "", verse_reference: data[0].verse_reference || "",
             charges_iva: data[0].charges_iva ?? (data[0].document_type === "Persona jurídica"),
             dian_resolution: data[0].dian_resolution || "", dian_resolution_date: data[0].dian_resolution_date || "",
             dian_range_from: data[0].dian_range_from ?? 0, dian_range_to: data[0].dian_range_to ?? 0,
@@ -90,7 +93,10 @@ export default function Company() {
     try {
       const payload = { ...form, credit_default_days: Number(form.credit_default_days) || 30 };
       if (company) {
-        await base44.entities.Company.update(company.id, payload);
+        const verseChanged = (form.verse_text || "") !== (company.verse_text || "") || (form.verse_reference || "") !== (company.verse_reference || "");
+        if (verseChanged) payload.verse_rotation_active = false;
+        const updated = await base44.entities.Company.update(company.id, payload);
+        setCompany({ ...company, ...payload, ...(updated || {}) });
       } else {
         const created = await base44.entities.Company.create(payload);
         setCompany(created);
@@ -152,6 +158,13 @@ export default function Company() {
       alert("Error al restaurar: " + (e.response?.data?.error || e.message));
     }
     setRestoring(false);
+  };
+
+  const resumeVerse = async () => {
+    if (!company) return;
+    const next = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString();
+    await base44.entities.Company.update(company.id, { verse_rotation_active: true, verse_next_change: next });
+    setCompany({ ...company, verse_rotation_active: true, verse_next_change: next });
   };
 
   const saveSignature = async (url) => {
@@ -298,6 +311,9 @@ export default function Company() {
           ))}
           <p className="text-xs text-slate-400">{isAdmin ? "El texto aparece al final de cada documento impreso o enviado en PDF" : "Solo un administrador puede editar estos textos"}</p>
         </div>
+
+        <VerseSettings form={form} setForm={setForm} isAdmin={isAdmin} active={company?.verse_rotation_active !== false}
+          nextChange={company?.verse_next_change} onResume={resumeVerse} />
 
         <div className="border-t border-slate-100 pt-4 space-y-3">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Garantía de servicios (plantilla)</p>

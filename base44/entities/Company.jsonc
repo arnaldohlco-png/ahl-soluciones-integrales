@@ -145,6 +145,23 @@
       "title": "Prefijo facturas",
       "default": "FAC"
     },
+    "verse_text": {
+      "type": "string",
+      "title": "Texto b\u00edblico de los pies de p\u00e1gina"
+    },
+    "verse_reference": {
+      "type": "string",
+      "title": "Referencia del texto b\u00edblico"
+    },
+    "verse_rotation_active": {
+      "type": "boolean",
+      "title": "Rotaci\u00f3n autom\u00e1tica del vers\u00edculo",
+      "default": true
+    },
+    "verse_next_change": {
+      "type": "string",
+      "title": "Pr\u00f3ximo cambio autom\u00e1tico del vers\u00edculo"
+    },
     "supplier_order_prefix": {
       "type": "string",
       "title": "Prefijo pedidos a proveedor",

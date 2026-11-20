@@ -1,0 +1,45 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 6 * * *",
+      "one_time_date": null,
+      "timezone": "America/Bogota",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Genera un nuevo vers\u00edculo cada 8 d\u00edas si la rotaci\u00f3n est\u00e1 activa",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "rotar_versiculo",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "rotate": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "rotateVerse",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Generar nuevo vers\u00edculo",
+            "description": "Solo si venci\u00f3 el ciclo"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Rotar vers\u00edculo de pies de p\u00e1gina"
+}
