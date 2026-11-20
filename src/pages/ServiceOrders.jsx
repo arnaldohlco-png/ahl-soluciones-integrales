@@ -494,7 +494,7 @@ export default function ServiceOrders() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="!flex !flex-col w-screen max-w-none h-[100dvh] max-h-[100dvh] sm:max-w-none sm:rounded-none rounded-none p-4 md:p-6 gap-4" onOpenAutoFocus={(e) => {
-          const el = document.querySelector("[data-autofocus-items] input");
+          const el = document.querySelector(editing ? "[data-autofocus-items] input" : "[data-autofocus-customer] input");
           if (el) { e.preventDefault(); el.focus(); }
         }}>
           <DialogHeader className="shrink-0 pr-8"><DialogTitle>{editing ? "Editar Orden de Servicio" : "Nueva Orden de Servicio"}</DialogTitle></DialogHeader>
@@ -509,7 +509,7 @@ export default function ServiceOrders() {
                 hideUntilSearch
                 items={motos.map((m) => ({ id: m.id, label: `${m.brand} ${m.model}`, sublabel: m.plate ? `Placa: ${m.plate}` : "Sin placa" }))} />
               
-              <SearchableSelect
+              <div data-autofocus-customer><SearchableSelect
                 label="Cliente"
                 placeholder="Buscar cliente..."
                 value={form.customer_id}
@@ -523,7 +523,7 @@ export default function ServiceOrders() {
                 onCreate={createCustomer}
                 createLabel="Crear cliente"
                 required
-                items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: c.document_number || c.phone }))} />
+                items={customers.map((c) => ({ id: c.id, label: c.name, sublabel: c.document_number || c.phone }))} /></div>
               
             </div>
             {form.customer_id && (() => {
