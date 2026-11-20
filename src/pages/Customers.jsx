@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Phone, Mail, Search, Users, MessageCircle, CreditCard, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, Phone, Mail, Search, Users, MessageCircle, CreditCard, FileText, History } from "lucide-react";
+import DocumentHistory from "@/components/DocumentHistory";
 import ExportImport from "@/components/ExportImport";
 import { matchAny } from "@/lib/search";
 import { useConfirm } from "@/components/ConfirmProvider";
@@ -28,6 +29,7 @@ export default function Customers() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [balanceFilter, setBalanceFilter] = useState("all");
+  const [historyFor, setHistoryFor] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -160,6 +162,7 @@ export default function Customers() {
                   {c.phone && (
                     <a href={`tel:${c.phone.replace(/\s+/g, "")}`} title="Llamar" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Phone className="w-4 h-4" /></a>
                   )}
+                  <button onClick={() => setHistoryFor(c)} title="Historial de órdenes y facturas" className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><History className="w-4 h-4" /></button>
                   <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => remove(c)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
@@ -167,6 +170,8 @@ export default function Customers() {
           ))}
         </div>
       )}
+
+      <DocumentHistory open={!!historyFor} onOpenChange={(o) => !o && setHistoryFor(null)} customer={historyFor} />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">

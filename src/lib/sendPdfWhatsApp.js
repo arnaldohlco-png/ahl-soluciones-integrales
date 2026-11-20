@@ -42,6 +42,17 @@ const loadLibs = async () => {
  * @returns {Promise<string>} file_url del PDF subido
  */
 export async function generateAndSendPdf({ phone, message, format = "a4" }) {
+  const cleanPhone = (phone || "").replace(/\D/g, "");
+  if (!cleanPhone) throw new Error("Teléfono del destinatario no válido");
+  const file_url = await generatePdfUrl({ format });
+  const fullPhone = cleanPhone.length === 10 ? `57${cleanPhone}` : cleanPhone;
+  const text = (message || "").replace("{{link}}", file_url);
+  window.open(`https://wa.me/${fullPhone}?text=${encodeURIComponent(text)}`, "_blank");
+  return file_url;
+}
+
+/** Genera el PDF del .print-area visible, lo sube y devuelve su URL. */
+export async function generatePdfUrl({ format = "a4" } = {}) {
   const printArea = document.querySelector(".print-area");
   if (!printArea) throw new Error("No hay documento para enviar");
 
@@ -99,13 +110,6 @@ export async function generateAndSendPdf({ phone, message, format = "a4" }) {
     const blob = pdf.output("blob");
     const file = new File([blob], "documento.pdf", { type: "application/pdf" });
     const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
-
-    const cleanPhone = (phone || "").replace(/\D/g, "");
-    if (!cleanPhone) throw new Error("Teléfono del destinatario no válido");
-    const fullPhone = cleanPhone.length === 10 ? `57${cleanPhone}` : cleanPhone;
-    const text = (message || "").replace("{{link}}", file_url);
-    const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
 
     return file_url;
   } finally {

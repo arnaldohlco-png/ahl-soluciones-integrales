@@ -151,7 +151,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto p-4 print:bg-white print:p-0 print:block">
       <div className="print-area bg-white text-slate-900 w-full max-w-3xl my-4 shadow-xl print:shadow-none print:my-0 print:max-w-none">
-        <PrintToolbar onClose={onClose} whatsappPhone={whatsappPhone} whatsappMessage={whatsappMessage} />
+        <PrintToolbar onClose={onClose} whatsappPhone={whatsappPhone} whatsappMessage={whatsappMessage} email={(type === "purchase" ? supplier?.email : (type === "loan" || type === "commission") ? technician?.email : customer?.email) || ""} />
 
         <div className="p-8 text-[13px] leading-relaxed print:p-6 print-inner">
           {/* Header */}

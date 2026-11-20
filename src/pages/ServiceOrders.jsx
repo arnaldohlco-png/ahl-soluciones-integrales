@@ -21,6 +21,8 @@ import SignaturePad from "@/components/SignaturePad";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SearchableSelect from "@/components/SearchableSelect";
 import PrintableDocument from "@/components/PrintableDocument";
+import DocumentHistory from "@/components/DocumentHistory";
+import { History } from "lucide-react";
 import AnticiposEditor from "@/components/AnticiposEditor";
 import AnticipoReceipt from "@/components/AnticipoReceipt";
 import WarrantyDocument from "@/components/WarrantyDocument";
@@ -70,6 +72,7 @@ export default function ServiceOrders() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [printOrder, setPrintOrder] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState(null);
   const [warrantyOrder, setWarrantyOrder] = useState(null);
   const [invoices, setInvoices] = useState([]);
@@ -401,7 +404,8 @@ export default function ServiceOrders() {
             <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Nueva Orden</span><span className="sm:hidden">Nueva</span>
           </Button>
         </div>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setHistoryOpen(true)}><History className="w-4 h-4 mr-1" /> Historial</Button>
           <ExportImport entityName="ServiceOrder" fields={["motorcycle_id", "customer_id", "service_type", "description", "status", "technician_id", "mechanic", "entry_date", "delivery_date", "cost", "previous_mileage", "current_mileage", "oil_change_interval", "next_oil_change", "parts_used"]} />
         </div>
       </div>
@@ -702,6 +706,8 @@ export default function ServiceOrders() {
         technician={technicians.find((t) => t.id === warrantyOrder.technician_id)}
         onClose={() => {setWarrantyOrder(null);load();}} />
       }
+
+      <DocumentHistory open={historyOpen} onOpenChange={setHistoryOpen} />
 
       {printOrder &&
       <PrintableDocument
