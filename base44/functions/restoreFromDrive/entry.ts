@@ -88,18 +88,31 @@ export default async function(req) {
       for (const name of ENTITY_NAMES) {
         if (!Array.isArray(backup[name])) continue;
         try {
-          const clean = backup[name].map((r) => {
+          const existing = new Set();
+          let cursor = undefined;
+          do {
+            const page = await base44.asServiceRole.entities[name].filter({}, { limit: 500, cursor });
+            page.items.forEach((x) => existing.add(x.id));
+            cursor = page.has_more ? page.next_cursor : undefined;
+          } while (cursor);
+          const toUpdate = [];
+          const toCreate = [];
+          for (const r of backup[name]) {
             const copy = { ...r };
             for (const f of BUILT_IN_FIELDS) delete copy[f];
-            return copy;
-          });
-          await base44.asServiceRole.entities[name].deleteMany({});
+            if (r.id && existing.has(r.id)) toUpdate.push({ id: r.id, ...copy });
+            else toCreate.push(copy);
+          }
           let restored = 0;
-          for (let i = 0; i < clean.length; i += 500) {
-            const created = await base44.asServiceRole.entities[name].bulkCreate(clean.slice(i, i + 500));
+          for (let i = 0; i < toUpdate.length; i += 500) {
+            await base44.asServiceRole.entities[name].bulkUpdate(toUpdate.slice(i, i + 500));
+            restored += Math.min(500, toUpdate.length - i);
+          }
+          for (let i = 0; i < toCreate.length; i += 500) {
+            const created = await base44.asServiceRole.entities[name].bulkCreate(toCreate.slice(i, i + 500));
             restored += created.length;
           }
-          results[name] = { restored, expected: clean.length };
+          results[name] = { restored, expected: backup[name].length };
         } catch (e) {
           results[name] = { error: e.message };
         }
