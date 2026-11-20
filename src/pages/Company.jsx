@@ -11,6 +11,7 @@ import RolesManager from "@/components/RolesManager";
 import BankAccountsManager from "@/components/BankAccountsManager";
 import UsersManager from "@/components/UsersManager";
 import VerseSettings from "@/components/VerseSettings";
+import LocalBackupButton from "@/components/LocalBackupButton";
 import AdminSignatureDialog from "@/components/AdminSignatureDialog";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { useAuth } from "@/lib/AuthContext";
@@ -402,7 +403,8 @@ export default function Company() {
               <p className="text-sm text-slate-500">Guarda una copia de todos los datos del taller en tu Google Drive</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <LocalBackupButton />
             <Button onClick={backupToDrive} disabled={backing} variant="outline">
               {backing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Cloud className="w-4 h-4 mr-1" />}
               {backing ? "Respaldando..." : "Respaldar ahora"}
