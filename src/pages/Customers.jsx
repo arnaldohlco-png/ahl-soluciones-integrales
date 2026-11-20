@@ -27,6 +27,7 @@ export default function Customers() {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
+  const [balanceFilter, setBalanceFilter] = useState("all");
 
   const load = async () => {
     setLoading(true);
@@ -89,7 +90,8 @@ export default function Customers() {
   };
 
   const filtered = customers.filter((c) =>
-    matchAny(search, c.name, c.phone, c.email, c.document_number)
+    matchAny(search, c.name, c.phone, c.email, c.document_number) &&
+    (balanceFilter === "all" || (balanceFilter === "with" ? (c.balance || 0) > 0 : !((c.balance || 0) > 0)))
   );
 
   return (
@@ -107,9 +109,19 @@ export default function Customers() {
         </div>
       </div>
 
-      <div className="relative mb-4 max-w-sm">
-        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <Input placeholder="Buscar por nombre, teléfono, email o documento..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex gap-3 mb-4 flex-wrap">
+        <div className="relative w-full max-w-sm">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Input placeholder="Buscar por nombre, teléfono, email o documento..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <Select value={balanceFilter} onValueChange={setBalanceFilter}>
+          <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los clientes</SelectItem>
+            <SelectItem value="with">Con saldo pendiente</SelectItem>
+            <SelectItem value="without">Sin saldo pendiente</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (
@@ -120,41 +132,37 @@ export default function Customers() {
           <p>No hay clientes registrados</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-2">
           {filtered.map((c) => (
-            <div key={c.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-slate-900 text-white flex items-center justify-center font-semibold">
+            <div key={c.id} className="bg-white rounded-xl border border-slate-200 px-4 py-3 hover:shadow-md transition-shadow flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3 flex-1 min-w-[220px]">
+                  <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-semibold shrink-0">
                     {c.name?.charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-900">{c.name}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900 truncate">{c.name}</p>
                     {c.document_number && <p className="text-xs text-slate-400">{c.document_type}: {c.document_number}</p>}
-                    {c.address && <p className="text-xs text-slate-400">{c.address}</p>}
+                    {c.address && <p className="text-xs text-slate-400 truncate">{c.address}</p>}
                   </div>
+              </div>
+              <div className="space-y-0.5 text-sm min-w-[180px]">
+                {c.phone && <div className="flex items-center gap-2 text-slate-600"><Phone className="w-3.5 h-3.5 text-slate-400" /> {c.phone}</div>}
+                {c.whatsapp && <div className="flex items-center gap-2 text-slate-600"><MessageCircle className="w-3.5 h-3.5 text-green-500" /> {c.whatsapp}</div>}
+                {c.email && <div className="flex items-center gap-2 text-slate-600 truncate"><Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {c.email}</div>}
+              </div>
+              <div className="text-xs min-w-[150px] space-y-0.5">
+                <div className="flex items-center gap-1 text-slate-500"><CreditCard className="w-3.5 h-3.5" /> Crédito: ${(c.credit_limit || 0).toLocaleString("es-CO")}</div>
+                <div className={c.balance > 0 ? "text-red-600 font-semibold" : "text-emerald-600 font-semibold"}>
+                  Saldo: ${(c.balance || 0).toLocaleString("es-CO")}
                 </div>
-                <div className="flex gap-1">
+              </div>
+              <div className="flex gap-1 ml-auto">
                   {c.phone && (
                     <a href={`tel:${c.phone.replace(/\s+/g, "")}`} title="Llamar" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><Phone className="w-4 h-4" /></a>
                   )}
                   <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => remove(c)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-                </div>
               </div>
-              <div className="space-y-1.5 text-sm">
-                {c.phone && <div className="flex items-center gap-2 text-slate-600"><Phone className="w-3.5 h-3.5 text-slate-400" /> {c.phone}</div>}
-                {c.whatsapp && <div className="flex items-center gap-2 text-slate-600"><MessageCircle className="w-3.5 h-3.5 text-green-500" /> {c.whatsapp}</div>}
-                {c.email && <div className="flex items-center gap-2 text-slate-600 truncate"><Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {c.email}</div>}
-              </div>
-              {(c.credit_limit > 0 || c.balance > 0) && (
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1 text-slate-500"><CreditCard className="w-3.5 h-3.5" /> Crédito: ${(c.credit_limit || 0).toLocaleString("es-CO")}</div>
-                  <div className={c.balance > 0 ? "text-red-600 font-semibold" : "text-emerald-600 font-semibold"}>
-                    Saldo: ${(c.balance || 0).toLocaleString("es-CO")}
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
