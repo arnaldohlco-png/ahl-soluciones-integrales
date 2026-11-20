@@ -13,6 +13,7 @@ import UsersManager from "@/components/UsersManager";
 import VerseSettings from "@/components/VerseSettings";
 import LocalBackupButton from "@/components/LocalBackupButton";
 import RestoreBackupDialog from "@/components/RestoreBackupDialog";
+import DeleteAccountSection from "@/components/DeleteAccountSection";
 import AdminSignatureDialog from "@/components/AdminSignatureDialog";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { useAuth } from "@/lib/AuthContext";
@@ -377,6 +378,7 @@ export default function Company() {
         </div>
       </div>
 
+      <DeleteAccountSection />
       <RestoreBackupDialog open={restoreOpen} onOpenChange={setRestoreOpen} />
     </div>
   );

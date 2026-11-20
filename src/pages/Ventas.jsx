@@ -19,6 +19,8 @@ import { useConfirm } from "@/components/ConfirmProvider";
 import MixedPaymentLines from "@/components/MixedPaymentLines";
 import { newLine, resolveLines, summaryMethod } from "@/lib/mixedPayments";
 import { Image } from "@/components/ui/image";
+import { useIsMobile } from "@/hooks/use-mobile";
+import LoadMoreSentinel from "@/components/LoadMoreSentinel";
 
 export default function Ventas() {
   const confirm = useConfirm();
@@ -156,8 +158,30 @@ export default function Ventas() {
   };
 
   const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const isMobile = useIsMobile();
+  const [historyMore, setHistoryMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const loadMoreHistory = async () => {
+    setLoadingMore(true);
+    try {
+      const part = await base44.entities.Sale.list("-date", 200, sales.length);
+      setSales((prev) => [...prev, ...part]);
+      setHistoryMore(part.length === 200);
+    } catch (e) { console.error(e); setHistoryMore(false); }
+    setLoadingMore(false);
+  };
   const loadHistory = async () => {
     setHistoryLoading(true);
+    if (isMobile) {
+      // Móvil: solo las 200 ventas más recientes; el resto carga al hacer scroll
+      try {
+        const part = await base44.entities.Sale.list("-date", 200);
+        setSales(part);
+        setHistoryMore(part.length === 200);
+      } catch (e) { console.error(e); }
+      setHistoryLoading(false);
+      return;
+    }
     try {
       let skip = 0, all = [];
       while (true) {
@@ -731,6 +755,7 @@ export default function Ventas() {
                   </tbody>
                 </table>
               </div>
+              {historyMore && <LoadMoreSentinel loading={loadingMore} onVisible={loadMoreHistory} />}
             </div>
           )}
         </div>

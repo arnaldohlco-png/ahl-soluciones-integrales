@@ -200,3 +200,29 @@ body.print-80mm {
   body.print-80mm .print-area .doc-header > div:first-child > img {
     margin: 0 auto !important;
   }
+
+/* ===== Android WebView: comportamiento nativo ===== */
+html, body, #root { overscroll-behavior: none; }
+main, .screen, [data-screen] { overscroll-behavior-y: contain; }
+
+button, a, nav, [role="tab"], svg {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+p, td, th, input, textarea, .selectable {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+
+@media (max-width: 767px) {
+  button:not([role="checkbox"]):not([role="switch"]):not([role="radio"]),
+  [role="button"],
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

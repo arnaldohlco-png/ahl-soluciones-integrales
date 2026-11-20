@@ -323,13 +323,13 @@ export default function Quotations() {
                       <td className="px-3 py-1">
                         <input value={it.name} onChange={(e) => updateItem(i, "name", e.target.value)} className="w-full border-0 px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-300 rounded" />
                         {(it.service_id || it.type === "Servicio") && (
-                          <select
-                            value={it.technician_id || ""}
-                            onChange={(e) => updateItem(i, "technician_id", e.target.value)}
-                            className="mt-1 ml-1 text-xs border border-slate-200 rounded px-1 py-0.5 bg-white text-slate-600 max-w-[220px]">
-                            <option value="">Técnico (opcional)</option>
-                            {technicians.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                          </select>
+                          <Select value={it.technician_id || "__none"} onValueChange={(v) => updateItem(i, "technician_id", v === "__none" ? "" : v)}>
+                            <SelectTrigger className="mt-1 h-7 text-xs max-w-[220px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none">Técnico (opcional)</SelectItem>
+                              {technicians.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
                         )}
                         {(() => {
                           const prod = it.product_id ? products.find((p) => p.id === it.product_id) : null;

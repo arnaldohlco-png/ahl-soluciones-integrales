@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { UserCog, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
@@ -119,9 +120,12 @@ export default function UsersManager() {
             </div>
             <div>
               <Label>Rol</Label>
-              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm">
-                {roleOptions.map((r) => <option key={r.name} value={r.name}>{r.label}</option>)}
-              </select>
+              <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {roleOptions.map((r) => <SelectItem key={r.name} value={r.name}>{r.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
               {!editing && <p className="text-xs text-slate-400 mt-1">Si el rol no se puede asignar en la invitación, entra como Usuario y luego edítalo aquí.</p>}
             </div>
             {msg && <p className="text-sm text-red-600">{msg}</p>}

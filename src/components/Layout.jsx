@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { Outlet, Link, useLocation, Navigate, useNavigate } from "react-router-dom";
+import { useOutlet, Link, useLocation, Navigate, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
+import PageHeader from "@/components/PageHeader";
+import BottomTabBar from "@/components/BottomTabBar";
+import PullToRefresh from "@/components/PullToRefresh";
 import {
   LayoutDashboard, Users, Wrench, Package, Bike,
   ShoppingCart, Receipt, CreditCard, Wallet, Landmark,
@@ -68,6 +73,9 @@ export default function Layout() {
   const [leaving, setLeaving] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
+  const [refreshKey, setRefreshKey] = useState(0);
+  const isMobile = useIsMobile();
+  const outlet = useOutlet();
   const navigate = useNavigate();
   const pathRef = React.useRef(location.pathname);
   pathRef.current = location.pathname;
@@ -299,7 +307,7 @@ export default function Layout() {
   const isDashboard = location.pathname === "/";
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Desktop: botón de tres rayitas (oculto en Dashboard, que lleva su propio menú) */}
       {!isDashboard &&
       <button
@@ -311,23 +319,15 @@ export default function Layout() {
 
       {/* Mobile top bar (oculta en Dashboard, que lleva su propio menú en el encabezado amarillo) */}
       {!isDashboard &&
-      <div className="md:hidden fixed top-0 inset-x-0 z-30 bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
-            <Bike className="w-5 h-5 text-slate-900" />
-          </div>
-          <span className="font-bold">AHL Soluciones Integrales </span>
-        </div>
-        <button onClick={() => setMobileOpen(true)} className="p-2 -mr-2">
-          <Menu className="w-6 h-6" />
-        </button>
-      </div>}
+      <PageHeader isRoot={["/ordenes", "/ventas", "/inventario"].includes(location.pathname)} onMenu={() => setMobileOpen(true)} />}
 
       {/* Drawer (escritorio y móvil) */}
       {mobileOpen &&
       <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-72 max-w-[80vw] bg-slate-900 flex flex-col overflow-y-auto animate-in slide-in-from-right duration-300">
+          <aside
+            style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", paddingRight: "env(safe-area-inset-right)" }}
+            className="relative w-72 max-w-[80vw] bg-slate-900 flex flex-col overflow-y-auto animate-in slide-in-from-right duration-300">
             <div className="flex items-center justify-between px-6 py-6 border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
@@ -370,9 +370,23 @@ export default function Layout() {
       <BackupReminder open={backupOpen} onContinue={handleLogout} onCancel={() => setBackupOpen(false)} />
 
       {/* Main content */}
-      <main className={`min-h-screen ${isDashboard ? "" : "pt-14 md:pt-0 md:pr-16"}`}>
-        <Outlet />
+      <main className={`min-h-screen pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 ${isDashboard ? "" : "pt-[calc(3.5rem+env(safe-area-inset-top))] md:pt-0 md:pr-16"}`}>
+        <PullToRefresh disabled={!isMobile} onRefresh={() => setRefreshKey((k) => k + 1)}>
+          {isMobile ?
+          <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.16 }}>
+                <React.Fragment key={refreshKey}>{outlet}</React.Fragment>
+              </motion.div>
+            </AnimatePresence> :
+          <React.Fragment key={refreshKey}>{outlet}</React.Fragment>}
+        </PullToRefresh>
       </main>
+      <BottomTabBar canAccess={(to) => canAccess(role, to, roles)} onMenu={() => setMobileOpen(true)} />
     </div>);
 
 }

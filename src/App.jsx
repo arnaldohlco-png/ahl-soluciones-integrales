@@ -12,6 +12,10 @@ import Layout from "@/components/Layout";
 import { ConfirmProvider } from "@/components/ConfirmProvider";
 import ChunkErrorBoundary from "@/components/ChunkErrorBoundary";
 import UpdateNotifier from "@/components/UpdateNotifier";
+import { ThemeProvider } from "next-themes";
+
+// En web se mantiene el modo claro; en WebView de Android se sigue el tema del sistema.
+const isAndroidWebView = typeof navigator !== "undefined" && /Android.*; wv\)/.test(navigator.userAgent);
 const Login = lazy(() => import("@/pages/Login"));
 const Register = lazy(() => import("@/pages/Register"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
@@ -123,6 +127,7 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
+    <ThemeProvider attribute="class" defaultTheme={isAndroidWebView ? "system" : "light"} enableSystem={isAndroidWebView}>
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
@@ -135,6 +140,7 @@ function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
+    </ThemeProvider>
   )
 }
 

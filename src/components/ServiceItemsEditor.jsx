@@ -106,13 +106,13 @@ export default function ServiceItemsEditor({ items, setItems, products, services
                       isTerceroItem(it, services) ? (
                         <p className="mt-1 text-xs text-slate-400">Terceros · no requiere técnico</p>
                       ) : (
-                        <select
-                          value={it.technician_id || ""}
-                          onChange={(e) => updateItem(i, "technician_id", e.target.value)}
-                          className="mt-1 text-xs border border-slate-200 rounded px-1 py-0.5 bg-white text-slate-600 max-w-[200px]">
-                          <option value="">Técnico (general de la orden)</option>
-                          {technicians.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </select>
+                        <Select value={it.technician_id || "__none"} onValueChange={(v) => updateItem(i, "technician_id", v === "__none" ? "" : v)}>
+                          <SelectTrigger className="mt-1 h-7 text-xs max-w-[200px]"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none">Técnico (general de la orden)</SelectItem>
+                            {technicians.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       )
                     )}
                     {(() => {
