@@ -579,7 +579,7 @@ export default function PrintableDocument({ type, doc, company, extras = {}, onC
           {/* Footer */}
           <div className="mt-6 pt-3 border-t border-slate-200 text-[11px] text-slate-600 text-center space-y-1">
             {type === "order" && company?.footer_text && <p className="whitespace-pre-wrap">{company.footer_text}</p>}
-            {type === "order" && has(doc.admin_footer) && <p className="whitespace-pre-wrap">{doc.admin_footer}</p>}
+            {type === "order" && has(doc.admin_footer) && String(doc.admin_footer).trim() !== String(company?.footer_text || "").trim() && <p className="whitespace-pre-wrap">{doc.admin_footer}</p>}
             {DOC_FOOTERS[type] && company?.[DOC_FOOTERS[type]] && (
               <p className="whitespace-pre-wrap">{company[DOC_FOOTERS[type]]}</p>
             )}
