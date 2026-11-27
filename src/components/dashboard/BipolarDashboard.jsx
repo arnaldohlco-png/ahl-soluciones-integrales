@@ -62,7 +62,7 @@ export default function BipolarDashboard({ d, company, canClose, onCloseShift, o
   filter(Boolean).join("  ·  ");
 
   return (
-    <div className="min-h-screen bg-[#E5E9EC] text-[#1E232A] px-4 md:px-8 pt-5 md:pt-7 pb-12 flex flex-col gap-5 font-sans">
+    <div className="min-h-screen bg-[#E5E9EC] text-[#1E232A] md:px-8 pt-5 md:pt-7 pb-12 flex flex-col gap-5 font-sans pr-4 pl-4 mt-1">
       {/* Encabezado */}
       <div className="dash-rise flex flex-col md:flex-row md:items-center gap-4 md:gap-[22px] bg-white border border-[#d3d9de] rounded-2xl px-5 py-4 shadow-[0_6px_18px_rgba(30,35,42,0.08)]">
         {company?.logo ?
