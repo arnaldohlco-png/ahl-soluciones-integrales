@@ -104,7 +104,7 @@ export default function BipolarDashboard({ d, company, canClose, onCloseShift, o
 
       {/* Cinta de órdenes por estado */}
       <div className="dash-rise flex flex-col lg:flex-row lg:items-center gap-3.5 bg-[#1E232A] rounded-[14px] px-[18px] py-3.5 shadow-[0_8px_20px_rgba(30,35,42,0.2)]" style={{ animationDelay: "0.14s" }}>
-        <div className="text-[11px] font-black tracking-[0.22em] uppercase text-[#FFB703] whitespace-nowrap pr-1.5">Órdenes por estado</div>
+        <div className="font-black tracking-[0.22em] uppercase text-[#FFB703] whitespace-nowrap pr-1.5 text-[22px]">Órdenes por estado</div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 flex-1">
           {Object.entries(STATUS_META).map(([status, meta]) => {
             const Icon = meta.icon;
