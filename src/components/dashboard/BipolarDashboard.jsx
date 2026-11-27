@@ -179,7 +179,7 @@ export default function BipolarDashboard({ d, company, canClose, onCloseShift, o
         </div>
 
         {/* Caja */}
-        <div className="dash-rise bg-[#1E232A] rounded-[18px] flex flex-col gap-4 shadow-[0_14px_34px_rgba(30,35,42,0.3)] text-white my-32 px-1 py-48" style={{ animationDelay: "0.4s" }}>
+        <div className="dash-rise bg-[#1E232A] rounded-[18px] flex flex-col gap-4 shadow-[0_14px_34px_rgba(30,35,42,0.3)] text-white my-32 pt-1" style={{ animationDelay: "0.4s" }}>
           <AreaHeader icon={Wallet} title="Caja" image={CAJA_IMG} dark />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className={`${kBase} sm:col-span-2 min-h-[172px] bg-[#FFB703] border-[#FFB703] text-[#1E232A] hover:bg-[#ffc42e] active:bg-[#e5a200]`}>
