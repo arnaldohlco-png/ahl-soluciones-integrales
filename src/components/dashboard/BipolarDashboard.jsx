@@ -2,8 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import {
   DollarSign, TrendingUp, TrendingDown, Clock, Wrench, Package, AlertTriangle,
-  ShoppingCart, Bike, CreditCard, FileText, ClipboardList, Menu, Lock, HardHat, Wallet
-} from "lucide-react";
+  ShoppingCart, Bike, CreditCard, FileText, ClipboardList, Menu, Lock, HardHat, Wallet } from
+"lucide-react";
 import { Image } from "@/components/ui/image";
 import { momentBogota } from "@/lib/localDate";
 
@@ -35,11 +35,11 @@ const ut = "text-xs font-black tracking-[0.04em] text-[#a87300]";
 function Bars({ heights }) {
   return (
     <div className="flex items-end gap-1 h-[26px] ml-auto">
-      {heights.map((h, i) => (
-        <i key={i} className={`w-2 rounded-t-sm bd-grow ${i % 2 === 0 ? "bg-[#1E232A]" : "bg-[#FFB703]"}`} style={{ height: `${h}%` }} />
-      ))}
-    </div>
-  );
+      {heights.map((h, i) =>
+      <i key={i} className={`w-2 rounded-t-sm bd-grow ${i % 2 === 0 ? "bg-[#1E232A]" : "bg-[#FFB703]"}`} style={{ height: `${h}%` }} />
+      )}
+    </div>);
+
 }
 
 function AreaHeader({ icon: Icon, title, image, dark }) {
@@ -48,48 +48,48 @@ function AreaHeader({ icon: Icon, title, image, dark }) {
       <div className="w-[50px] bg-[#FFB703] text-[#1E232A] flex items-center justify-center shrink-0"><Icon className="w-6 h-6" strokeWidth={2.4} /></div>
       <h2 className="flex-1 flex items-center px-4 text-sm font-black tracking-[0.3em] uppercase">{title}</h2>
       <Image src={image} alt={title} fittingType="fill" className="w-[150px] h-14 shrink-0 hidden sm:block" />
-    </div>
-  );
+    </div>);
+
 }
 
 export default function BipolarDashboard({ d, company, canClose, onCloseShift, onOpenMenu, onRestore }) {
   const now = momentBogota();
   const info = [
-    company?.document_number && `NIT/C.C.: ${company.document_number}`,
-    company?.phone,
-    company?.email,
-    [company?.address, company?.city].filter(Boolean).join(" · ")
-  ].filter(Boolean).join("  ·  ");
+  company?.document_number && `NIT/C.C.: ${company.document_number}`,
+  company?.phone,
+  company?.email,
+  [company?.address, company?.city].filter(Boolean).join(" · ")].
+  filter(Boolean).join("  ·  ");
 
   return (
     <div className="min-h-screen bg-[#E5E9EC] text-[#1E232A] px-4 md:px-8 pt-5 md:pt-7 pb-12 flex flex-col gap-5 font-sans">
       {/* Encabezado */}
       <div className="dash-rise flex flex-col md:flex-row md:items-center gap-4 md:gap-[22px] bg-white border border-[#d3d9de] rounded-2xl px-5 py-4 shadow-[0_6px_18px_rgba(30,35,42,0.08)]">
-        {company?.logo ? (
-          <img src={company.logo} alt="Logo" className="w-[92px] h-[92px] object-contain shrink-0 rounded-full self-center md:self-auto" />
-        ) : (
-          <div className="w-[92px] h-[92px] rounded-full bg-[#E5E9EC] flex items-center justify-center shrink-0 self-center md:self-auto"><Bike className="w-9 h-9" /></div>
-        )}
+        {company?.logo ?
+        <img src={company.logo} alt="Logo" className="w-[92px] h-[92px] object-contain shrink-0 rounded-full self-center md:self-auto" /> :
+
+        <div className="w-[92px] h-[92px] rounded-full bg-[#E5E9EC] flex items-center justify-center shrink-0 self-center md:self-auto"><Bike className="w-9 h-9" /></div>
+        }
         <div className="flex-1 min-w-0 text-center md:text-left">
           <h1 className="text-[22px] font-black tracking-[0.06em] uppercase leading-[1.15]">{company?.name || "Mi Taller"}</h1>
           <p className="text-xs font-semibold text-[#5b646d] leading-[1.4] mt-1.5">{info}</p>
         </div>
         <div className="flex flex-col items-center md:items-end gap-2 shrink-0">
           <div className="flex gap-2 flex-wrap justify-center">
-            {canClose && (
-              <button type="button" onClick={onCloseShift} className={`bd-pulse h-11 px-4 rounded-[10px] bg-[#FFB703] text-[#1E232A] flex items-center gap-[9px] text-xs font-black tracking-[0.1em] uppercase cursor-pointer transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-[#ffc83a] hover:shadow-[0_4px_12px_rgba(255,183,3,0.4)] active:bg-[#e5a200] ${focus}`}>
+            {canClose &&
+            <button type="button" onClick={onCloseShift} className={`bd-pulse h-11 px-4 rounded-[10px] bg-[#FFB703] text-[#1E232A] flex items-center gap-[9px] text-xs font-black tracking-[0.1em] uppercase cursor-pointer transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-[#ffc83a] hover:shadow-[0_4px_12px_rgba(255,183,3,0.4)] active:bg-[#e5a200] hidden ${focus}`}>
                 <Lock className="w-[17px] h-[17px]" strokeWidth={2.2} /><span>Cerrar turno</span>
               </button>
-            )}
+            }
             <button type="button" onClick={onOpenMenu} aria-label="Abrir menú" className={`h-11 px-4 rounded-[10px] bg-[#1E232A] text-white flex items-center gap-[9px] text-xs font-black tracking-[0.1em] uppercase cursor-pointer transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-[#2e353e] hover:shadow-[0_4px_12px_rgba(30,35,42,0.3)] active:bg-[#12161a] ${focus}`}>
               <Menu className="w-[17px] h-[17px] text-[#FFB703]" strokeWidth={2.4} /><span>Abrir menú</span>
             </button>
           </div>
-          {canClose && (
-            <button type="button" onClick={onRestore} className={`flex items-center gap-[7px] bg-transparent text-[#8a939c] text-[11px] font-bold tracking-[0.04em] cursor-pointer px-1.5 py-1 rounded-md transition-[color,background-color] duration-[180ms] hover:text-[#1E232A] hover:bg-[#eef1f3] active:bg-[#e0e5e8] ${focus}`}>
+          {canClose &&
+          <button type="button" onClick={onRestore} className={`flex items-center gap-[7px] bg-transparent text-[#8a939c] text-[11px] font-bold tracking-[0.04em] cursor-pointer px-1.5 py-1 rounded-md transition-[color,background-color] duration-[180ms] hover:text-[#1E232A] hover:bg-[#eef1f3] active:bg-[#e0e5e8] hidden ${focus}`}>
               <Lock className="w-3.5 h-3.5" strokeWidth={2} />Restaurar copia de seguridad
             </button>
-          )}
+          }
         </div>
       </div>
 
@@ -113,8 +113,8 @@ export default function BipolarDashboard({ d, company, canClose, onCloseShift, o
                 <Icon className="w-[22px] h-[22px] shrink-0" style={{ color: meta.color }} strokeWidth={2} />
                 <b className="text-[30px] font-black leading-none tracking-[-0.03em]">{d.ordersByStatus?.[status] || 0}</b>
                 <span className="text-[11px] font-extrabold tracking-[0.12em] uppercase text-[#c3ccd4]">{status}</span>
-              </Link>
-            );
+              </Link>);
+
           })}
         </div>
       </div>
@@ -212,6 +212,6 @@ export default function BipolarDashboard({ d, company, canClose, onCloseShift, o
           <div className="h-2 rounded-sm" style={{ background: "repeating-linear-gradient(135deg,#FFB703 0 14px,#1E232A 14px 28px)" }} />
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
