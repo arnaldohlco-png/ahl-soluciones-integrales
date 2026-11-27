@@ -120,7 +120,7 @@ export default function BipolarDashboard({ d, company, canClose, onCloseShift, o
       </div>
 
       {/* Columnas */}
-      <div className="grid grid-cols-1 lg:grid-cols-[430px_1fr] gap-5 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-[430px_1fr] gap-5 items-stretch pb-32">
         <div className="flex flex-col gap-4">
           <div className="dash-rise bg-white border border-[#d3d9de] rounded-2xl overflow-hidden shadow-[0_8px_22px_rgba(30,35,42,0.08)]" style={{ animationDelay: "0.22s" }}>
             <AreaHeader icon={Wrench} title="Taller" image={TALLER_IMG} />
