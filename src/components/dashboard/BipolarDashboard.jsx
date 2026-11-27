@@ -71,7 +71,7 @@ export default function BipolarDashboard({ d, company, canClose, onCloseShift, o
         <div className="w-[92px] h-[92px] rounded-full bg-[#E5E9EC] flex items-center justify-center shrink-0 self-center md:self-auto"><Bike className="w-9 h-9" /></div>
         }
         <div className="flex-1 min-w-0 text-center md:text-left">
-          <h1 className="text-[22px] font-black tracking-[0.06em] uppercase leading-[1.15]">{company?.name || "Mi Taller"}</h1>
+          <h1 className="font-black tracking-[0.06em] uppercase leading-[1.15] text-[32px]">{company?.name || "Mi Taller"}</h1>
           <p className="text-xs font-semibold text-[#5b646d] leading-[1.4] mt-1.5">{info}</p>
         </div>
         <div className="flex flex-col items-center md:items-end gap-2 shrink-0">
